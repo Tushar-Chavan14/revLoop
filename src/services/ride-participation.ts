@@ -47,3 +47,22 @@ export async function getMyRideRequest(
     .maybeSingle();
   return data;
 }
+
+export async function getPendingRequestCounts(rideIds: string[]): Promise<Record<string, number>> {
+  if (rideIds.length === 0) {
+    return {};
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("ride_requests")
+    .select("ride_id")
+    .eq("status", "pending")
+    .in("ride_id", rideIds);
+
+  const counts: Record<string, number> = {};
+  for (const row of data ?? []) {
+    counts[row.ride_id] = (counts[row.ride_id] ?? 0) + 1;
+  }
+  return counts;
+}

@@ -18,10 +18,6 @@ export function ManageRequestsPanel({ requests, isRideFull }: ManageRequestsPane
   const pending = requests.filter((request) => request.status === "pending");
   const resolved = requests.filter((request) => request.status !== "pending");
 
-  if (requests.length === 0) {
-    return null;
-  }
-
   return (
     <Card>
       <CardHeader>

@@ -189,6 +189,30 @@ export async function getUpcomingRides(limit = 6): Promise<RideWithOrganizer[]> 
   return (data ?? []) as RideWithOrganizer[];
 }
 
+export interface OrganizerRides {
+  upcoming: RideWithOrganizer[];
+  past: RideWithOrganizer[];
+}
+
+export async function getRidesByOrganizer(organizerId: string): Promise<OrganizerRides> {
+  const supabase = await createClient();
+  const today = new Date().toISOString().slice(0, 10);
+  const { data } = await supabase
+    .from("rides_with_stats")
+    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .eq("organizer_id", organizerId)
+    .order("ride_date", { ascending: true });
+
+  const rides = (data ?? []) as RideWithOrganizer[];
+  const isUpcoming = (ride: RideWithOrganizer) =>
+    ride.status === "upcoming" && (ride.ride_date ?? "") >= today;
+
+  return {
+    upcoming: rides.filter(isUpcoming),
+    past: rides.filter((ride) => !isUpcoming(ride)).reverse(),
+  };
+}
+
 export async function getRecentRides(limit = 6): Promise<RideWithOrganizer[]> {
   const supabase = await createClient();
   const { data } = await supabase

@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SiteHeader } from "@/components/site-header";
 import { signOut } from "@/features/auth/actions/auth-actions";
+import { OrganizerDashboard } from "@/features/rides/components/organizer-dashboard";
+import { getPendingRequestCounts, getRideRequests } from "@/services/ride-participation";
 import { getAuthUser, getProfileByUserId } from "@/services/profiles";
+import { getRidesByOrganizer } from "@/services/rides";
 import { capitalize } from "@/utils/capitalize";
 
 export default async function ProfilePage() {
@@ -19,6 +22,13 @@ export default async function ProfilePage() {
   if (!profile) {
     redirect("/profile/setup");
   }
+
+  const { upcoming, past } = await getRidesByOrganizer(user.id);
+  const [nearest, ...restUpcoming] = upcoming;
+  const [nearestRideRequests, pendingCounts] = await Promise.all([
+    nearest?.id ? getRideRequests(nearest.id) : Promise.resolve([]),
+    getPendingRequestCounts(restUpcoming.map((ride) => ride.id).filter((id) => id !== null)),
+  ]);
 
   const stats = [
     {
@@ -106,6 +116,13 @@ export default async function ProfilePage() {
             </CardContent>
           </Card>
         )}
+
+        <OrganizerDashboard
+          upcoming={upcoming}
+          past={past}
+          nearestRideRequests={nearestRideRequests}
+          pendingCounts={pendingCounts}
+        />
       </div>
     </div>
   );
