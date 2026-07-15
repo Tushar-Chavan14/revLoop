@@ -1,0 +1,43 @@
+import Link from "next/link";
+import { Logo } from "@/components/logo";
+import { Button } from "@/components/ui/button";
+import { getAuthUser } from "@/services/profiles";
+
+export async function SiteHeader() {
+  const user = await getAuthUser();
+
+  return (
+    <header className="border-border/60 bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
+        <Link href="/">
+          <Logo />
+        </Link>
+        <nav className="hidden items-center gap-6 text-sm font-medium sm:flex">
+          <Link
+            href="/rides"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Discover rides
+          </Link>
+        </nav>
+        <div className="flex items-center gap-2">
+          <Button
+            nativeButton={false}
+            render={<Link href={user ? "/profile" : "/login"}>{user ? "Profile" : "Sign in"}</Link>}
+            variant="ghost"
+            size="sm"
+          />
+          <Button
+            nativeButton={false}
+            render={
+              <Link href={user ? "/rides/create" : "/login"}>
+                {user ? "Create a ride" : "Get started"}
+              </Link>
+            }
+            size="sm"
+          />
+        </div>
+      </div>
+    </header>
+  );
+}

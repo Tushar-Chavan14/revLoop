@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "updatedAt": "2026-07-15T10:13:25.089Z",
+  "entries": {
+    "supabase": {
+      "slug": "supabase",
+      "format": "llms.txt",
+      "sourceUrl": "https://supabase.com/llms.txt",
+      "etag": null,
+      "lastModified": null,
+      "fetchedAt": "2026-07-15T10:13:25.088Z",
+      "checksum": "f6b8f497f879957847e254e54c6a1dbad2c3a8164d2c96e731c4fa6216e3fe43",
+      "size": 2759,
+      "name": "Supabase"
+    }
+  }
+}
