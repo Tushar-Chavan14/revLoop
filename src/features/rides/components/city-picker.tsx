@@ -120,6 +120,7 @@ export function CityPicker({ cityOptions, value, onChange }: CityPickerProps) {
           <Input
             autoFocus
             placeholder="Search any city"
+            aria-label="Search any city"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />

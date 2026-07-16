@@ -4,6 +4,10 @@ import { updateProfile } from "@/features/profile/actions/profile-actions";
 import { ProfileForm } from "@/features/profile/components/profile-form";
 import { getAuthUser, getProfileByUserId } from "@/services/profiles";
 
+export const metadata = {
+  title: "Edit profile",
+};
+
 export default async function EditProfilePage() {
   const user = await getAuthUser();
   if (!user) {

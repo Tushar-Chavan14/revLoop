@@ -16,6 +16,12 @@ import {
 } from "@/services/rides";
 import type { Enums } from "@/types/supabase";
 
+export const metadata = {
+  title: "Discover rides",
+  description:
+    "Browse upcoming motorcycle group rides near your city — breakfast runs, weekend loops, touring, and off-road. Filter by type, pace, distance, and date.",
+};
+
 const RIDE_TYPE_VALUES = new Set<string>(RIDE_TYPES.map((type) => type.value));
 const SPEED_VALUES = new Set<string>(SPEED_LEVELS.map((level) => level.value));
 const RIDER_LEVEL_VALUES = new Set<string>(RIDER_LEVELS.map((level) => level.value));

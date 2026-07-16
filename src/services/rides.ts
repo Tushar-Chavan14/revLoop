@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Enums, Tables } from "@/types/supabase";
 import { haversineKm } from "@/utils/geo";
@@ -166,7 +167,9 @@ export async function getCommunityStats(): Promise<CommunityStats> {
   };
 }
 
-export async function getRideById(id: string): Promise<RideWithOrganizer | null> {
+// cache() dedupes within a single request — the ride detail page calls this
+// from both generateMetadata and the page component.
+export const getRideById = cache(async (id: string): Promise<RideWithOrganizer | null> => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("rides_with_stats")
@@ -174,7 +177,7 @@ export async function getRideById(id: string): Promise<RideWithOrganizer | null>
     .eq("id", id)
     .maybeSingle();
   return data as RideWithOrganizer | null;
-}
+});
 
 export async function getUpcomingRides(limit = 6): Promise<RideWithOrganizer[]> {
   const supabase = await createClient();

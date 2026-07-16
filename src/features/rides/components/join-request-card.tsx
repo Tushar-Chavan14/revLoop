@@ -55,29 +55,12 @@ export function JoinRequestCard({ rideId, myRequest, isRideFull }: JoinRequestCa
     );
   }
 
-  if (myRequest?.status === "rejected") {
-    return (
-      <Card>
-        <CardContent>
-          <p className="text-muted-foreground text-sm">
-            Your request to join this ride was declined.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (myRequest?.status === "cancelled") {
-    return (
-      <Card>
-        <CardContent>
-          <p className="text-muted-foreground text-sm">
-            You cancelled your request to join this ride.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
+  const previousOutcome =
+    myRequest?.status === "rejected"
+      ? "Your last request to join this ride was declined. You can send another one."
+      : myRequest?.status === "cancelled"
+        ? "You cancelled your last request to join this ride. You can send another one."
+        : null;
 
   return (
     <Card>
@@ -86,7 +69,9 @@ export function JoinRequestCard({ rideId, myRequest, isRideFull }: JoinRequestCa
           <UserPlus className="text-primary size-4" />
           <CardTitle>Want to ride along?</CardTitle>
         </div>
-        <CardDescription>Send a request and the organizer will review it.</CardDescription>
+        <CardDescription>
+          {previousOutcome ?? "Send a request and the organizer will review it."}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {isRideFull ? (

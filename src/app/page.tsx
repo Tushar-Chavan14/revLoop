@@ -1,6 +1,17 @@
 import Link from "next/link";
-import { MapPin, Users } from "lucide-react";
+import {
+  Compass,
+  Flag,
+  MapPin,
+  MapPinOff,
+  MessageSquare,
+  MessageSquareX,
+  UserPlus,
+  Users,
+  UserX,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Reveal } from "@/components/reveal";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { RIDE_TYPE_ICONS, RIDE_TYPES } from "@/constants/ride-type";
@@ -13,6 +24,51 @@ import {
   getRecentRides,
   getUpcomingRides,
 } from "@/services/rides";
+
+const PAIN_POINTS = [
+  {
+    icon: MessageSquareX,
+    pain: "Buried in group chats",
+    fix: "Ride plans die under 400 unread messages. On RevLoop, every ride is its own page — date, route, pace, and rules in one place.",
+  },
+  {
+    icon: UserX,
+    pain: "No idea who's coming",
+    fix: "Seat counts and join requests mean you know exactly who's riding — and organizers choose who joins.",
+  },
+  {
+    icon: MapPinOff,
+    pain: "“Meet near the flyover”",
+    fix: "Every ride pins an exact meeting point on the map. No more circling the highway exit calling everyone.",
+  },
+] as const;
+
+const HOW_IT_WORKS = [
+  {
+    icon: Compass,
+    title: "Find or post a ride",
+    description:
+      "Browse loops near your city — breakfast runs, ghat roads, overnight tours — or post your own with the route mapped out.",
+  },
+  {
+    icon: UserPlus,
+    title: "Request your seat",
+    description:
+      "One tap to ask in. The organizer sees your profile and your machine, and accepts from their dashboard.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Sync up in ride chat",
+    description:
+      "Once you're in, the ride chat opens up — sort out timing, luggage, and where breakfast is happening.",
+  },
+  {
+    icon: Flag,
+    title: "Meet at the pin. Roll out.",
+    description:
+      "The exact meeting point is on the map, and you get notified of every update until kickstands go up.",
+  },
+] as const;
 
 export default async function HomePage() {
   const [user, upcomingRides, recentRides, popularDestinations, stats] = await Promise.all([
@@ -75,7 +131,81 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <main className="flex flex-1 flex-col gap-16 px-6 py-16">
+      <main className="flex flex-1 flex-col gap-20 px-6 py-16">
+        <section
+          aria-labelledby="why-revloop"
+          className="mx-auto flex w-full max-w-6xl flex-col gap-8"
+        >
+          <Reveal className="max-w-2xl">
+            <h2
+              id="why-revloop"
+              className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl"
+            >
+              Weekend plans shouldn&apos;t die in the group chat
+            </h2>
+            <p className="text-muted-foreground mt-2">
+              Every riding crew knows the drill: someone says &ldquo;Sunday?&rdquo;, forty messages
+              later nobody knows the plan. RevLoop fixes the three ways group rides fall apart.
+            </p>
+          </Reveal>
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+            {PAIN_POINTS.map((point, index) => (
+              <Reveal key={point.pain} delay={index * 120}>
+                <div className="border-border hover:border-primary/50 group flex h-full flex-col gap-3 rounded-2xl border p-6 transition-colors">
+                  <point.icon className="text-primary size-6 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6" />
+                  <h3 className="font-heading text-lg font-semibold">{point.pain}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{point.fix}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="how-it-works"
+          className="bg-secondary text-secondary-foreground relative -mx-6 overflow-hidden px-6 py-16"
+        >
+          <div
+            aria-hidden
+            className="text-primary/30 bg-road-dashes absolute top-0 right-0 left-0 h-1"
+          />
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
+            <Reveal className="max-w-2xl">
+              <h2
+                id="how-it-works"
+                className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl"
+              >
+                From &ldquo;anyone up for a ride?&rdquo; to kickstands up
+              </h2>
+              <p className="text-secondary-foreground/60 mt-2">
+                Four steps between you and the next loop.
+              </p>
+            </Reveal>
+            <div className="relative grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+              <div
+                aria-hidden
+                className="border-primary/30 absolute top-6 right-[12%] left-[12%] hidden border-t border-dashed lg:block"
+              />
+              {HOW_IT_WORKS.map((step, index) => (
+                <Reveal key={step.title} delay={index * 150} className="relative">
+                  <div className="flex flex-col gap-3">
+                    <div className="bg-secondary ring-primary text-primary font-heading relative z-10 flex size-12 items-center justify-center rounded-full text-lg font-semibold ring-2">
+                      {index + 1}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <step.icon className="text-primary size-4" />
+                      <h3 className="font-heading text-lg font-semibold">{step.title}</h3>
+                    </div>
+                    <p className="text-secondary-foreground/60 text-sm leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section id="upcoming-rides" className="mx-auto flex w-full max-w-6xl flex-col gap-6">
           <div className="flex items-end justify-between gap-4">
             <div>

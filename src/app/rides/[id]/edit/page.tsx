@@ -5,6 +5,10 @@ import { RideForm } from "@/features/rides/components/ride-form";
 import { getAuthUser } from "@/services/profiles";
 import { getRideById } from "@/services/rides";
 
+export const metadata = {
+  title: "Edit ride",
+};
+
 type EditRidePageProps = {
   params: Promise<{ id: string }>;
 };

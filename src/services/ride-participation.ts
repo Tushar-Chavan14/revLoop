@@ -24,12 +24,16 @@ export async function getRideMembers(rideId: string): Promise<RideMemberWithProf
   return (data ?? []) as RideMemberWithProfile[];
 }
 
-export async function getRideRequests(rideId: string): Promise<RideRequestWithRequester[]> {
+export async function getRequestsForRides(rideIds: string[]): Promise<RideRequestWithRequester[]> {
+  if (rideIds.length === 0) {
+    return [];
+  }
+
   const supabase = await createClient();
   const { data } = await supabase
     .from("ride_requests")
     .select(`*, requester:profiles!ride_requests_requester_id_fkey(${PROFILE_SELECT})`)
-    .eq("ride_id", rideId)
+    .in("ride_id", rideIds)
     .order("created_at", { ascending: false });
   return (data ?? []) as RideRequestWithRequester[];
 }
@@ -46,23 +50,4 @@ export async function getMyRideRequest(
     .eq("requester_id", userId)
     .maybeSingle();
   return data;
-}
-
-export async function getPendingRequestCounts(rideIds: string[]): Promise<Record<string, number>> {
-  if (rideIds.length === 0) {
-    return {};
-  }
-
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("ride_requests")
-    .select("ride_id")
-    .eq("status", "pending")
-    .in("ride_id", rideIds);
-
-  const counts: Record<string, number> = {};
-  for (const row of data ?? []) {
-    counts[row.ride_id] = (counts[row.ride_id] ?? 0) + 1;
-  }
-  return counts;
 }

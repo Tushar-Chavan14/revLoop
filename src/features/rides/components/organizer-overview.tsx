@@ -3,15 +3,14 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ManageRequestsPanel } from "@/features/rides/components/manage-requests-panel";
+import { RideRequestsAccordion } from "@/features/rides/components/ride-requests-accordion";
 import type { RideRequestWithRequester } from "@/services/ride-participation";
 import type { RideWithOrganizer } from "@/services/rides";
 
-interface OrganizerDashboardProps {
+interface OrganizerOverviewProps {
   upcoming: RideWithOrganizer[];
   past: RideWithOrganizer[];
-  nearestRideRequests: RideRequestWithRequester[];
-  pendingCounts: Record<string, number>;
+  requests: RideRequestWithRequester[];
 }
 
 function rideSummaryLine(ride: RideWithOrganizer) {
@@ -26,15 +25,10 @@ function rideSummaryLine(ride: RideWithOrganizer) {
     .join(" · ");
 }
 
-export function OrganizerDashboard({
-  upcoming,
-  past,
-  nearestRideRequests,
-  pendingCounts,
-}: OrganizerDashboardProps) {
+export function OrganizerOverview({ upcoming, past, requests }: OrganizerOverviewProps) {
   if (upcoming.length === 0 && past.length === 0) {
     return (
-      <Card>
+      <Card className="border-border border">
         <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
           <p className="text-muted-foreground">You haven&apos;t organized any rides yet.</p>
           <Button nativeButton={false} render={<Link href="/rides/create">Create a ride</Link>} />
@@ -44,23 +38,18 @@ export function OrganizerDashboard({
   }
 
   const [nearest, ...restUpcoming] = upcoming;
-  const isNearestFull = nearest
-    ? nearest.seats_available !== null && nearest.seats_available <= 0
-    : false;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <h2 className="font-heading text-lg font-semibold tracking-tight">Upcoming rides</h2>
-
-        {nearest ? (
-          <>
-            <Card>
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+      <div className="flex flex-col gap-6 lg:col-span-3 lg:max-h-[80vh] lg:overflow-y-auto lg:pr-2">
+        <section className="flex flex-col gap-3">
+          <h2 className="font-heading text-lg font-semibold tracking-tight">
+            Nearest upcoming ride
+          </h2>
+          {nearest ? (
+            <Card className="border-border border">
               <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <p className="text-primary text-xs font-medium tracking-wide uppercase">
-                    Your next ride
-                  </p>
                   <Link
                     href={`/rides/${nearest.id}`}
                     className="font-heading truncate text-lg font-semibold hover:underline"
@@ -78,41 +67,46 @@ export function OrganizerDashboard({
                 />
               </CardContent>
             </Card>
+          ) : (
+            <p className="text-muted-foreground text-sm">No upcoming rides.</p>
+          )}
+        </section>
 
-            <ManageRequestsPanel requests={nearestRideRequests} isRideFull={isNearestFull} />
+        <section className="border-border flex flex-col gap-3 border-t pt-6">
+          <h2 className="font-heading text-lg font-semibold tracking-tight">Upcoming rides</h2>
+          {restUpcoming.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {restUpcoming.map((ride) => (
+                <RideRow key={ride.id} ride={ride} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-sm">Nothing else coming up.</p>
+          )}
+        </section>
 
-            {restUpcoming.length > 0 && (
-              <div className="flex flex-col gap-2">
-                {restUpcoming.map((ride) => (
-                  <RideRow
-                    key={ride.id}
-                    ride={ride}
-                    pendingCount={ride.id ? pendingCounts[ride.id] : undefined}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        ) : (
-          <p className="text-muted-foreground text-sm">No upcoming rides.</p>
-        )}
+        <section className="border-border flex flex-col gap-3 border-t pt-6">
+          <h2 className="font-heading text-lg font-semibold tracking-tight">Past rides</h2>
+          {past.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {past.map((ride) => (
+                <RideRow key={ride.id} ride={ride} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-sm">No past rides yet.</p>
+          )}
+        </section>
       </div>
 
-      {past.length > 0 && (
-        <div className="flex flex-col gap-3">
-          <h2 className="font-heading text-lg font-semibold tracking-tight">Past rides</h2>
-          <div className="flex flex-col gap-2">
-            {past.map((ride) => (
-              <RideRow key={ride.id} ride={ride} />
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="border-border flex flex-col gap-3 lg:col-span-2 lg:max-h-[80vh] lg:overflow-y-auto lg:border-l lg:pl-6">
+        <RideRequestsAccordion rides={upcoming} requests={requests} />
+      </div>
     </div>
   );
 }
 
-function RideRow({ ride, pendingCount }: { ride: RideWithOrganizer; pendingCount?: number }) {
+function RideRow({ ride }: { ride: RideWithOrganizer }) {
   return (
     <Link
       href={`/rides/${ride.id}`}
@@ -124,14 +118,11 @@ function RideRow({ ride, pendingCount }: { ride: RideWithOrganizer; pendingCount
           {ride.ride_date && format(new Date(ride.ride_date), "EEE, MMM d, yyyy")}
         </p>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
-        {!!pendingCount && <Badge>{pendingCount} pending</Badge>}
-        {ride.seats_available !== null && ride.max_riders !== null && (
-          <span className="text-muted-foreground text-xs">
-            {ride.seats_available}/{ride.max_riders} left
-          </span>
-        )}
-      </div>
+      {ride.seats_available !== null && ride.max_riders !== null && (
+        <Badge variant="outline" className="text-muted-foreground shrink-0">
+          {ride.seats_available}/{ride.max_riders} left
+        </Badge>
+      )}
     </Link>
   );
 }

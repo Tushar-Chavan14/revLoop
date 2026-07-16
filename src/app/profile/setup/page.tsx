@@ -4,6 +4,10 @@ import { createProfile } from "@/features/profile/actions/profile-actions";
 import { ProfileForm } from "@/features/profile/components/profile-form";
 import { getAuthUser, getProfileByUserId } from "@/services/profiles";
 
+export const metadata = {
+  title: "Set up your profile",
+};
+
 export default async function ProfileSetupPage() {
   const user = await getAuthUser();
   if (!user) {

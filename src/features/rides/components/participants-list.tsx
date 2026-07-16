@@ -78,7 +78,7 @@ function ParticipantRow({
           onClick={() => {
             setError(null);
             startTransition(async () => {
-              const result = await removeRideMember(member.id);
+              const result = await removeRideMember(member.ride_id, member.user_id);
               if (result?.error) {
                 setError(result.error);
               }

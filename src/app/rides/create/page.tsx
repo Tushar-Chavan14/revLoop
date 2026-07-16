@@ -5,6 +5,10 @@ import { RideForm } from "@/features/rides/components/ride-form";
 import { getAuthUser, getProfileByUserId } from "@/services/profiles";
 import { isProfileComplete } from "@/utils/profile-completeness";
 
+export const metadata = {
+  title: "Create a ride",
+};
+
 export default async function CreateRidePage() {
   const user = await getAuthUser();
   if (!user) {

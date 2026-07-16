@@ -1,10 +1,15 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { NotificationBell } from "@/components/notification-bell";
 import { Button } from "@/components/ui/button";
 import { getAuthUser } from "@/services/profiles";
+import { getRecentNotifications, getUnreadNotificationCount } from "@/services/notifications";
 
 export async function SiteHeader() {
   const user = await getAuthUser();
+  const [notifications, unreadCount] = user
+    ? await Promise.all([getRecentNotifications(user.id), getUnreadNotificationCount(user.id)])
+    : [[], 0];
 
   return (
     <header className="border-border/60 bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md">
@@ -21,6 +26,13 @@ export async function SiteHeader() {
           </Link>
         </nav>
         <div className="flex items-center gap-2">
+          {user && (
+            <NotificationBell
+              currentUserId={user.id}
+              initialNotifications={notifications}
+              initialUnreadCount={unreadCount}
+            />
+          )}
           <Button
             nativeButton={false}
             render={<Link href={user ? "/profile" : "/login"}>{user ? "Profile" : "Sign in"}</Link>}

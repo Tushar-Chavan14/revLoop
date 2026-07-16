@@ -20,19 +20,40 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { JoinRequestCard } from "@/features/rides/components/join-request-card";
-import { ManageRequestsPanel } from "@/features/rides/components/manage-requests-panel";
 import { ParticipantsList } from "@/features/rides/components/participants-list";
 import { RideMap } from "@/features/rides/components/ride-map";
 import { DEFAULT_RIDE_TYPE_ICON, RIDE_TYPE_ICONS, RIDE_TYPES } from "@/constants/ride-type";
 import { SPEED_LEVELS } from "@/constants/speed-level";
 import { getAuthUser } from "@/services/profiles";
-import { getMyRideRequest, getRideMembers, getRideRequests } from "@/services/ride-participation";
+import { getMyRideRequest, getRideMembers } from "@/services/ride-participation";
 import { getRideById } from "@/services/rides";
 import { capitalize } from "@/utils/capitalize";
 
 type RideDetailPageProps = {
   params: Promise<{ id: string }>;
 };
+
+export async function generateMetadata({ params }: RideDetailPageProps) {
+  const { id } = await params;
+  const ride = await getRideById(id);
+  if (!ride) {
+    return { title: "Ride not found" };
+  }
+
+  const parts = [
+    ride.destination && `to ${ride.destination}`,
+    ride.ride_date && format(new Date(ride.ride_date), "MMM d, yyyy"),
+    ride.city && `from ${ride.city}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  return {
+    title: ride.title ?? "Ride",
+    description: ride.description?.slice(0, 160) || `Group motorcycle ride ${parts}`.trim(),
+    openGraph: ride.cover_image_url ? { images: [{ url: ride.cover_image_url }] } : undefined,
+  };
+}
 
 function optionLabel(options: readonly { value: string; label: string }[], value: string | null) {
   return options.find((option) => option.value === value)?.label ?? value;
@@ -51,10 +72,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
   const members = await getRideMembers(id);
   const isMember = user ? members.some((member) => member.user_id === user.id) : false;
-  const [requests, myRequest] = await Promise.all([
-    isOrganizer ? getRideRequests(id) : Promise.resolve([]),
-    user && !isOrganizer && !isMember ? getMyRideRequest(id, user.id) : Promise.resolve(null),
-  ]);
+  const myRequest = user && !isOrganizer && !isMember ? await getMyRideRequest(id, user.id) : null;
   const isRideFull = ride.seats_available !== null && ride.seats_available <= 0;
 
   const meeting =
@@ -131,14 +149,32 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           </div>
         </div>
 
-        {isOrganizer && (
-          <Button
-            nativeButton={false}
-            render={<Link href={`/rides/${id}/edit`}>Edit ride</Link>}
-            variant="outline"
-            size="sm"
-            className="self-start"
-          />
+        {(isOrganizer || isMember) && (
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex gap-2">
+              {isOrganizer && (
+                <Button
+                  nativeButton={false}
+                  render={<Link href={`/rides/${id}/edit`}>Edit ride</Link>}
+                  variant="outline"
+                  size="sm"
+                />
+              )}
+              {isMember && (
+                <Button
+                  nativeButton={false}
+                  render={<Link href={`/rides/${id}/chat`}>Ride chat</Link>}
+                  variant="outline"
+                  size="sm"
+                />
+              )}
+            </div>
+            {isOrganizer && (
+              <Link href="/profile" className="text-muted-foreground text-xs hover:underline">
+                Manage join requests from your profile →
+              </Link>
+            )}
+          </div>
         )}
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -223,8 +259,6 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           currentUserId={user?.id ?? null}
           isOrganizer={isOrganizer}
         />
-
-        {isOrganizer && <ManageRequestsPanel requests={requests} isRideFull={isRideFull} />}
 
         {!isOrganizer && !isMember && user && (
           <JoinRequestCard rideId={id} myRequest={myRequest} isRideFull={isRideFull} />

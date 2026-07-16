@@ -1,0 +1,12 @@
+project_id = "revloop"
+
+[functions.notification-email]
+# The Dashboard-managed Database Webhook (Integrations -> Database Webhooks)
+# that calls this function sends a valid service_role JWT, so JWT
+# verification can stay on (the default) — this keeps the endpoint from
+# being publicly invokable, unlike the earlier pg_net-based design.
+verify_jwt = true
+
+[auth.email.template.magic_link]
+subject = "Sign in to RevLoop"
+content_path = "./supabase/templates/magic_link.html"

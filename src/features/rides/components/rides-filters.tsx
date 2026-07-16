@@ -123,6 +123,7 @@ export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search by title, city, or destination"
+            aria-label="Search rides by title, city, or destination"
             className="pl-9"
           />
         </div>
@@ -160,12 +161,14 @@ export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground text-xs">Ride distance</Label>
+          <Label htmlFor="filter-distance" className="text-muted-foreground text-xs">
+            Ride distance
+          </Label>
           <Select
             value={distance}
             onValueChange={(value) => updateParams({ distance: value === "any" ? null : value })}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger id="filter-distance" className="w-full">
               <SelectValue placeholder="Any distance" />
             </SelectTrigger>
             <SelectContent>
@@ -178,12 +181,14 @@ export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[
           </Select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground text-xs">Speed</Label>
+          <Label htmlFor="filter-speed" className="text-muted-foreground text-xs">
+            Speed
+          </Label>
           <Select
             value={speed || "any"}
             onValueChange={(value) => updateParams({ speed: value === "any" ? null : value })}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger id="filter-speed" className="w-full">
               <SelectValue placeholder="Any speed" />
             </SelectTrigger>
             <SelectContent>
@@ -197,12 +202,14 @@ export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[
           </Select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground text-xs">Difficulty</Label>
+          <Label htmlFor="filter-difficulty" className="text-muted-foreground text-xs">
+            Difficulty
+          </Label>
           <Select
             value={difficulty || "any"}
             onValueChange={(value) => updateParams({ difficulty: value === "any" ? null : value })}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger id="filter-difficulty" className="w-full">
               <SelectValue placeholder="Any difficulty" />
             </SelectTrigger>
             <SelectContent>
@@ -216,16 +223,22 @@ export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[
           </Select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground text-xs">From</Label>
+          <Label htmlFor="filter-from" className="text-muted-foreground text-xs">
+            From
+          </Label>
           <Input
+            id="filter-from"
             type="date"
             value={dateFrom}
             onChange={(event) => updateParams({ from: event.target.value || null })}
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground text-xs">To</Label>
+          <Label htmlFor="filter-to" className="text-muted-foreground text-xs">
+            To
+          </Label>
           <Input
+            id="filter-to"
             type="date"
             value={dateTo}
             onChange={(event) => updateParams({ to: event.target.value || null })}

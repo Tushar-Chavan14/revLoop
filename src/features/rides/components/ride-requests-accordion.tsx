@@ -1,52 +1,70 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { UserRound, Users } from "lucide-react";
+import { UserRound } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { respondToJoinRequest } from "@/features/rides/actions/ride-request-actions";
 import type { RideRequestWithRequester } from "@/services/ride-participation";
+import type { RideWithOrganizer } from "@/services/rides";
 
-interface ManageRequestsPanelProps {
+interface RideRequestsAccordionProps {
+  rides: RideWithOrganizer[];
   requests: RideRequestWithRequester[];
-  isRideFull: boolean;
 }
 
-export function ManageRequestsPanel({ requests, isRideFull }: ManageRequestsPanelProps) {
-  const pending = requests.filter((request) => request.status === "pending");
-  const resolved = requests.filter((request) => request.status !== "pending");
+export function RideRequestsAccordion({ rides, requests }: RideRequestsAccordionProps) {
+  const pendingByRide = new Map<string, RideRequestWithRequester[]>();
+  for (const request of requests) {
+    if (request.status !== "pending") {
+      continue;
+    }
+    const list = pendingByRide.get(request.ride_id) ?? [];
+    list.push(request);
+    pendingByRide.set(request.ride_id, list);
+  }
+
+  const entries = rides
+    .filter((ride) => ride.id && pendingByRide.has(ride.id))
+    .map((ride) => ({ ride, requests: pendingByRide.get(ride.id as string) ?? [] }));
 
   return (
-    <Card>
+    <Card className="border-border border">
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <Users className="text-primary size-4" />
-          <CardTitle>Join requests {pending.length > 0 && `(${pending.length})`}</CardTitle>
-        </div>
+        <CardTitle>Join requests</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        {pending.length === 0 && (
-          <p className="text-muted-foreground text-sm">No pending requests.</p>
-        )}
-        {pending.map((request) => (
-          <RequestRow key={request.id} request={request} isRideFull={isRideFull} />
-        ))}
-
-        {resolved.length > 0 && (
-          <div className="flex flex-col gap-2 border-t pt-3">
-            {resolved.map((request) => (
-              <div key={request.id} className="flex items-center justify-between gap-2 text-sm">
-                <span className="text-muted-foreground truncate">
-                  {request.requester?.name ?? "Rider"}
-                </span>
-                <Badge variant="outline" className="text-muted-foreground capitalize">
-                  {request.status}
-                </Badge>
-              </div>
-            ))}
-          </div>
+      <CardContent>
+        {entries.length === 0 ? (
+          <p className="text-muted-foreground text-sm">No pending requests right now.</p>
+        ) : (
+          <Accordion multiple defaultValue={entries.map((entry) => entry.ride.id ?? "")}>
+            {entries.map(({ ride, requests: rideRequests }) => {
+              const isRideFull = ride.seats_available !== null && ride.seats_available <= 0;
+              return (
+                <AccordionItem key={ride.id} value={ride.id ?? ""}>
+                  <AccordionTrigger>
+                    <span className="flex items-center gap-2">
+                      {ride.title}
+                      <Badge>{rideRequests.length}</Badge>
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent className="flex flex-col gap-4">
+                    {rideRequests.map((request) => (
+                      <RequestRow key={request.id} request={request} isRideFull={isRideFull} />
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
         )}
       </CardContent>
     </Card>

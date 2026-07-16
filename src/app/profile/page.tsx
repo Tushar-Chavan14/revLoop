@@ -6,11 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SiteHeader } from "@/components/site-header";
 import { signOut } from "@/features/auth/actions/auth-actions";
-import { OrganizerDashboard } from "@/features/rides/components/organizer-dashboard";
-import { getPendingRequestCounts, getRideRequests } from "@/services/ride-participation";
+import { OrganizerOverview } from "@/features/rides/components/organizer-overview";
+import { getRequestsForRides } from "@/services/ride-participation";
 import { getAuthUser, getProfileByUserId } from "@/services/profiles";
 import { getRidesByOrganizer } from "@/services/rides";
 import { capitalize } from "@/utils/capitalize";
+
+export const metadata = {
+  title: "Your profile",
+};
 
 export default async function ProfilePage() {
   const user = await getAuthUser();
@@ -24,11 +28,9 @@ export default async function ProfilePage() {
   }
 
   const { upcoming, past } = await getRidesByOrganizer(user.id);
-  const [nearest, ...restUpcoming] = upcoming;
-  const [nearestRideRequests, pendingCounts] = await Promise.all([
-    nearest?.id ? getRideRequests(nearest.id) : Promise.resolve([]),
-    getPendingRequestCounts(restUpcoming.map((ride) => ride.id).filter((id) => id !== null)),
-  ]);
+  const requests = await getRequestsForRides(
+    upcoming.map((ride) => ride.id).filter((id) => id !== null),
+  );
 
   const stats = [
     {
@@ -58,7 +60,7 @@ export default async function ProfilePage() {
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
-      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-12">
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-12">
         <Card>
           <CardContent className="flex flex-col gap-6 sm:flex-row sm:items-center">
             <div className="bg-secondary ring-primary/10 h-24 w-24 shrink-0 overflow-hidden rounded-full ring-4">
@@ -117,12 +119,7 @@ export default async function ProfilePage() {
           </Card>
         )}
 
-        <OrganizerDashboard
-          upcoming={upcoming}
-          past={past}
-          nearestRideRequests={nearestRideRequests}
-          pendingCounts={pendingCounts}
-        />
+        <OrganizerOverview upcoming={upcoming} past={past} requests={requests} />
       </div>
     </div>
   );

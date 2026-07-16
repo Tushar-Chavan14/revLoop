@@ -2,6 +2,10 @@ import { Logo } from "@/components/logo";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { APP_DESCRIPTION, APP_TAGLINE } from "@/constants/site";
 
+export const metadata = {
+  title: "Sign in",
+};
+
 type LoginPageProps = {
   searchParams: Promise<{ error?: string; message?: string }>;
 };

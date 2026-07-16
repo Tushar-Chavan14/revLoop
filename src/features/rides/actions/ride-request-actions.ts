@@ -17,10 +17,41 @@ export async function requestToJoinRide(rideId: string, message: string): Promis
     redirect("/login");
   }
 
+  const trimmedMessage = message.trim() || null;
+
+  // A rider can only ever have one ride_requests row per ride (unique
+  // ride_id+requester_id) — re-requesting after a decline/cancellation/removal
+  // means updating that same row back to pending, not inserting a new one.
+  const { data: existing } = await supabase
+    .from("ride_requests")
+    .select("id, status")
+    .eq("ride_id", rideId)
+    .eq("requester_id", user.id)
+    .maybeSingle();
+
+  if (existing) {
+    if (existing.status === "pending") {
+      return { error: "You already have a pending request for this ride." };
+    }
+    if (existing.status === "accepted") {
+      return { error: "You're already part of this ride." };
+    }
+
+    const { error } = await supabase
+      .from("ride_requests")
+      .update({ status: "pending", message: trimmedMessage })
+      .eq("id", existing.id);
+    if (error) {
+      return { error: error.message };
+    }
+    refresh();
+    return;
+  }
+
   const { error } = await supabase.from("ride_requests").insert({
     ride_id: rideId,
     requester_id: user.id,
-    message: message.trim() || undefined,
+    message: trimmedMessage,
   });
 
   if (error) {
@@ -64,13 +95,27 @@ export async function respondToJoinRequest(
   refresh();
 }
 
-export async function removeRideMember(memberId: string): Promise<ActionResult> {
+export async function removeRideMember(rideId: string, userId: string): Promise<ActionResult> {
   const supabase = await createClient();
-  const { error } = await supabase.from("ride_members").delete().eq("id", memberId);
+  const { error } = await supabase
+    .from("ride_members")
+    .delete()
+    .eq("ride_id", rideId)
+    .eq("user_id", userId);
 
   if (error) {
     return { error: "You don't have permission to do that" };
   }
+
+  // The membership is gone, but its originating request would otherwise sit
+  // at "accepted" forever, permanently blocking a future re-request (only
+  // pending/accepted rows are blocked from re-requesting). Reopen the door.
+  await supabase
+    .from("ride_requests")
+    .update({ status: "cancelled" })
+    .eq("ride_id", rideId)
+    .eq("requester_id", userId)
+    .eq("status", "accepted");
 
   refresh();
 }
