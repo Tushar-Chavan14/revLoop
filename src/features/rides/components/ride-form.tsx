@@ -293,7 +293,7 @@ export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: 
               name="maxRiders"
               type="number"
               min={1}
-              max={50}
+              max={20}
               value={formik.values.maxRiders}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
@@ -391,19 +391,59 @@ export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: 
             />
           </Field>
           <Field
-            label="Estimated duration (minutes)"
-            htmlFor="estimatedDurationMinutes"
-            error={fieldError("estimatedDurationMinutes")}
+            label="Estimated duration"
+            htmlFor="estimatedDurationDays"
+            error={fieldError("estimatedDurationDays") ?? fieldError("estimatedDurationHours")}
           >
-            <Input
-              id="estimatedDurationMinutes"
-              name="estimatedDurationMinutes"
-              type="number"
-              min={0}
-              value={formik.values.estimatedDurationMinutes ?? ""}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  id="estimatedDurationDays"
+                  name="estimatedDurationDays"
+                  type="number"
+                  min={1}
+                  max={4}
+                  placeholder="1"
+                  value={formik.values.estimatedDurationDays ?? ""}
+                  onChange={(event) => {
+                    formik.handleChange(event);
+                    // Hour precision only applies to a same-day ride (Days = 1) —
+                    // for a 2+ day tour the estimate is just a day count, so clear
+                    // any leftover hours value once it's no longer 1.
+                    if (Number(event.target.value) !== 1) {
+                      formik.setFieldValue("estimatedDurationHours", undefined);
+                    }
+                  }}
+                  onBlur={formik.handleBlur}
+                  className="pr-12"
+                />
+                <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs">
+                  days
+                </span>
+              </div>
+              {formik.values.estimatedDurationDays === 1 && (
+                <div className="relative flex-1">
+                  <Input
+                    id="estimatedDurationHours"
+                    name="estimatedDurationHours"
+                    type="number"
+                    min={0}
+                    max={23}
+                    placeholder="0"
+                    value={formik.values.estimatedDurationHours ?? ""}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="pr-12"
+                  />
+                  <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs">
+                    hrs
+                  </span>
+                </div>
+              )}
+            </div>
+            <p className="text-muted-foreground text-xs">
+              For a same-day ride, set Days to 1 and estimate the hours.
+            </p>
           </Field>
         </CardContent>
       </Card>

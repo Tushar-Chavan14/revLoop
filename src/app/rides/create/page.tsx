@@ -53,7 +53,8 @@ export default async function CreateRidePage() {
             helmetRequired: true,
             pillionAllowed: true,
             estimatedDistanceKm: undefined,
-            estimatedDurationMinutes: undefined,
+            estimatedDurationDays: undefined,
+            estimatedDurationHours: undefined,
           }}
         />
       </div>

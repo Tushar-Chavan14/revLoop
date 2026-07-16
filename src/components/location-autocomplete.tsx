@@ -14,6 +14,8 @@ interface LocationAutocompleteProps {
   value: string;
   placeholder?: string;
   types: LocationType;
+  /** ISO 3166-1 alpha-2 code (e.g. "IN") — restricts suggestions to that country. */
+  countryCode?: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
   /** Fired (in addition to onChange) when the user picks a suggestion — gives coordinates for map-based fields. */
@@ -26,6 +28,7 @@ export function LocationAutocomplete({
   value,
   placeholder,
   types,
+  countryCode,
   onChange,
   onBlur,
   onSelectLocation,
@@ -102,7 +105,7 @@ export function LocationAutocomplete({
 
     debounceRef.current = setTimeout(async () => {
       try {
-        const results = await searchPlaces(query, types);
+        const results = await searchPlaces(query, types, { countryCode });
         setSuggestions(results);
         if (results.length > 0) {
           openMenuAtInput();

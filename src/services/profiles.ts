@@ -24,3 +24,13 @@ export async function getCurrentProfile(): Promise<Profile | null> {
   }
   return getProfileByUserId(user.id);
 }
+
+export async function getProfileByUsername(username: string): Promise<Profile | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("username", username)
+    .maybeSingle();
+  return data;
+}

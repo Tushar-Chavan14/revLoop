@@ -8,6 +8,7 @@ import {
   Clock,
   ExternalLink,
   Fuel,
+  Hourglass,
   MapPin,
   ShieldCheck,
   UserRound,
@@ -28,6 +29,7 @@ import { getAuthUser } from "@/services/profiles";
 import { getMyRideRequest, getRideMembers } from "@/services/ride-participation";
 import { getRideById } from "@/services/rides";
 import { capitalize } from "@/utils/capitalize";
+import { formatRideDuration } from "@/utils/ride-duration";
 
 type RideDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -74,11 +76,24 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const isMember = user ? members.some((member) => member.user_id === user.id) : false;
   const myRequest = user && !isOrganizer && !isMember ? await getMyRideRequest(id, user.id) : null;
   const isRideFull = ride.seats_available !== null && ride.seats_available <= 0;
+  // Gated on departure time, not just the date, so attendance can be marked
+  // as soon as the ride actually starts rather than waiting for midnight.
+  const rideStarted =
+    ride.ride_date !== null && ride.departure_time !== null
+      ? new Date(`${ride.ride_date}T${ride.departure_time}`) < new Date()
+      : false;
 
   const meeting =
     ride.meeting_lat !== null && ride.meeting_lng !== null
       ? { lat: ride.meeting_lat, lng: ride.meeting_lng }
       : null;
+  const directionsUrl = meeting
+    ? `https://www.google.com/maps/dir/?api=1&destination=${meeting.lat},${meeting.lng}`
+    : null;
+  // Organizers know the meeting point they set (they aren't in ride_members),
+  // so this can't just be `isMember` — otherwise the organizer would lose
+  // visibility into their own ride's meeting point.
+  const canSeeMeetingPoint = isOrganizer || isMember;
   const destination =
     ride.destination_lat !== null && ride.destination_lng !== null
       ? { lat: ride.destination_lat, lng: ride.destination_lng }
@@ -177,7 +192,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
           <Stat
             icon={Calendar}
             label="Date"
@@ -198,6 +213,11 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             label="Distance"
             value={ride.estimated_distance_km ? `${ride.estimated_distance_km} km` : undefined}
           />
+          <Stat
+            icon={Hourglass}
+            label="Duration"
+            value={formatRideDuration(ride.estimated_duration_minutes)}
+          />
         </div>
 
         {ride.description && (
@@ -213,8 +233,30 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             <div className="flex items-start gap-3">
               <MapPin className="text-primary mt-0.5 size-4 shrink-0" />
               <div>
-                <p className="text-sm font-medium">{ride.meeting_point}</p>
-                <p className="text-muted-foreground text-xs">Meeting point</p>
+                {canSeeMeetingPoint ? (
+                  <>
+                    <p className="text-sm font-medium">{ride.meeting_point}</p>
+                    <p className="text-muted-foreground text-xs">Meeting point</p>
+                    {directionsUrl && (
+                      <a
+                        href={directionsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary mt-1 flex items-center gap-1.5 text-xs hover:underline"
+                      >
+                        <ExternalLink className="size-3.5" />
+                        Get directions
+                      </a>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium">Meeting point</p>
+                    <p className="text-muted-foreground text-xs">
+                      Shared once your join request is accepted
+                    </p>
+                  </>
+                )}
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -235,7 +277,11 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
                 )}
               </div>
             </div>
-            <RideMap meeting={meeting} destination={destination} interactive={false} />
+            <RideMap
+              meeting={canSeeMeetingPoint ? meeting : null}
+              destination={destination}
+              interactive={false}
+            />
           </CardContent>
         </Card>
 
@@ -258,6 +304,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           members={members}
           currentUserId={user?.id ?? null}
           isOrganizer={isOrganizer}
+          rideStarted={rideStarted}
         />
 
         {!isOrganizer && !isMember && user && (

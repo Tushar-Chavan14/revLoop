@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { UserRound } from "lucide-react";
 import {
   Accordion,
@@ -104,7 +105,18 @@ function RequestRow({
               <UserRound className="size-3.5" />
             </AvatarFallback>
           </Avatar>
-          <span className="truncate text-sm font-medium">{request.requester?.name ?? "Rider"}</span>
+          {request.requester?.username ? (
+            <Link
+              href={`/riders/${request.requester.username}`}
+              className="truncate text-sm font-medium hover:underline"
+            >
+              {request.requester.name ?? "Rider"}
+            </Link>
+          ) : (
+            <span className="truncate text-sm font-medium">
+              {request.requester?.name ?? "Rider"}
+            </span>
+          )}
         </div>
         <div className="flex shrink-0 gap-2">
           <Button

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { DEFAULT_RIDE_TYPE_ICON, RIDE_TYPE_ICONS, RIDE_TYPES } from "@/constants/ride-type";
 import { SPEED_LEVELS } from "@/constants/speed-level";
 import type { RideWithOrganizer } from "@/services/rides";
+import { formatRideDuration } from "@/utils/ride-duration";
 
 function rideTypeLabel(value: string | null) {
   return RIDE_TYPES.find((type) => type.value === value)?.label ?? value;
@@ -20,6 +21,7 @@ export function RideCard({ ride }: { ride: RideWithOrganizer }) {
   const lowSeats =
     ride.seats_available !== null && ride.seats_available !== 0 && ride.seats_available <= 2;
   const CoverIcon = (ride.ride_type && RIDE_TYPE_ICONS[ride.ride_type]) || DEFAULT_RIDE_TYPE_ICON;
+  const duration = formatRideDuration(ride.estimated_duration_minutes);
 
   return (
     <Link
@@ -72,6 +74,11 @@ export function RideCard({ ride }: { ride: RideWithOrganizer }) {
           {ride.estimated_distance_km && (
             <Badge variant="outline" className="text-muted-foreground">
               {ride.estimated_distance_km} km
+            </Badge>
+          )}
+          {duration && (
+            <Badge variant="outline" className="text-muted-foreground">
+              {duration}
             </Badge>
           )}
         </div>

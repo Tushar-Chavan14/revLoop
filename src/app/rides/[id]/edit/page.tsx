@@ -62,7 +62,16 @@ export default async function EditRidePage({ params }: EditRidePageProps) {
             helmetRequired: ride.helmet_required ?? true,
             pillionAllowed: ride.pillion_allowed ?? true,
             estimatedDistanceKm: ride.estimated_distance_km ?? undefined,
-            estimatedDurationMinutes: ride.estimated_duration_minutes ?? undefined,
+            estimatedDurationDays:
+              ride.estimated_duration_minutes != null
+                ? ride.estimated_duration_minutes < 24 * 60
+                  ? 1
+                  : Math.round(ride.estimated_duration_minutes / (24 * 60))
+                : undefined,
+            estimatedDurationHours:
+              ride.estimated_duration_minutes != null && ride.estimated_duration_minutes < 24 * 60
+                ? Math.round(ride.estimated_duration_minutes / 60)
+                : undefined,
           }}
         />
       </div>

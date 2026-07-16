@@ -188,7 +188,8 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
               id="city"
               name="city"
               types="place"
-              placeholder="e.g. Austin"
+              countryCode="IN"
+              placeholder="e.g. Pune"
               value={formik.values.city}
               onChange={(value) => formik.setFieldValue("city", value)}
               onBlur={() => formik.setFieldTouched("city", true)}

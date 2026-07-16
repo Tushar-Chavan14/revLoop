@@ -42,8 +42,24 @@ function parseRideFormData(formData: FormData) {
     helmetRequired: formData.get("helmetRequired") === "true",
     pillionAllowed: formData.get("pillionAllowed") === "true",
     estimatedDistanceKm: optionalNumber(formData.get("estimatedDistanceKm")),
-    estimatedDurationMinutes: optionalNumber(formData.get("estimatedDurationMinutes")),
+    estimatedDurationDays: optionalNumber(formData.get("estimatedDurationDays")),
+    estimatedDurationHours: optionalNumber(formData.get("estimatedDurationHours")),
   };
+}
+
+// Stored as total minutes in the DB (no separate days/hours columns). Days
+// is a day *count*, not additive with hours: 1 day means "same-day ride,
+// estimate it in hours" (the form only shows the hours input then), while
+// 2+ days means a multi-day tour where hours don't apply — see
+// formatRideDuration in src/utils/ride-duration.ts, which reverses this.
+function toDurationMinutes(days: number | undefined, hours: number | undefined) {
+  if (days === undefined) {
+    return undefined;
+  }
+  if (days === 1) {
+    return (hours ?? 0) * 60;
+  }
+  return days * 24 * 60;
 }
 
 async function uploadCoverIfPresent(
@@ -125,7 +141,10 @@ export async function createRide(formData: FormData): Promise<RideActionResult> 
       helmet_required: parsed.helmetRequired,
       pillion_allowed: parsed.pillionAllowed,
       estimated_distance_km: parsed.estimatedDistanceKm,
-      estimated_duration_minutes: parsed.estimatedDurationMinutes,
+      estimated_duration_minutes: toDurationMinutes(
+        parsed.estimatedDurationDays,
+        parsed.estimatedDurationHours,
+      ),
       cover_image_url: coverImageUrl,
     })
     .select("id")
@@ -186,7 +205,10 @@ export async function updateRide(rideId: string, formData: FormData): Promise<Ri
       helmet_required: parsed.helmetRequired,
       pillion_allowed: parsed.pillionAllowed,
       estimated_distance_km: parsed.estimatedDistanceKm,
-      estimated_duration_minutes: parsed.estimatedDurationMinutes,
+      estimated_duration_minutes: toDurationMinutes(
+        parsed.estimatedDurationDays,
+        parsed.estimatedDurationHours,
+      ),
       ...(coverImageUrl ? { cover_image_url: coverImageUrl } : {}),
     })
     .eq("id", rideId)

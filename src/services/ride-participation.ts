@@ -51,3 +51,28 @@ export async function getMyRideRequest(
     .maybeSingle();
   return data;
 }
+
+export interface AttendanceStats {
+  attended: number;
+  noShow: number;
+}
+
+// Reliability numbers shown on a rider's profile: how many rides they've
+// actually shown up for versus flaked on, per attendance_status set by
+// organizers after each ride's date has passed.
+export async function getAttendanceStats(userId: string): Promise<AttendanceStats> {
+  const supabase = await createClient();
+  const [attended, noShow] = await Promise.all([
+    supabase
+      .from("ride_members")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("attendance_status", "attended"),
+    supabase
+      .from("ride_members")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("attendance_status", "no_show"),
+  ]);
+  return { attended: attended.count ?? 0, noShow: noShow.count ?? 0 };
+}

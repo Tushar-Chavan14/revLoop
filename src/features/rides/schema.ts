@@ -26,7 +26,7 @@ export const rideSchema = Yup.object({
     .typeError("Enter a number")
     .integer("Enter a whole number")
     .min(1, "At least 1 rider")
-    .max(50, "50 riders max")
+    .max(20, "20 riders max")
     .required("Maximum riders is required"),
   rideType: Yup.string()
     .oneOf(
@@ -54,10 +54,17 @@ export const rideSchema = Yup.object({
     .typeError("Enter a number")
     .min(0, "Can't be negative")
     .optional(),
-  estimatedDurationMinutes: Yup.number()
+  estimatedDurationDays: Yup.number()
+    .typeError("Enter a number")
+    .integer("Enter a whole number")
+    .min(1, "At least 1 day")
+    .max(4, "4 days max")
+    .optional(),
+  estimatedDurationHours: Yup.number()
     .typeError("Enter a number")
     .integer("Enter a whole number")
     .min(0, "Can't be negative")
+    .max(23, "23 hours max")
     .optional(),
 });
 

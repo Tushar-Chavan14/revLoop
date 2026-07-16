@@ -119,3 +119,25 @@ export async function removeRideMember(rideId: string, userId: string): Promise<
 
   refresh();
 }
+
+export async function setAttendance(
+  rideId: string,
+  userId: string,
+  status: "attended" | "no_show" | "pending",
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  // RLS + the ride_members_before_update_guard trigger enforce that only the
+  // ride's organizer can do this, and only once the ride's departure time
+  // has passed — this is just the client-facing call.
+  const { error } = await supabase
+    .from("ride_members")
+    .update({ attendance_status: status })
+    .eq("ride_id", rideId)
+    .eq("user_id", userId);
+
+  if (error) {
+    return { error: "Couldn't update attendance, please try again" };
+  }
+
+  refresh();
+}

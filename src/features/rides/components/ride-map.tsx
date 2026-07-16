@@ -155,14 +155,18 @@ export function RideMap({
     }
 
     marker.setLngLat([destination.lng, destination.lat]).addTo(map);
-    if (interactive && !destinationDraggedRef.current) {
+    // Normally the meeting-marker effect (or the fitBounds effect below, when
+    // both points exist) owns focusing the non-interactive map — but when the
+    // meeting point is hidden from a non-member, this is the only marker on
+    // the map, so it has to center itself.
+    if ((interactive || !meeting) && !destinationDraggedRef.current) {
       map.flyTo({
         center: [destination.lng, destination.lat],
         zoom: Math.max(map.getZoom(), FOCUSED_ZOOM),
       });
     }
     destinationDraggedRef.current = false;
-  }, [destination, interactive]);
+  }, [destination, meeting, interactive]);
 
   useEffect(() => {
     const map = mapRef.current;

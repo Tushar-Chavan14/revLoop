@@ -1,13 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AtSign, Bike, MapPin, Sparkles } from "lucide-react";
+import { AtSign, Bike, Check, MapPin, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SiteHeader } from "@/components/site-header";
 import { signOut } from "@/features/auth/actions/auth-actions";
 import { OrganizerOverview } from "@/features/rides/components/organizer-overview";
-import { getRequestsForRides } from "@/services/ride-participation";
+import { getAttendanceStats, getRequestsForRides } from "@/services/ride-participation";
 import { getAuthUser, getProfileByUserId } from "@/services/profiles";
 import { getRidesByOrganizer } from "@/services/rides";
 import { capitalize } from "@/utils/capitalize";
@@ -31,8 +31,14 @@ export default async function ProfilePage() {
   const requests = await getRequestsForRides(
     upcoming.map((ride) => ride.id).filter((id) => id !== null),
   );
+  const attendance = await getAttendanceStats(user.id);
 
   const stats = [
+    {
+      icon: Check,
+      label: "Rides completed",
+      value: attendance.attended > 0 ? String(attendance.attended) : undefined,
+    },
     {
       icon: MapPin,
       label: "Based in",
