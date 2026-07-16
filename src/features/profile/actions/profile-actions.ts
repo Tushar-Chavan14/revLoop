@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { profileSchema } from "@/features/profile/schema";
 import type { Enums } from "@/types/supabase";
+import { getOAuthAvatarUrl } from "@/utils/oauth-metadata";
 
 const AVATAR_BUCKET = "avatars";
 
@@ -75,6 +76,9 @@ export async function createProfile(formData: FormData): Promise<ProfileActionRe
   } catch {
     return { error: "Could not upload profile image" };
   }
+  // No manual upload — fall back to the OAuth provider's own photo (e.g.
+  // Google) rather than leaving new riders with no avatar at all.
+  profileImageUrl ??= getOAuthAvatarUrl(user.user_metadata);
 
   const { error } = await supabase.from("profiles").insert({
     id: user.id,

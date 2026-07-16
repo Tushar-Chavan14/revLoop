@@ -56,6 +56,13 @@ export default async function RideChatPage({ params }: RideChatPageProps) {
           currentUserId={user.id}
           initialMessages={messages}
           senderProfiles={senderProfiles}
+          ride={{
+            title: ride.title,
+            destination: ride.destination,
+            coverImageUrl: ride.cover_image_url,
+            meetingPoint: ride.meeting_point,
+          }}
+          participants={members.filter((member) => member.profile).map((member) => member.profile!)}
         />
       </div>
     </div>

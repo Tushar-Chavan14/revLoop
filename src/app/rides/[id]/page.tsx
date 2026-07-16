@@ -6,7 +6,9 @@ import {
   Bike,
   Calendar,
   Clock,
+  Coffee,
   ExternalLink,
+  Flag,
   Fuel,
   Hourglass,
   MapPin,
@@ -18,6 +20,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { StatusChip } from "@/components/ui/status-chip";
+import { ImageGallery } from "@/components/design-system/image-gallery";
+import { MapContainer } from "@/components/design-system/map-container";
+import { Timeline, type TimelineItemData } from "@/components/design-system/timeline";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { JoinRequestCard } from "@/features/rides/components/join-request-card";
@@ -27,7 +33,7 @@ import { DEFAULT_RIDE_TYPE_ICON, RIDE_TYPE_ICONS, RIDE_TYPES } from "@/constants
 import { SPEED_LEVELS } from "@/constants/speed-level";
 import { getAuthUser } from "@/services/profiles";
 import { getMyRideRequest, getRideMembers } from "@/services/ride-participation";
-import { getRideById } from "@/services/rides";
+import { getRideById, getRideImages } from "@/services/rides";
 import { capitalize } from "@/utils/capitalize";
 import { formatRideDuration } from "@/utils/ride-duration";
 
@@ -72,10 +78,15 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const user = await getAuthUser();
   const isOrganizer = user?.id === ride.organizer_id;
 
-  const members = await getRideMembers(id);
+  const [members, images] = await Promise.all([getRideMembers(id), getRideImages(id)]);
   const isMember = user ? members.some((member) => member.user_id === user.id) : false;
   const myRequest = user && !isOrganizer && !isMember ? await getMyRideRequest(id, user.id) : null;
   const isRideFull = ride.seats_available !== null && ride.seats_available <= 0;
+  const lowSeats =
+    !isRideFull &&
+    ride.seats_available !== null &&
+    ride.seats_available > 0 &&
+    ride.seats_available <= 2;
   // Gated on departure time, not just the date, so attendance can be marked
   // as soon as the ride actually starts rather than waiting for midnight.
   const rideStarted =
@@ -114,11 +125,30 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
   const CoverIcon = (ride.ride_type && RIDE_TYPE_ICONS[ride.ride_type]) || DEFAULT_RIDE_TYPE_ICON;
 
+  const timelineItems: TimelineItemData[] = [
+    {
+      icon: MapPin,
+      title: canSeeMeetingPoint ? (ride.meeting_point ?? "Meeting point") : "Meeting point",
+      time: ride.departure_time?.slice(0, 5),
+      description: canSeeMeetingPoint ? undefined : "Shared once your join request is accepted",
+      active: true,
+    },
+    ...(ride.breakfast_stop
+      ? [{ icon: Coffee, title: "Breakfast stop", description: "Along the route" }]
+      : []),
+    ...(ride.fuel_stop ? [{ icon: Fuel, title: "Fuel stop", description: "Along the route" }] : []),
+    {
+      icon: Flag,
+      title: ride.destination ?? "Destination",
+      description: "Ride ends here",
+    },
+  ];
+
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
-      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-12">
-        <div className="from-secondary via-secondary/70 to-primary/30 relative aspect-video w-full overflow-hidden rounded-2xl bg-linear-to-br">
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-12">
+        <div className="from-secondary via-secondary/70 to-primary/30 relative aspect-video w-full overflow-hidden rounded-3xl bg-linear-to-br">
           {ride.cover_image_url ? (
             <Image
               src={ride.cover_image_url}
@@ -143,8 +173,16 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
                   {badge}
                 </Badge>
               ))}
+              {ride.seats_available !== null && (
+                <StatusChip
+                  status={isRideFull ? "full" : lowSeats ? "filling" : "open"}
+                  className="border-transparent bg-white/15 text-white backdrop-blur-sm"
+                >
+                  {isRideFull ? "Full" : `${ride.seats_available} seats left`}
+                </StatusChip>
+              )}
             </div>
-            <h1 className="font-heading text-2xl font-semibold text-balance text-white sm:text-3xl">
+            <h1 className="font-heading text-2xl font-bold text-balance text-white sm:text-3xl">
               {ride.title}
             </h1>
             {ride.organizer && (
@@ -186,13 +224,13 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             </div>
             {isOrganizer && (
               <Link href="/profile" className="text-muted-foreground text-xs hover:underline">
-                Manage join requests from your profile →
+                Manage join requests from your dashboard →
               </Link>
             )}
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+        <div className="grid grid-cols-3 gap-4 sm:grid-cols-6">
           <Stat
             icon={Calendar}
             label="Date"
@@ -229,59 +267,37 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         )}
 
         <Card>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex items-start gap-3">
-              <MapPin className="text-primary mt-0.5 size-4 shrink-0" />
-              <div>
-                {canSeeMeetingPoint ? (
-                  <>
-                    <p className="text-sm font-medium">{ride.meeting_point}</p>
-                    <p className="text-muted-foreground text-xs">Meeting point</p>
-                    {directionsUrl && (
-                      <a
-                        href={directionsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary mt-1 flex items-center gap-1.5 text-xs hover:underline"
-                      >
-                        <ExternalLink className="size-3.5" />
-                        Get directions
-                      </a>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm font-medium">Meeting point</p>
-                    <p className="text-muted-foreground text-xs">
-                      Shared once your join request is accepted
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <MapPin className="text-foreground mt-0.5 size-4 shrink-0" />
-              <div>
-                <p className="text-sm font-medium">{ride.destination}</p>
-                <p className="text-muted-foreground text-xs">Destination</p>
-                {ride.destination_map_url && (
-                  <a
-                    href={ride.destination_map_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary mt-1 flex items-center gap-1.5 text-xs hover:underline"
-                  >
-                    <ExternalLink className="size-3.5" />
-                    View on Google Maps
-                  </a>
-                )}
-              </div>
-            </div>
-            <RideMap
-              meeting={canSeeMeetingPoint ? meeting : null}
-              destination={destination}
-              interactive={false}
-            />
+          <CardContent className="flex flex-col gap-6">
+            <Timeline items={timelineItems} />
+            {directionsUrl && canSeeMeetingPoint && (
+              <a
+                href={directionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary -mt-4 ml-13 flex items-center gap-1.5 text-xs hover:underline"
+              >
+                <ExternalLink className="size-3.5" />
+                Get directions to meeting point
+              </a>
+            )}
+            {ride.destination_map_url && (
+              <a
+                href={ride.destination_map_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary -mt-4 ml-13 flex items-center gap-1.5 text-xs hover:underline"
+              >
+                <ExternalLink className="size-3.5" />
+                View destination on Google Maps
+              </a>
+            )}
+            <MapContainer>
+              <RideMap
+                meeting={canSeeMeetingPoint ? meeting : null}
+                destination={destination}
+                interactive={false}
+              />
+            </MapContainer>
           </CardContent>
         </Card>
 
@@ -300,6 +316,13 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           </div>
         )}
 
+        {images.length > 0 && (
+          <div className="flex flex-col gap-3">
+            <h2 className="font-heading text-lg font-semibold">Ride gallery</h2>
+            <ImageGallery images={images.map((image) => ({ url: image.image_url }))} />
+          </div>
+        )}
+
         <ParticipantsList
           members={members}
           currentUserId={user?.id ?? null}
@@ -307,18 +330,26 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           rideStarted={rideStarted}
         />
 
-        {!isOrganizer && !isMember && user && (
-          <JoinRequestCard rideId={id} myRequest={myRequest} isRideFull={isRideFull} />
-        )}
+        <div id="join" className="scroll-mt-20">
+          {!isOrganizer && !isMember && user && (
+            <JoinRequestCard rideId={id} myRequest={myRequest} isRideFull={isRideFull} />
+          )}
 
-        {!isOrganizer && !isMember && !user && (
-          <Card>
-            <CardContent className="flex items-center justify-between gap-3">
-              <p className="text-muted-foreground text-sm">Sign in to request to join this ride.</p>
-              <Button nativeButton={false} size="sm" render={<Link href="/login">Sign in</Link>} />
-            </CardContent>
-          </Card>
-        )}
+          {!isOrganizer && !isMember && !user && (
+            <Card>
+              <CardContent className="flex items-center justify-between gap-3">
+                <p className="text-muted-foreground text-sm">
+                  Sign in to request to join this ride.
+                </p>
+                <Button
+                  nativeButton={false}
+                  size="sm"
+                  render={<Link href="/login">Sign in</Link>}
+                />
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
       <SiteFooter />
     </div>

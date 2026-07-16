@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { NotificationBell } from "@/components/notification-bell";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { getAuthUser } from "@/services/profiles";
 import { getRecentNotifications, getUnreadNotificationCount } from "@/services/notifications";
@@ -24,8 +25,17 @@ export async function SiteHeader() {
           >
             Discover rides
           </Link>
+          {user && (
+            <Link
+              href="/profile/rides"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              My rides
+            </Link>
+          )}
         </nav>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           {user && (
             <NotificationBell
               currentUserId={user.id}

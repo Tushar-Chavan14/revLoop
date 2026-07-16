@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/site-header";
 import { createProfile } from "@/features/profile/actions/profile-actions";
 import { ProfileForm } from "@/features/profile/components/profile-form";
 import { getAuthUser, getProfileByUserId } from "@/services/profiles";
+import { getOAuthAvatarUrl } from "@/utils/oauth-metadata";
 
 export const metadata = {
   title: "Set up your profile",
@@ -24,7 +25,9 @@ export default async function ProfileSetupPage() {
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-12">
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Complete your profile</h1>
+          <h1 className="font-heading text-2xl font-bold tracking-tight">
+            Welcome to the community
+          </h1>
           <p className="text-muted-foreground">
             Tell other riders who you are before you create or join a ride.
           </p>
@@ -32,6 +35,7 @@ export default async function ProfileSetupPage() {
         <ProfileForm
           mode="create"
           action={createProfile}
+          initialAvatarUrl={getOAuthAvatarUrl(user.user_metadata)}
           initialValues={{
             name:
               typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "",

@@ -46,7 +46,11 @@ export function RideRequestsAccordion({ rides, requests }: RideRequestsAccordion
         {entries.length === 0 ? (
           <p className="text-muted-foreground text-sm">No pending requests right now.</p>
         ) : (
-          <Accordion multiple defaultValue={entries.map((entry) => entry.ride.id ?? "")}>
+          <Accordion
+            key={entries.map((entry) => entry.ride.id).join(",")}
+            multiple
+            defaultValue={entries.map((entry) => entry.ride.id ?? "")}
+          >
             {entries.map(({ ride, requests: rideRequests }) => {
               const isRideFull = ride.seats_available !== null && ride.seats_available <= 0;
               return (

@@ -1,25 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Oswald } from "next/font/google";
+import { Bebas_Neue, Inter } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import "./globals.css";
+import { Toaster } from "@/components/ui/toast";
+import { BottomNav } from "@/components/design-system/bottom-nav";
 import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE } from "@/constants/site";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Condensed, road-sign-adjacent weight for display headings — gives the
+// Condensed poster/road-sign type for hero statements only — gives the
 // brand a "moto club" energy instead of reading as a generic SaaS product.
-const oswald = Oswald({
-  variable: "--font-oswald",
+const bebasNeue = Bebas_Neue({
+  variable: "--font-bebas-neue",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -38,10 +36,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${oswald.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={`${inter.variable} ${bebasNeue.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
-        {children}
+      <body className="flex min-h-full flex-col pb-16 sm:pb-0">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {children}
+          <BottomNav />
+          <Toaster />
+        </ThemeProvider>
         <SpeedInsights />
       </body>
     </html>

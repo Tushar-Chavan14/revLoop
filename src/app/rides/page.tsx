@@ -1,12 +1,9 @@
-import Link from "next/link";
-import { CalendarSearch } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { RIDE_TYPES } from "@/constants/ride-type";
 import { SPEED_LEVELS } from "@/constants/speed-level";
 import { RIDER_LEVELS } from "@/constants/rider-level";
-import { RideCard } from "@/features/rides/components/ride-card";
+import { RidesExplorer } from "@/features/rides/components/rides-explorer";
 import { RidesFilters } from "@/features/rides/components/rides-filters";
 import {
   getPopularDestinations,
@@ -77,88 +74,33 @@ function parseFilters(params: Record<string, string | string[] | undefined>): Ri
   };
 }
 
-function buildPageHref(params: Record<string, string | string[] | undefined>, page: number) {
-  const search = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    const resolved = first(value);
-    if (resolved) {
-      search.set(key, resolved);
-    }
-  }
-  search.set("page", String(page));
-  return `/rides?${search.toString()}`;
-}
-
 export default async function RidesPage({ searchParams }: RidesPageProps) {
   const params = await searchParams;
   const filters = parseFilters(params);
   const cityLabel = first(params.cityLabel);
-  const [{ rides, total, page, pageSize }, cityOptions] = await Promise.all([
-    listRides(filters),
-    getPopularDestinations(50),
-  ]);
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const [result, cityOptions] = await Promise.all([listRides(filters), getPopularDestinations(50)]);
 
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
-      <main className="flex flex-1 flex-col gap-8 px-6 py-12">
+      <main className="flex flex-1 flex-col gap-6 px-6 py-10">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-2">
-          <h1 className="font-heading text-3xl font-semibold tracking-tight">
+          <h1 className="font-heading text-3xl font-bold tracking-tight">
             {cityLabel ? `Rides near ${cityLabel}` : "Discover rides"}
           </h1>
           <p className="text-muted-foreground">
             {cityLabel
               ? "Includes rides in and around this city."
-              : "Filter by type, speed, and date to find your next weekend loop."}
+              : "Real riders, real routes — filter by type, pace, and date to find your next weekend loop."}
           </p>
         </div>
 
-        <div className="mx-auto w-full max-w-6xl">
+        <div className="bg-background/95 sticky top-16 z-30 mx-auto w-full max-w-6xl py-2 backdrop-blur-md">
           <RidesFilters cityOptions={cityOptions} />
         </div>
 
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-          <p className="text-muted-foreground text-sm">
-            {total} ride{total === 1 ? "" : "s"} found
-          </p>
-
-          {rides.length > 0 ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {rides.map((ride) => (
-                <RideCard key={ride.id} ride={ride} />
-              ))}
-            </div>
-          ) : (
-            <div className="border-border flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
-              <CalendarSearch className="text-muted-foreground size-8" />
-              <p className="text-muted-foreground">
-                No rides match those filters — try widening your search.
-              </p>
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 pt-4">
-              <Button
-                nativeButton={false}
-                variant="outline"
-                size="sm"
-                disabled={page <= 1}
-                render={<Link href={buildPageHref(params, page - 1)}>Previous</Link>}
-              />
-              <p className="text-muted-foreground text-sm">
-                Page {page} of {totalPages}
-              </p>
-              <Button
-                nativeButton={false}
-                variant="outline"
-                size="sm"
-                disabled={page >= totalPages}
-                render={<Link href={buildPageHref(params, page + 1)}>Next</Link>}
-              />
-            </div>
-          )}
+        <div className="mx-auto w-full max-w-6xl">
+          <RidesExplorer key={JSON.stringify(filters)} initialResult={result} filters={filters} />
         </div>
       </main>
       <SiteFooter />

@@ -16,6 +16,19 @@ export async function getRecentNotifications(userId: string): Promise<Notificati
   return data ?? [];
 }
 
+const INBOX_LIMIT = 60;
+
+export async function getAllNotifications(userId: string): Promise<Notification[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("notifications")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(INBOX_LIMIT);
+  return data ?? [];
+}
+
 export async function getUnreadNotificationCount(userId: string): Promise<number> {
   const supabase = await createClient();
   const { count } = await supabase

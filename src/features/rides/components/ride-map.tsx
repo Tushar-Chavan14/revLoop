@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { cn } from "@/lib/utils";
 
 const OPENFREEMAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const ROUTE_SOURCE_ID = "ride-route-line";
@@ -25,6 +26,7 @@ interface RideMapProps {
   onDestinationChange?: (location: LatLng) => void;
   /** Read-only mode for the ride detail page: no dragging, no click-to-place. */
   interactive?: boolean;
+  className?: string;
 }
 
 export function RideMap({
@@ -34,6 +36,7 @@ export function RideMap({
   onMeetingChange,
   onDestinationChange,
   interactive = true,
+  className,
 }: RideMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -207,7 +210,7 @@ export function RideMap({
   return (
     <div
       ref={containerRef}
-      className="border-border h-80 w-full overflow-hidden rounded-lg border"
+      className={cn("border-border h-80 w-full overflow-hidden rounded-lg border", className)}
     />
   );
 }

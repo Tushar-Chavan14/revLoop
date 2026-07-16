@@ -27,7 +27,13 @@ export function SiteFooter() {
             href="/profile"
             className="text-secondary-foreground/70 hover:text-secondary-foreground transition-colors"
           >
-            Profile
+            Dashboard
+          </Link>
+          <Link
+            href="/notifications"
+            className="text-secondary-foreground/70 hover:text-secondary-foreground transition-colors"
+          >
+            Notifications
           </Link>
         </nav>
       </div>

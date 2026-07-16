@@ -1,7 +1,9 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Enums, Tables } from "@/types/supabase";
+import { getRideIdsWithAttendanceMarked } from "@/services/ride-participation";
 import { haversineKm } from "@/utils/geo";
+import { getRideLifecycleStatus } from "@/utils/ride-duration";
 
 // A radius wide enough to cover a metro/tricity cluster (e.g. Chandigarh +
 // Panchkula + Mohali + Zirakpur are all within ~20km of each other) without
@@ -192,6 +194,88 @@ export async function getUpcomingRides(limit = 6): Promise<RideWithOrganizer[]> 
   return (data ?? []) as RideWithOrganizer[];
 }
 
+// The next ride on this rider's own calendar, whether they organized it or
+// just joined — ride_members has a row for the organizer too, so their own
+// rides already show up here without a separate lookup. Can be upcoming
+// *or* ongoing — only excludes rides already completed/cancelled.
+export async function getMyNextRide(userId: string): Promise<RideWithOrganizer | null> {
+  const supabase = await createClient();
+
+  const { data: memberRows } = await supabase
+    .from("ride_members")
+    .select("ride_id")
+    .eq("user_id", userId);
+  const rideIds = [...new Set((memberRows ?? []).map((row) => row.ride_id))];
+  if (rideIds.length === 0) {
+    return null;
+  }
+
+  const { data } = await supabase
+    .from("rides_with_stats")
+    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .in("id", rideIds)
+    .eq("status", "upcoming")
+    .order("ride_date", { ascending: true })
+    .order("departure_time", { ascending: true });
+
+  // `status` only flips when an organizer marks it — a ride can already be
+  // ongoing, or fully wrapped up (attendance marked, or duration elapsed),
+  // while still saying "upcoming" here, so that's re-derived below.
+  const rides = (data ?? []) as RideWithOrganizer[];
+  const attendanceMarkedIds = await getRideIdsWithAttendanceMarked(
+    rides.map((ride) => ride.id).filter((id): id is string => id !== null),
+  );
+  return (
+    rides.find(
+      (ride) =>
+        getRideLifecycleStatus(ride, attendanceMarkedIds.has(ride.id ?? "")) !== "completed",
+    ) ?? null
+  );
+}
+
+export interface MyRides {
+  upcoming: RideWithOrganizer[];
+  ongoing: RideWithOrganizer[];
+  completed: RideWithOrganizer[];
+  cancelled: RideWithOrganizer[];
+}
+
+// Every ride this rider has organized or joined, grouped for the "My Rides"
+// timeline by its real lifecycle status rather than the rarely-updated DB
+// `status` column — see getRideLifecycleStatus for exactly how that's derived.
+export async function getMyRides(userId: string): Promise<MyRides> {
+  const supabase = await createClient();
+
+  const { data: memberRows } = await supabase
+    .from("ride_members")
+    .select("ride_id")
+    .eq("user_id", userId);
+  const rideIds = [...new Set((memberRows ?? []).map((row) => row.ride_id))];
+  if (rideIds.length === 0) {
+    return { upcoming: [], ongoing: [], completed: [], cancelled: [] };
+  }
+
+  const { data } = await supabase
+    .from("rides_with_stats")
+    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .in("id", rideIds)
+    .order("ride_date", { ascending: false });
+
+  const rides = (data ?? []) as RideWithOrganizer[];
+  const attendanceMarkedIds = await getRideIdsWithAttendanceMarked(
+    rides.map((ride) => ride.id).filter((id): id is string => id !== null),
+  );
+
+  const grouped: MyRides = { upcoming: [], ongoing: [], completed: [], cancelled: [] };
+  for (const ride of rides) {
+    const status = getRideLifecycleStatus(ride, attendanceMarkedIds.has(ride.id ?? ""));
+    grouped[status].push(ride);
+  }
+  grouped.upcoming.reverse(); // soonest first — everything else stays newest-first
+
+  return grouped;
+}
+
 export interface OrganizerRides {
   upcoming: RideWithOrganizer[];
   past: RideWithOrganizer[];
@@ -233,6 +317,157 @@ export interface DestinationSummary {
   lng: number;
 }
 
+// The single ride the hero banner leads with — favors what's happening soon
+// and already has momentum (riders joined) over a ride nobody's noticed yet.
+export async function getFeaturedRide(): Promise<RideWithOrganizer | null> {
+  const supabase = await createClient();
+  const today = new Date().toISOString().slice(0, 10);
+  const { data } = await supabase
+    .from("rides_with_stats")
+    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .eq("status", "upcoming")
+    .gte("ride_date", today)
+    .gt("member_count", 1)
+    .order("member_count", { ascending: false })
+    .order("ride_date", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (data) {
+    return data as RideWithOrganizer;
+  }
+
+  // No ride has other riders yet (new/quiet community) — fall back to
+  // whatever's soonest so the hero always has something to show.
+  const { data: soonest } = await supabase
+    .from("rides_with_stats")
+    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .eq("status", "upcoming")
+    .gte("ride_date", today)
+    .order("ride_date", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  return soonest as RideWithOrganizer | null;
+}
+
+export async function getRidesInCity(
+  city: string,
+  excludeRideIds: string[] = [],
+  limit = 4,
+): Promise<RideWithOrganizer[]> {
+  const supabase = await createClient();
+  const today = new Date().toISOString().slice(0, 10);
+  let query = supabase
+    .from("rides_with_stats")
+    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .eq("status", "upcoming")
+    .eq("city", city)
+    .gte("ride_date", today)
+    .order("ride_date", { ascending: true })
+    .limit(limit);
+
+  if (excludeRideIds.length > 0) {
+    query = query.not("id", "in", `(${excludeRideIds.join(",")})`);
+  }
+
+  const { data } = await query;
+  return (data ?? []) as RideWithOrganizer[];
+}
+
+export type RideImage = Tables<"ride_images">;
+
+export async function getRideImages(rideId: string): Promise<RideImage[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("ride_images")
+    .select("*")
+    .eq("ride_id", rideId)
+    .order("created_at", { ascending: false });
+  return data ?? [];
+}
+
+// A rider's photo wall — every image posted to a ride they organized or
+// joined, newest first. Empty until the (not-yet-built) upload flow ships.
+export async function getRiderGalleryImages(userId: string, limit = 12): Promise<RideImage[]> {
+  const supabase = await createClient();
+  const { data: memberRows } = await supabase
+    .from("ride_members")
+    .select("ride_id")
+    .eq("user_id", userId);
+  const rideIds = [...new Set((memberRows ?? []).map((row) => row.ride_id))];
+  if (rideIds.length === 0) {
+    return [];
+  }
+
+  const { data } = await supabase
+    .from("ride_images")
+    .select("*")
+    .in("ride_id", rideIds)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
+export interface CommunityActivityItem {
+  id: string;
+  timestamp: string;
+  actorName: string;
+  actorImage: string | null;
+  rideId: string;
+  rideTitle: string;
+  kind: "joined" | "created";
+}
+
+// A lightweight public feed — recent ride sign-ups and new rides posted —
+// built from existing tables rather than a dedicated activity log.
+export async function getCommunityActivity(limit = 8): Promise<CommunityActivityItem[]> {
+  const supabase = await createClient();
+
+  const [{ data: joins }, { data: created }] = await Promise.all([
+    supabase
+      .from("ride_members")
+      .select(
+        "id, joined_at, ride_id, profile:profiles!ride_members_user_id_fkey(name, profile_image_url), ride:rides!ride_members_ride_id_fkey(title)",
+      )
+      .eq("role", "participant")
+      .order("joined_at", { ascending: false })
+      .limit(limit),
+    supabase
+      .from("rides_with_stats")
+      .select(RIDE_WITH_ORGANIZER_SELECT)
+      .order("created_at", { ascending: false })
+      .limit(limit),
+  ]);
+
+  const joinItems: CommunityActivityItem[] = (joins ?? [])
+    .filter((row): row is typeof row & { ride: { title: string | null } } => Boolean(row.ride))
+    .map((row) => ({
+      id: `join-${row.id}`,
+      timestamp: row.joined_at,
+      actorName: row.profile?.name ?? "A rider",
+      actorImage: row.profile?.profile_image_url ?? null,
+      rideId: row.ride_id,
+      rideTitle: row.ride?.title ?? "a ride",
+      kind: "joined" as const,
+    }));
+
+  const createdItems: CommunityActivityItem[] = (created as RideWithOrganizer[])
+    .filter((ride) => ride.id && ride.created_at)
+    .map((ride) => ({
+      id: `created-${ride.id}`,
+      timestamp: ride.created_at as string,
+      actorName: ride.organizer?.name ?? "A rider",
+      actorImage: ride.organizer?.profile_image_url ?? null,
+      rideId: ride.id as string,
+      rideTitle: ride.title ?? "a ride",
+      kind: "created" as const,
+    }));
+
+  return [...joinItems, ...createdItems]
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, limit);
+}
+
 export async function getPopularDestinations(limit = 6): Promise<DestinationSummary[]> {
   const supabase = await createClient();
   const { data } = await supabase
@@ -255,6 +490,48 @@ export async function getPopularDestinations(limit = 6): Promise<DestinationSumm
   return [...groups.entries()]
     .map(([city, group]) => ({
       city,
+      rideCount: group.count,
+      lat: group.latSum / group.count,
+      lng: group.lngSum / group.count,
+    }))
+    .sort((a, b) => b.rideCount - a.rideCount)
+    .slice(0, limit);
+}
+
+export interface TripDestinationSummary {
+  destination: string;
+  rideCount: number;
+  lat: number;
+  lng: number;
+}
+
+// Where rides are actually headed — distinct from getPopularDestinations,
+// which groups by the ride's meeting city (used for "search rides near me").
+// This is what the landing page's "Popular destinations" rail should show.
+export async function getPopularTripDestinations(limit = 6): Promise<TripDestinationSummary[]> {
+  const supabase = await createClient();
+  const today = new Date().toISOString().slice(0, 10);
+  const { data } = await supabase
+    .from("rides")
+    .select("destination, destination_lat, destination_lng")
+    .eq("status", "upcoming")
+    .gte("ride_date", today);
+
+  const groups = new Map<string, { count: number; latSum: number; lngSum: number }>();
+  for (const row of data ?? []) {
+    if (!row.destination || row.destination_lat === null || row.destination_lng === null) {
+      continue;
+    }
+    const group = groups.get(row.destination) ?? { count: 0, latSum: 0, lngSum: 0 };
+    group.count += 1;
+    group.latSum += row.destination_lat;
+    group.lngSum += row.destination_lng;
+    groups.set(row.destination, group);
+  }
+
+  return [...groups.entries()]
+    .map(([destination, group]) => ({
+      destination,
       rideCount: group.count,
       lat: group.latSum / group.count,
       lng: group.lngSum / group.count,
