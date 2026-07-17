@@ -518,7 +518,7 @@ export default function DesignSystemPage() {
   //   </div>
   // );
 
-  return <></>
+  return <></>;
 }
 
 // function Section({

@@ -1,9 +1,7 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Enums, Tables } from "@/types/supabase";
-import { getRideIdsWithAttendanceMarked } from "@/services/ride-participation";
 import { haversineKm } from "@/utils/geo";
-import { getRideLifecycleStatus } from "@/utils/ride-duration";
 
 // A radius wide enough to cover a metro/tricity cluster (e.g. Chandigarh +
 // Panchkula + Mohali + Zirakpur are all within ~20km of each other) without
@@ -197,7 +195,8 @@ export async function getUpcomingRides(limit = 6): Promise<RideWithOrganizer[]> 
 // The next ride on this rider's own calendar, whether they organized it or
 // just joined — ride_members has a row for the organizer too, so their own
 // rides already show up here without a separate lookup. Can be upcoming
-// *or* ongoing — only excludes rides already completed/cancelled.
+// *or* ongoing — a cron sweep + an attendance-marking trigger keep
+// `rides.status` itself accurate, so it's trusted directly here.
 export async function getMyNextRide(userId: string): Promise<RideWithOrganizer | null> {
   const supabase = await createClient();
 
@@ -214,23 +213,13 @@ export async function getMyNextRide(userId: string): Promise<RideWithOrganizer |
     .from("rides_with_stats")
     .select(RIDE_WITH_ORGANIZER_SELECT)
     .in("id", rideIds)
-    .eq("status", "upcoming")
+    .in("status", ["upcoming", "ongoing"])
     .order("ride_date", { ascending: true })
-    .order("departure_time", { ascending: true });
+    .order("departure_time", { ascending: true })
+    .limit(1)
+    .maybeSingle();
 
-  // `status` only flips when an organizer marks it — a ride can already be
-  // ongoing, or fully wrapped up (attendance marked, or duration elapsed),
-  // while still saying "upcoming" here, so that's re-derived below.
-  const rides = (data ?? []) as RideWithOrganizer[];
-  const attendanceMarkedIds = await getRideIdsWithAttendanceMarked(
-    rides.map((ride) => ride.id).filter((id): id is string => id !== null),
-  );
-  return (
-    rides.find(
-      (ride) =>
-        getRideLifecycleStatus(ride, attendanceMarkedIds.has(ride.id ?? "")) !== "completed",
-    ) ?? null
-  );
+  return data as RideWithOrganizer | null;
 }
 
 export interface MyRides {
@@ -241,8 +230,8 @@ export interface MyRides {
 }
 
 // Every ride this rider has organized or joined, grouped for the "My Rides"
-// timeline by its real lifecycle status rather than the rarely-updated DB
-// `status` column — see getRideLifecycleStatus for exactly how that's derived.
+// timeline by its DB `status` — kept accurate by a cron sweep (time-elapsed)
+// and an attendance-marking trigger (instant), so it's trusted directly.
 export async function getMyRides(userId: string): Promise<MyRides> {
   const supabase = await createClient();
 
@@ -262,14 +251,9 @@ export async function getMyRides(userId: string): Promise<MyRides> {
     .order("ride_date", { ascending: false });
 
   const rides = (data ?? []) as RideWithOrganizer[];
-  const attendanceMarkedIds = await getRideIdsWithAttendanceMarked(
-    rides.map((ride) => ride.id).filter((id): id is string => id !== null),
-  );
-
   const grouped: MyRides = { upcoming: [], ongoing: [], completed: [], cancelled: [] };
   for (const ride of rides) {
-    const status = getRideLifecycleStatus(ride, attendanceMarkedIds.has(ride.id ?? ""));
-    grouped[status].push(ride);
+    grouped[ride.status ?? "upcoming"].push(ride);
   }
   grouped.upcoming.reverse(); // soonest first — everything else stays newest-first
 
@@ -298,6 +282,15 @@ export async function getRidesByOrganizer(organizerId: string): Promise<Organize
     upcoming: rides.filter(isUpcoming),
     past: rides.filter((ride) => !isUpcoming(ride)).reverse(),
   };
+}
+
+export async function getOrganizedRidesCount(organizerId: string): Promise<number> {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("rides")
+    .select("id", { count: "exact", head: true })
+    .eq("organizer_id", organizerId);
+  return count ?? 0;
 }
 
 export async function getRecentRides(limit = 6): Promise<RideWithOrganizer[]> {
@@ -415,43 +408,21 @@ export interface CommunityActivityItem {
   actorImage: string | null;
   rideId: string;
   rideTitle: string;
-  kind: "joined" | "created";
+  kind: "created";
 }
 
-// A lightweight public feed — recent ride sign-ups and new rides posted —
-// built from existing tables rather than a dedicated activity log.
+// A lightweight public feed — recently created rides — built from
+// existing tables rather than a dedicated activity log.
 export async function getCommunityActivity(limit = 8): Promise<CommunityActivityItem[]> {
   const supabase = await createClient();
 
-  const [{ data: joins }, { data: created }] = await Promise.all([
-    supabase
-      .from("ride_members")
-      .select(
-        "id, joined_at, ride_id, profile:profiles!ride_members_user_id_fkey(name, profile_image_url), ride:rides!ride_members_ride_id_fkey(title)",
-      )
-      .eq("role", "participant")
-      .order("joined_at", { ascending: false })
-      .limit(limit),
-    supabase
-      .from("rides_with_stats")
-      .select(RIDE_WITH_ORGANIZER_SELECT)
-      .order("created_at", { ascending: false })
-      .limit(limit),
-  ]);
+  const { data: created } = await supabase
+    .from("rides_with_stats")
+    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
-  const joinItems: CommunityActivityItem[] = (joins ?? [])
-    .filter((row): row is typeof row & { ride: { title: string | null } } => Boolean(row.ride))
-    .map((row) => ({
-      id: `join-${row.id}`,
-      timestamp: row.joined_at,
-      actorName: row.profile?.name ?? "A rider",
-      actorImage: row.profile?.profile_image_url ?? null,
-      rideId: row.ride_id,
-      rideTitle: row.ride?.title ?? "a ride",
-      kind: "joined" as const,
-    }));
-
-  const createdItems: CommunityActivityItem[] = (created as RideWithOrganizer[])
+  return (created as RideWithOrganizer[])
     .filter((ride) => ride.id && ride.created_at)
     .map((ride) => ({
       id: `created-${ride.id}`,
@@ -462,10 +433,6 @@ export async function getCommunityActivity(limit = 8): Promise<CommunityActivity
       rideTitle: ride.title ?? "a ride",
       kind: "created" as const,
     }));
-
-  return [...joinItems, ...createdItems]
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-    .slice(0, limit);
 }
 
 export async function getPopularDestinations(limit = 6): Promise<DestinationSummary[]> {

@@ -14,22 +14,6 @@ export type RideRequestWithRequester = RideRequest & { requester: RiderProfile |
 
 const PROFILE_SELECT = "id, name, username, profile_image_url";
 
-// Which of these rides already have someone's attendance marked — the
-// organizer doing this is treated as a deliberate "this ride happened" signal
-// for deriving ride lifecycle status (see getRideLifecycleStatus).
-export async function getRideIdsWithAttendanceMarked(rideIds: string[]): Promise<Set<string>> {
-  if (rideIds.length === 0) {
-    return new Set();
-  }
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("ride_members")
-    .select("ride_id")
-    .in("ride_id", rideIds)
-    .neq("attendance_status", "pending");
-  return new Set((data ?? []).map((row) => row.ride_id));
-}
-
 export async function getRideMembers(rideId: string): Promise<RideMemberWithProfile[]> {
   const supabase = await createClient();
   const { data } = await supabase

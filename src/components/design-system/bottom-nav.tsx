@@ -23,6 +23,11 @@ const ITEMS: BottomNavItem[] = [
 export function BottomNav() {
   const pathname = usePathname();
 
+  // Nowhere to navigate away to until the profile setup flow is complete.
+  if (pathname === "/profile/setup") {
+    return null;
+  }
+
   return (
     <nav
       aria-label="Primary"

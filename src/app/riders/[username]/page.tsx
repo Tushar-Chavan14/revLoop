@@ -1,6 +1,17 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { AtSign, Award, Bike, Check, Flame, MapPin, Medal, Sparkles, X } from "lucide-react";
+import {
+  AtSign,
+  Award,
+  Bike,
+  Check,
+  Compass,
+  Flame,
+  MapPin,
+  Medal,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/design-system/state-panel";
 import { ImageGallery } from "@/components/design-system/image-gallery";
@@ -11,7 +22,7 @@ import { rideToTimelineItem } from "@/features/rides/ride-timeline-item";
 import { cn } from "@/lib/utils";
 import { getAttendanceStats } from "@/services/ride-participation";
 import { getProfileByUsername } from "@/services/profiles";
-import { getMyRides, getRiderGalleryImages } from "@/services/rides";
+import { getMyRides, getOrganizedRidesCount, getRiderGalleryImages } from "@/services/rides";
 import { capitalize } from "@/utils/capitalize";
 
 type RiderProfilePageProps = {
@@ -61,8 +72,9 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
     notFound();
   }
 
-  const [attendance, gallery, myRides] = await Promise.all([
+  const [attendance, organizedCount, gallery, myRides] = await Promise.all([
     getAttendanceStats(profile.id),
+    getOrganizedRidesCount(profile.id),
     getRiderGalleryImages(profile.id, 12),
     getMyRides(profile.id),
   ]);
@@ -143,7 +155,7 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
           <Card size="sm">
             <CardContent className="flex flex-col gap-1.5">
               <Check className="text-primary size-4" />
@@ -156,6 +168,13 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
               <X className="text-primary size-4" />
               <p className="text-muted-foreground text-xs">No-shows</p>
               <p className="text-sm font-medium">{attendance.noShow}</p>
+            </CardContent>
+          </Card>
+          <Card size="sm">
+            <CardContent className="flex flex-col gap-1.5">
+              <Compass className="text-primary size-4" />
+              <p className="text-muted-foreground text-xs">Rides organized</p>
+              <p className="text-sm font-medium">{organizedCount}</p>
             </CardContent>
           </Card>
           {stats.map((stat) => (
@@ -175,6 +194,15 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
               <p className="text-muted-foreground">{profile.bio}</p>
             </CardContent>
           </Card>
+        )}
+
+        {myRides.ongoing.length > 0 && (
+          <section className="flex flex-col gap-3">
+            <h2 className="font-heading text-lg font-bold tracking-tight">Ongoing</h2>
+            <Timeline
+              items={myRides.ongoing.map((ride) => rideToTimelineItem(ride, true, "live"))}
+            />
+          </section>
         )}
 
         <section className="flex flex-col gap-3">

@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toast";
 import { BottomNav } from "@/components/design-system/bottom-nav";
+import { TimezoneSync } from "@/components/timezone-sync";
 import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE } from "@/constants/site";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -44,6 +45,7 @@ export default function RootLayout({
           {children}
           <BottomNav />
           <Toaster />
+          <TimezoneSync />
         </ThemeProvider>
         <SpeedInsights />
       </body>

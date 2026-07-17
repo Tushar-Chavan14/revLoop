@@ -20,6 +20,7 @@ export interface LocationSuggestion {
   name: string;
   displayName: string;
   city: string | null;
+  country: string | null;
   lat: number;
   lng: number;
 }
@@ -105,6 +106,7 @@ export async function searchPlaces(
     name: buildName(feature.properties),
     displayName: buildDisplayName(feature.properties),
     city: buildCity(feature.properties),
+    country: feature.properties.country || null,
     lng: feature.geometry.coordinates[0],
     lat: feature.geometry.coordinates[1],
   }));

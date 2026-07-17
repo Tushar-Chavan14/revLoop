@@ -539,7 +539,7 @@ export type Database = {
         | "ride_cancelled"
         | "ride_reminder";
       request_status: "pending" | "accepted" | "rejected" | "cancelled";
-      ride_status: "upcoming" | "completed" | "cancelled";
+      ride_status: "upcoming" | "ongoing" | "completed" | "cancelled";
       ride_type:
         | "breakfast_ride"
         | "weekend_ride"
@@ -682,7 +682,7 @@ export const Constants = {
         "ride_reminder",
       ],
       request_status: ["pending", "accepted", "rejected", "cancelled"],
-      ride_status: ["upcoming", "completed", "cancelled"],
+      ride_status: ["upcoming", "ongoing", "completed", "cancelled"],
       ride_type: [
         "breakfast_ride",
         "weekend_ride",

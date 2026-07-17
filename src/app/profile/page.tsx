@@ -11,7 +11,6 @@ import {
   MapPin,
   MessageSquare,
   Sparkles,
-  UserPlus,
   Users,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -36,17 +35,18 @@ import {
   getCommunityActivity,
   getMyNextRide,
   getMyRides,
+  getOrganizedRidesCount,
   getRidesByOrganizer,
 } from "@/services/rides";
+import { getUserTimeZone } from "@/services/timezone";
 import { capitalize } from "@/utils/capitalize";
-import { hasRideStarted } from "@/utils/ride-duration";
+import { getHourInTimeZone } from "@/utils/timezone";
 
 export const metadata = {
   title: "Your dashboard",
 };
 
-function greeting() {
-  const hour = new Date().getHours();
+function greeting(hour: number) {
   if (hour < 12) return "Good morning";
   if (hour < 18) return "Good afternoon";
   return "Good evening";
@@ -64,22 +64,39 @@ export default async function ProfilePage() {
   }
 
   const { upcoming } = await getRidesByOrganizer(user.id);
-  const [requests, attendance, nextRide, myRides, fellowRiders, recentMessages, communityActivity] =
-    await Promise.all([
-      getRequestsForRides(upcoming.map((ride) => ride.id).filter((id) => id !== null)),
-      getAttendanceStats(user.id),
-      getMyNextRide(user.id),
-      getMyRides(user.id),
-      getFellowRiders(user.id, 6),
-      getRecentMessagesForUser(user.id, 5),
-      getCommunityActivity(6),
-    ]);
+  const [
+    requests,
+    attendance,
+    organizedCount,
+    nextRide,
+    myRides,
+    fellowRiders,
+    recentMessages,
+    communityActivity,
+    timeZone,
+  ] = await Promise.all([
+    getRequestsForRides(upcoming.map((ride) => ride.id).filter((id) => id !== null)),
+    getAttendanceStats(user.id),
+    getOrganizedRidesCount(user.id),
+    getMyNextRide(user.id),
+    getMyRides(user.id),
+    getFellowRiders(user.id, 6),
+    getRecentMessagesForUser(user.id, 5),
+    getCommunityActivity(6),
+    getUserTimeZone(),
+  ]);
+  const currentHour = getHourInTimeZone(timeZone);
 
   const stats = [
     {
       icon: Check,
       label: "Rides completed",
       value: attendance.attended > 0 ? String(attendance.attended) : undefined,
+    },
+    {
+      icon: Compass,
+      label: "Rides organized",
+      value: organizedCount > 0 ? String(organizedCount) : undefined,
     },
     {
       icon: MapPin,
@@ -152,7 +169,7 @@ export default async function ProfilePage() {
         </div>
 
         {stats.length > 0 && (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-6">
             {stats.map((stat) => (
               <Card key={stat.label} size="sm">
                 <CardContent className="flex flex-col gap-1.5">
@@ -175,9 +192,9 @@ export default async function ProfilePage() {
             <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-col gap-2">
                 <p className="text-secondary-foreground/60 text-sm">
-                  {greeting()}, {firstName}
+                  {greeting(currentHour)}, {firstName}
                 </p>
-                {hasRideStarted(nextRide) && (
+                {nextRide.status === "ongoing" && (
                   <StatusChip
                     status="live"
                     pulse
@@ -187,7 +204,7 @@ export default async function ProfilePage() {
                   </StatusChip>
                 )}
                 <h2 className="font-heading text-2xl font-bold tracking-tight">
-                  {hasRideStarted(nextRide) ? "Your ride: " : "Your next ride: "}
+                  {nextRide.status === "ongoing" ? "Your ride: " : "Your next ride: "}
                   {nextRide.title}
                 </h2>
                 <p className="text-secondary-foreground/70 flex items-center gap-1.5 text-sm">
@@ -196,7 +213,7 @@ export default async function ProfilePage() {
                 </p>
               </div>
               <div className="flex items-center gap-6">
-                {!hasRideStarted(nextRide) && (
+                {nextRide.status !== "ongoing" && (
                   <div className="flex flex-col items-end gap-0.5">
                     <RideCountdown
                       targetIso={`${nextRide.ride_date}T${nextRide.departure_time ?? "00:00"}`}
@@ -267,7 +284,7 @@ export default async function ProfilePage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="truncate font-medium">{ride.title}</p>
-                          {hasRideStarted(ride) && (
+                          {ride.status === "ongoing" && (
                             <StatusChip status="live" pulse className="shrink-0">
                               Live
                             </StatusChip>
@@ -356,7 +373,7 @@ export default async function ProfilePage() {
 
             <section className="flex flex-col gap-3">
               <h2 className="font-heading flex items-center gap-1.5 text-lg font-bold tracking-tight">
-                <UserPlus className="text-primary size-4" />
+                <Sparkles className="text-primary size-4" />
                 Community activity
               </h2>
               {communityActivity.length > 0 ? (
@@ -373,8 +390,7 @@ export default async function ProfilePage() {
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm">
-                          <span className="font-medium">{item.actorName}</span>{" "}
-                          {item.kind === "joined" ? "joined" : "created"}{" "}
+                          <span className="font-medium">{item.actorName}</span> created{" "}
                           <span className="font-medium">{item.rideTitle}</span>
                         </p>
                         <p className="text-muted-foreground text-xs">
