@@ -560,6 +560,13 @@ export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: 
         </>
       )}
 
+      {isLastStep && (
+        <p className="text-muted-foreground text-xs">
+          Riders who join are responsible for their own expenses — fuel, food, accommodation, and
+          any other costs. You&apos;re not expected to cover these as the organizer.
+        </p>
+      )}
+
       {formError && <p className="text-destructive text-sm">{formError}</p>}
 
       <div className="flex items-center justify-between gap-3">

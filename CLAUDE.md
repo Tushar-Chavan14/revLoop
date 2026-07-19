@@ -7,6 +7,7 @@
 When working with these technologies, read the corresponding skill for detailed reference:
 
 - Supabase: .agents/skills/supabase/SKILL.md
+- Razorpay: .agents/skills/razorpay/SKILL.md
 
 <!-- llmstxt:end -->
 

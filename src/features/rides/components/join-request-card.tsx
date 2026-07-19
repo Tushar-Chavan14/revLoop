@@ -84,6 +84,10 @@ export function JoinRequestCard({ rideId, myRequest, isRideFull }: JoinRequestCa
               value={message}
               onChange={(event) => setMessage(event.target.value)}
             />
+            <p className="text-muted-foreground text-xs">
+              The organizer doesn&apos;t cover your expenses. Fuel, food, accommodation, and any
+              other costs on the ride are your own responsibility.
+            </p>
             <Button
               type="button"
               disabled={isPending}
