@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { refresh } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createBookingOrder as createRazorpayOrder } from "@/lib/razorpay/client";
 import { organizerHasPayoutDetails } from "@/services/organizer-payout";
@@ -30,7 +31,9 @@ export async function createBookingOrder(
 
   const { data: ride } = await supabase
     .from("rides")
-    .select("id, organizer_id, pricing_model, ride_fee, currency, status, booking_deadline, max_riders")
+    .select(
+      "id, organizer_id, pricing_model, ride_fee, currency, status, booking_deadline, max_riders",
+    )
     .eq("id", rideId)
     .maybeSingle();
 
@@ -128,5 +131,15 @@ export async function getBookingStatus(bookingId: string) {
     .select("status")
     .eq("id", bookingId)
     .maybeSingle();
-  return data?.status ?? null;
+  const status = data?.status ?? null;
+
+  // Once the booking lands on "paid", the trigger has already seated the
+  // rider in ride_members — refresh so the rest of the page (isMember,
+  // participants list, seats_available) catches up too, not just this
+  // card's own local status.
+  if (status === "paid") {
+    refresh();
+  }
+
+  return status;
 }

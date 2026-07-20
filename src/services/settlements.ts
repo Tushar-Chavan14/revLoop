@@ -44,7 +44,9 @@ export async function getSettlementGroups(): Promise<OrganizerSettlementGroup[]>
     return [];
   }
 
-  const organizerIds = [...new Set(bookings.map((b) => b.ride?.organizer_id).filter(Boolean))] as string[];
+  const organizerIds = [
+    ...new Set(bookings.map((b) => b.ride?.organizer_id).filter(Boolean)),
+  ] as string[];
   const riderIds = [...new Set(bookings.map((b) => b.rider_id))];
   const profileIds = [...new Set([...organizerIds, ...riderIds])];
 

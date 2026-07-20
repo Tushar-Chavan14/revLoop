@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Search, X } from "lucide-react";
+import { ChevronDown, Search, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,6 +16,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
 import { RIDE_TYPES } from "@/constants/ride-type";
 import { SPEED_LEVELS } from "@/constants/speed-level";
 import { RIDER_LEVELS } from "@/constants/rider-level";
@@ -38,6 +40,12 @@ const DISTANCE_OPTIONS = [
   { value: "300+", label: "300+ km", min: 300, max: undefined },
 ] as const;
 
+// Community = free rides, Organized = paid rides (rides.pricing_model).
+const PRICING_OPTIONS = [
+  { value: "community", label: "Community (free)" },
+  { value: "organized", label: "Organized (paid)" },
+] as const;
+
 export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[] }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -45,6 +53,9 @@ export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[
 
   const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The full filter set is tall enough to push every ride result off-screen
+  // on mobile — collapsed by default there, always expanded from `sm` up.
+  const [expanded, setExpanded] = useState(false);
 
   const rideTypes = searchParams.get("types")?.split(",").filter(Boolean) ?? [];
   const speed = searchParams.get("speed") ?? "";
@@ -53,6 +64,7 @@ export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[
   const dateTo = searchParams.get("to") ?? "";
   const openSeatsOnly = searchParams.get("seats") === "1";
   const sort = searchParams.get("sort") ?? "soonest";
+  const pricing = searchParams.get("pricing") ?? "";
 
   const cityLatParam = searchParams.get("cityLat");
   const cityLngParam = searchParams.get("cityLng");
@@ -67,12 +79,19 @@ export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[
     rideTypes.length > 0 ||
     speed ||
     difficulty ||
+    pricing ||
     dateFrom ||
     dateTo ||
     openSeatsOnly ||
     search ||
     citySelection ||
     distance !== "any";
+
+  const advancedFilterCount =
+    rideTypes.length +
+    [speed, difficulty, pricing, dateFrom, dateTo].filter(Boolean).length +
+    (openSeatsOnly ? 1 : 0) +
+    (distance !== "any" ? 1 : 0);
 
   function updateParams(updates: Record<string, string | null>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -141,136 +160,178 @@ export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[
         </Select>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label className="text-muted-foreground text-xs">Ride type</Label>
-        <ToggleGroup
-          multiple
-          variant="outline"
-          spacing={0}
-          value={rideTypes}
-          onValueChange={(value) => updateParams({ types: value.length ? value.join(",") : null })}
-          className="flex-wrap"
-        >
-          {RIDE_TYPES.map((type) => (
-            <ToggleGroupItem key={type.value} value={type.value} className="text-xs">
-              {type.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="justify-between sm:hidden"
+        onClick={() => setExpanded((current) => !current)}
+        aria-expanded={expanded}
+      >
+        <span className="flex items-center gap-2">
+          Filters
+          {advancedFilterCount > 0 && <Badge>{advancedFilterCount}</Badge>}
+        </span>
+        <ChevronDown className={cn("size-4 transition-transform", expanded && "rotate-180")} />
+      </Button>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="filter-distance" className="text-muted-foreground text-xs">
-            Ride distance
-          </Label>
-          <Select
-            value={distance}
-            onValueChange={(value) => updateParams({ distance: value === "any" ? null : value })}
+      <div className={cn("flex-col gap-5", expanded ? "flex" : "hidden", "sm:flex")}>
+        <div className="flex flex-col gap-2">
+          <Label className="text-muted-foreground text-xs">Ride type</Label>
+          <ToggleGroup
+            multiple
+            variant="outline"
+            spacing={0}
+            value={rideTypes}
+            onValueChange={(value) =>
+              updateParams({ types: value.length ? value.join(",") : null })
+            }
+            className="flex-wrap"
           >
-            <SelectTrigger id="filter-distance" className="w-full">
-              <SelectValue placeholder="Any distance" />
-            </SelectTrigger>
-            <SelectContent>
-              {DISTANCE_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {RIDE_TYPES.map((type) => (
+              <ToggleGroupItem key={type.value} value={type.value} className="text-xs">
+                {type.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="filter-speed" className="text-muted-foreground text-xs">
-            Speed
-          </Label>
-          <Select
-            value={speed || "any"}
-            onValueChange={(value) => updateParams({ speed: value === "any" ? null : value })}
-          >
-            <SelectTrigger id="filter-speed" className="w-full">
-              <SelectValue placeholder="Any speed" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="any">Any speed</SelectItem>
-              {SPEED_LEVELS.map((level) => (
-                <SelectItem key={level.value} value={level.value}>
-                  {level.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="filter-difficulty" className="text-muted-foreground text-xs">
-            Difficulty
-          </Label>
-          <Select
-            value={difficulty || "any"}
-            onValueChange={(value) => updateParams({ difficulty: value === "any" ? null : value })}
-          >
-            <SelectTrigger id="filter-difficulty" className="w-full">
-              <SelectValue placeholder="Any difficulty" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="any">Any difficulty</SelectItem>
-              {RIDER_LEVELS.map((level) => (
-                <SelectItem key={level.value} value={level.value}>
-                  {level.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="filter-from" className="text-muted-foreground text-xs">
-            From
-          </Label>
-          <Input
-            id="filter-from"
-            type="date"
-            value={dateFrom}
-            onChange={(event) => updateParams({ from: event.target.value || null })}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="filter-to" className="text-muted-foreground text-xs">
-            To
-          </Label>
-          <Input
-            id="filter-to"
-            type="date"
-            value={dateTo}
-            onChange={(event) => updateParams({ to: event.target.value || null })}
-          />
-        </div>
-      </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Switch
-            id="open-seats-only"
-            checked={openSeatsOnly}
-            onCheckedChange={(checked) => updateParams({ seats: checked ? "1" : null })}
-          />
-          <Label htmlFor="open-seats-only" className="text-sm font-normal">
-            Open seats only
-          </Label>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="filter-pricing" className="text-muted-foreground text-xs">
+              Ride category
+            </Label>
+            <Select
+              value={pricing || "any"}
+              onValueChange={(value) => updateParams({ pricing: value === "any" ? null : value })}
+            >
+              <SelectTrigger id="filter-pricing" className="w-full">
+                <SelectValue placeholder="All rides" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">All rides</SelectItem>
+                {PRICING_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="filter-distance" className="text-muted-foreground text-xs">
+              Ride distance
+            </Label>
+            <Select
+              value={distance}
+              onValueChange={(value) => updateParams({ distance: value === "any" ? null : value })}
+            >
+              <SelectTrigger id="filter-distance" className="w-full">
+                <SelectValue placeholder="Any distance" />
+              </SelectTrigger>
+              <SelectContent>
+                {DISTANCE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="filter-speed" className="text-muted-foreground text-xs">
+              Speed
+            </Label>
+            <Select
+              value={speed || "any"}
+              onValueChange={(value) => updateParams({ speed: value === "any" ? null : value })}
+            >
+              <SelectTrigger id="filter-speed" className="w-full">
+                <SelectValue placeholder="Any speed" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any speed</SelectItem>
+                {SPEED_LEVELS.map((level) => (
+                  <SelectItem key={level.value} value={level.value}>
+                    {level.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="filter-difficulty" className="text-muted-foreground text-xs">
+              Difficulty
+            </Label>
+            <Select
+              value={difficulty || "any"}
+              onValueChange={(value) =>
+                updateParams({ difficulty: value === "any" ? null : value })
+              }
+            >
+              <SelectTrigger id="filter-difficulty" className="w-full">
+                <SelectValue placeholder="Any difficulty" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any difficulty</SelectItem>
+                {RIDER_LEVELS.map((level) => (
+                  <SelectItem key={level.value} value={level.value}>
+                    {level.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="filter-from" className="text-muted-foreground text-xs">
+              From
+            </Label>
+            <Input
+              id="filter-from"
+              type="date"
+              value={dateFrom}
+              onChange={(event) => updateParams({ from: event.target.value || null })}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="filter-to" className="text-muted-foreground text-xs">
+              To
+            </Label>
+            <Input
+              id="filter-to"
+              type="date"
+              value={dateTo}
+              onChange={(event) => updateParams({ to: event.target.value || null })}
+            />
+          </div>
         </div>
-        {hasActiveFilters && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setSearch("");
-              router.push(pathname, { scroll: false });
-            }}
-          >
-            <X className="size-3.5" />
-            Clear filters
-          </Button>
-        )}
+
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Switch
+              id="open-seats-only"
+              checked={openSeatsOnly}
+              onCheckedChange={(checked) => updateParams({ seats: checked ? "1" : null })}
+            />
+            <Label htmlFor="open-seats-only" className="text-sm font-normal">
+              Open seats only
+            </Label>
+          </div>
+          {hasActiveFilters && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearch("");
+                router.push(pathname, { scroll: false });
+              }}
+            >
+              <X className="size-3.5" />
+              Clear filters
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

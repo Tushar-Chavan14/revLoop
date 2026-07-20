@@ -5,6 +5,7 @@ import Script from "next/script";
 import { IndianRupee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FullscreenLoader } from "@/components/design-system/fullscreen-loader";
 import {
   createBookingOrder,
   getBookingStatus,
@@ -96,6 +97,7 @@ export function BookRideCard({
 
   return (
     <>
+      {confirming && <FullscreenLoader message="Confirming your booking..." />}
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       <Card>
         <CardHeader>
@@ -131,15 +133,13 @@ export function BookRideCard({
                 className="self-start"
                 onClick={handleReserve}
               >
-                {confirming
-                  ? "Confirming..."
-                  : isPending
-                    ? "Starting payment..."
-                    : status === "failed"
-                      ? "Try again"
-                      : status === "created"
-                        ? "Resume payment"
-                        : `Reserve spot — ${currency === "INR" ? "₹" : `${currency} `}${rideFee}`}
+                {isPending
+                  ? "Starting payment..."
+                  : status === "failed"
+                    ? "Try again"
+                    : status === "created"
+                      ? "Resume payment"
+                      : `Reserve spot — ${currency === "INR" ? "₹" : `${currency} `}${rideFee}`}
               </Button>
             </>
           )}

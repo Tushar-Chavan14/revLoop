@@ -15,7 +15,9 @@ export const metadata = {
 };
 
 function ridesGroupCount(group: MyRides) {
-  return group.upcoming.length + group.ongoing.length + group.completed.length + group.cancelled.length;
+  return (
+    group.upcoming.length + group.ongoing.length + group.completed.length + group.cancelled.length
+  );
 }
 
 function RidesGroupSections({ group }: { group: MyRides }) {
@@ -77,7 +79,8 @@ export default async function MyRidesPage() {
   }
 
   const { community, hosted, booked } = await getMyRidesGrouped(user.id);
-  const hasAnyRides = ridesGroupCount(community) + ridesGroupCount(hosted) + ridesGroupCount(booked) > 0;
+  const hasAnyRides =
+    ridesGroupCount(community) + ridesGroupCount(hosted) + ridesGroupCount(booked) > 0;
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -92,7 +95,9 @@ export default async function MyRidesPage() {
             Dashboard
           </Link>
           <h1 className="font-heading text-2xl font-bold tracking-tight">My rides</h1>
-          <p className="text-muted-foreground">Every ride you&apos;ve organized, joined, or booked.</p>
+          <p className="text-muted-foreground">
+            Every ride you&apos;ve organized, joined, or booked.
+          </p>
         </div>
 
         {!hasAnyRides ? (

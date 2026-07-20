@@ -30,6 +30,7 @@ export interface RideFilters {
   rideTypes?: Enums<"ride_type">[];
   speed?: Enums<"speed_level">;
   difficulty?: Enums<"rider_level">;
+  pricingModel?: Enums<"pricing_model">;
   dateFrom?: string;
   dateTo?: string;
   openSeatsOnly?: boolean;
@@ -77,6 +78,9 @@ export async function listRides(filters: RideFilters = {}): Promise<RideListResu
   }
   if (filters.difficulty) {
     query = query.eq("difficulty", filters.difficulty);
+  }
+  if (filters.pricingModel) {
+    query = query.eq("pricing_model", filters.pricingModel);
   }
   if (filters.dateTo) {
     query = query.lte("ride_date", filters.dateTo);

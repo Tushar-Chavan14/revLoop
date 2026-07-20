@@ -216,7 +216,10 @@ export function RideForm({
 
   function addItineraryItem(dayIndex: number) {
     const itinerary = [...(formik.values.itinerary ?? [])];
-    itinerary[dayIndex] = { ...itinerary[dayIndex], items: [...itinerary[dayIndex].items, { label: "", time: "" }] };
+    itinerary[dayIndex] = {
+      ...itinerary[dayIndex],
+      items: [...itinerary[dayIndex].items, { label: "", time: "" }],
+    };
     formik.setFieldValue("itinerary", itinerary);
   }
 
@@ -280,8 +283,8 @@ export function RideForm({
                 <CardTitle>Ride type</CardTitle>
               </div>
               <CardDescription>
-                Community rides are free to join. Organized rides are paid — riders reserve a
-                seat by paying you directly through the app.
+                Community rides are free to join. Organized rides are paid — riders reserve a seat
+                by paying you directly through the app.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
@@ -730,7 +733,12 @@ export function RideForm({
       )}
 
       {currentStep.label === "Inclusions" && (
-        <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="flex flex-col gap-6">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
+          className="flex flex-col gap-6"
+        >
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
@@ -760,7 +768,9 @@ export function RideForm({
           <Card>
             <CardHeader>
               <CardTitle>What&apos;s not included</CardTitle>
-              <CardDescription>Optional — call out costs riders should expect to cover.</CardDescription>
+              <CardDescription>
+                Optional — call out costs riders should expect to cover.
+              </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               <div className="flex gap-2">
@@ -802,7 +812,12 @@ export function RideForm({
       )}
 
       {currentStep.label === "Itinerary" && (
-        <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="flex flex-col gap-4">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
+          className="flex flex-col gap-4"
+        >
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
@@ -893,7 +908,9 @@ export function RideForm({
                   rows={3}
                   placeholder="e.g. Full refund up to 7 days before the ride."
                   value={formik.values.cancellationPolicy ?? ""}
-                  onChange={(event) => formik.setFieldValue("cancellationPolicy", event.target.value)}
+                  onChange={(event) =>
+                    formik.setFieldValue("cancellationPolicy", event.target.value)
+                  }
                 />
               </CardContent>
             </Card>

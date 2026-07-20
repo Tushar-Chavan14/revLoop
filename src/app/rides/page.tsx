@@ -23,6 +23,7 @@ const RIDE_TYPE_VALUES = new Set<string>(RIDE_TYPES.map((type) => type.value));
 const SPEED_VALUES = new Set<string>(SPEED_LEVELS.map((level) => level.value));
 const RIDER_LEVEL_VALUES = new Set<string>(RIDER_LEVELS.map((level) => level.value));
 const SORT_VALUES = new Set<RideSort>(["soonest", "newest", "seats"]);
+const PRICING_MODEL_VALUES = new Set<string>(["community", "organized"]);
 
 // Mirrors the DISTANCE_OPTIONS buckets in RidesFilters — the ride's own trip
 // length (estimated_distance_km), not the fixed city-search radius.
@@ -47,6 +48,7 @@ function parseFilters(params: Record<string, string | string[] | undefined>): Ri
     .filter((value): value is Enums<"ride_type"> => RIDE_TYPE_VALUES.has(value));
   const speed = first(params.speed);
   const difficulty = first(params.difficulty);
+  const pricingModel = first(params.pricing);
   const sort = first(params.sort);
   const page = Number(first(params.page));
   const cityLat = Number(first(params.cityLat));
@@ -65,6 +67,10 @@ function parseFilters(params: Record<string, string | string[] | undefined>): Ri
     difficulty:
       difficulty && RIDER_LEVEL_VALUES.has(difficulty)
         ? (difficulty as Enums<"rider_level">)
+        : undefined,
+    pricingModel:
+      pricingModel && PRICING_MODEL_VALUES.has(pricingModel)
+        ? (pricingModel as Enums<"pricing_model">)
         : undefined,
     dateFrom: first(params.from),
     dateTo: first(params.to),
@@ -95,7 +101,7 @@ export default async function RidesPage({ searchParams }: RidesPageProps) {
           </p>
         </div>
 
-        <div className="bg-background/95 sticky top-16 z-30 mx-auto w-full max-w-6xl py-2 backdrop-blur-md">
+        <div className="bg-background/95 sticky top-16.25 z-30 mx-auto w-full max-w-6xl py-2 backdrop-blur-md">
           <RidesFilters cityOptions={cityOptions} />
         </div>
 

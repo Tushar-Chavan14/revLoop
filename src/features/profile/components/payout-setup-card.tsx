@@ -132,12 +132,7 @@ export function PayoutSetupCard({ payoutDetails }: PayoutSetupCardProps) {
                 {isPending ? "Saving..." : "Save"}
               </Button>
               {payoutDetails && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setEditing(false)}
-                >
+                <Button type="button" variant="outline" size="sm" onClick={() => setEditing(false)}>
                   Cancel
                 </Button>
               )}
