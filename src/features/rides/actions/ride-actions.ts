@@ -2,10 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { rideSchema } from "@/features/rides/schema";
+import { rideSchema, type ItineraryDay } from "@/features/rides/schema";
 import { getProfileByUserId } from "@/services/profiles";
+import { getPayoutDetails, hasPayoutDetails } from "@/services/organizer-payout";
 import { isProfileComplete } from "@/utils/profile-completeness";
-import type { Enums } from "@/types/supabase";
+import type { Enums, Json } from "@/types/supabase";
 
 const COVER_BUCKET = "ride-covers";
 
@@ -20,6 +21,15 @@ function optionalNumber(value: FormDataEntryValue | null): number | undefined {
 }
 
 function parseRideFormData(formData: FormData) {
+  const pricingModel = String(formData.get("pricingModel") ?? "community");
+  const itineraryRaw = (formData.get("itinerary") as string) || "[]";
+  let itinerary: ItineraryDay[] = [];
+  try {
+    itinerary = JSON.parse(itineraryRaw);
+  } catch {
+    itinerary = [];
+  }
+
   return {
     title: String(formData.get("title") ?? "").trim(),
     description: (formData.get("description") as string)?.trim() || undefined,
@@ -44,6 +54,14 @@ function parseRideFormData(formData: FormData) {
     estimatedDistanceKm: optionalNumber(formData.get("estimatedDistanceKm")),
     estimatedDurationDays: optionalNumber(formData.get("estimatedDurationDays")),
     estimatedDurationHours: optionalNumber(formData.get("estimatedDurationHours")),
+    pricingModel,
+    rideFee: optionalNumber(formData.get("rideFee")),
+    bookingDeadline: (formData.get("bookingDeadline") as string) || undefined,
+    minimumRiders: optionalNumber(formData.get("minimumRiders")),
+    cancellationPolicy: (formData.get("cancellationPolicy") as string)?.trim() || undefined,
+    inclusions: formData.getAll("inclusions").map(String),
+    exclusions: formData.getAll("exclusions").map(String),
+    itinerary,
   };
 }
 
@@ -109,6 +127,10 @@ export async function createRide(formData: FormData): Promise<RideActionResult> 
     return { error: "Please fill in all required fields" };
   }
 
+  if (parsed.pricingModel === "organized" && !hasPayoutDetails(await getPayoutDetails(user.id))) {
+    return { error: "Add your payout details in your profile before creating an Organized Ride." };
+  }
+
   let coverImageUrl: string | undefined;
   try {
     coverImageUrl = await uploadCoverIfPresent(supabase, user.id, formData);
@@ -146,6 +168,17 @@ export async function createRide(formData: FormData): Promise<RideActionResult> 
         parsed.estimatedDurationHours,
       ),
       cover_image_url: coverImageUrl,
+      pricing_model: parsed.pricingModel as Enums<"pricing_model">,
+      ride_fee: parsed.pricingModel === "organized" ? parsed.rideFee : undefined,
+      currency: "INR",
+      booking_deadline: parsed.pricingModel === "organized" ? parsed.bookingDeadline : undefined,
+      minimum_riders: parsed.pricingModel === "organized" ? parsed.minimumRiders : undefined,
+      ride_inclusions: parsed.pricingModel === "organized" ? parsed.inclusions : [],
+      ride_exclusions: parsed.pricingModel === "organized" ? parsed.exclusions : [],
+      ride_itinerary:
+        parsed.pricingModel === "organized" ? (parsed.itinerary as unknown as Json) : [],
+      cancellation_policy:
+        parsed.pricingModel === "organized" ? parsed.cancellationPolicy : undefined,
     })
     .select("id")
     .single();
@@ -172,6 +205,32 @@ export async function updateRide(rideId: string, formData: FormData): Promise<Ri
   const isValid = await rideSchema.isValid(parsed);
   if (!isValid) {
     return { error: "Please fill in all required fields" };
+  }
+
+  const { data: existingRide } = await supabase
+    .from("rides")
+    .select("pricing_model")
+    .eq("id", rideId)
+    .maybeSingle();
+
+  if (existingRide && existingRide.pricing_model !== parsed.pricingModel) {
+    const [{ count: bookingCount }, { count: requestCount }] = await Promise.all([
+      supabase
+        .from("ride_bookings")
+        .select("id", { count: "exact", head: true })
+        .eq("ride_id", rideId),
+      supabase
+        .from("ride_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("ride_id", rideId),
+    ]);
+    if ((bookingCount ?? 0) > 0 || (requestCount ?? 0) > 0) {
+      return { error: "Can't change ride type once riders have booked or requested to join." };
+    }
+  }
+
+  if (parsed.pricingModel === "organized" && !hasPayoutDetails(await getPayoutDetails(user.id))) {
+    return { error: "Add your payout details in your profile before creating an Organized Ride." };
   }
 
   let coverImageUrl: string | undefined;
@@ -210,6 +269,17 @@ export async function updateRide(rideId: string, formData: FormData): Promise<Ri
         parsed.estimatedDurationHours,
       ),
       ...(coverImageUrl ? { cover_image_url: coverImageUrl } : {}),
+      pricing_model: parsed.pricingModel as Enums<"pricing_model">,
+      ride_fee: parsed.pricingModel === "organized" ? parsed.rideFee : undefined,
+      currency: "INR",
+      booking_deadline: parsed.pricingModel === "organized" ? parsed.bookingDeadline : undefined,
+      minimum_riders: parsed.pricingModel === "organized" ? parsed.minimumRiders : undefined,
+      ride_inclusions: parsed.pricingModel === "organized" ? parsed.inclusions : [],
+      ride_exclusions: parsed.pricingModel === "organized" ? parsed.exclusions : [],
+      ride_itinerary:
+        parsed.pricingModel === "organized" ? (parsed.itinerary as unknown as Json) : [],
+      cancellation_policy:
+        parsed.pricingModel === "organized" ? parsed.cancellationPolicy : undefined,
     })
     .eq("id", rideId)
     .select("id")

@@ -1,0 +1,18 @@
+import { createClient } from "@/lib/supabase/server";
+import type { Tables } from "@/types/supabase";
+
+export type OrganizerPayoutDetails = Tables<"organizer_payout_details">;
+
+export async function getPayoutDetails(userId: string): Promise<OrganizerPayoutDetails | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("organizer_payout_details")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+  return data;
+}
+
+export function hasPayoutDetails(details: OrganizerPayoutDetails | null): boolean {
+  return details !== null;
+}

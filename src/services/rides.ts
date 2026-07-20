@@ -260,6 +260,61 @@ export async function getMyRides(userId: string): Promise<MyRides> {
   return grouped;
 }
 
+export interface MyRidesGrouped {
+  community: MyRides;
+  hosted: MyRides;
+  booked: MyRides;
+}
+
+function emptyMyRides(): MyRides {
+  return { upcoming: [], ongoing: [], completed: [], cancelled: [] };
+}
+
+// Same source rows as getMyRides (ride_members already includes the
+// organizer's own rides and any rider with a paid ride_booking, since both
+// paths insert into ride_members), just split three ways by the viewer's
+// relationship to each ride's pricing_model before bucketing by status.
+export async function getMyRidesGrouped(userId: string): Promise<MyRidesGrouped> {
+  const supabase = await createClient();
+
+  const { data: memberRows } = await supabase
+    .from("ride_members")
+    .select("ride_id")
+    .eq("user_id", userId);
+  const rideIds = [...new Set((memberRows ?? []).map((row) => row.ride_id))];
+
+  const result: MyRidesGrouped = {
+    community: emptyMyRides(),
+    hosted: emptyMyRides(),
+    booked: emptyMyRides(),
+  };
+  if (rideIds.length === 0) {
+    return result;
+  }
+
+  const { data } = await supabase
+    .from("rides_with_stats")
+    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .in("id", rideIds)
+    .order("ride_date", { ascending: false });
+
+  const rides = (data ?? []) as RideWithOrganizer[];
+  for (const ride of rides) {
+    const group =
+      ride.pricing_model === "organized"
+        ? ride.organizer_id === userId
+          ? result.hosted
+          : result.booked
+        : result.community;
+    group[ride.status ?? "upcoming"].push(ride);
+  }
+  for (const group of Object.values(result)) {
+    group.upcoming.reverse();
+  }
+
+  return result;
+}
+
 export interface OrganizerRides {
   upcoming: RideWithOrganizer[];
   past: RideWithOrganizer[];

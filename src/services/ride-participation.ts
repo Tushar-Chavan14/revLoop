@@ -4,6 +4,7 @@ import { getUpcomingWeekendRange } from "@/utils/weekend";
 
 export type RideMember = Tables<"ride_members">;
 export type RideRequest = Tables<"ride_requests">;
+export type RideBooking = Tables<"ride_bookings">;
 export type RiderProfile = Pick<
   Tables<"profiles">,
   "id" | "name" | "username" | "profile_image_url"
@@ -49,6 +50,20 @@ export async function getMyRideRequest(
     .select("*")
     .eq("ride_id", rideId)
     .eq("requester_id", userId)
+    .maybeSingle();
+  return data;
+}
+
+export async function getMyRideBooking(
+  rideId: string,
+  userId: string,
+): Promise<RideBooking | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("ride_bookings")
+    .select("*")
+    .eq("ride_id", rideId)
+    .eq("rider_id", userId)
     .maybeSingle();
   return data;
 }

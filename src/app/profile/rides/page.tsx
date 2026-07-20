@@ -4,14 +4,71 @@ import { Ban, CalendarCheck, Compass, ArrowLeft, Radio } from "lucide-react";
 import { EmptyState } from "@/components/design-system/state-panel";
 import { Timeline } from "@/components/design-system/timeline";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SiteHeader } from "@/components/site-header";
 import { rideToTimelineItem } from "@/features/rides/ride-timeline-item";
 import { getAuthUser } from "@/services/profiles";
-import { getMyRides } from "@/services/rides";
+import { getMyRidesGrouped, type MyRides } from "@/services/rides";
 
 export const metadata = {
   title: "My rides",
 };
+
+function ridesGroupCount(group: MyRides) {
+  return group.upcoming.length + group.ongoing.length + group.completed.length + group.cancelled.length;
+}
+
+function RidesGroupSections({ group }: { group: MyRides }) {
+  const { upcoming, ongoing, completed, cancelled } = group;
+
+  if (ridesGroupCount(group) === 0) {
+    return <p className="text-muted-foreground py-6 text-sm">Nothing here yet.</p>;
+  }
+
+  return (
+    <div className="flex flex-col gap-8">
+      {ongoing.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
+            <Radio className="text-primary size-4" />
+            Ongoing
+          </h2>
+          <Timeline items={ongoing.map((ride) => rideToTimelineItem(ride, true, "live"))} />
+        </section>
+      )}
+
+      {upcoming.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
+            <Compass className="text-primary size-4" />
+            Upcoming
+          </h2>
+          <Timeline items={upcoming.map((ride) => rideToTimelineItem(ride, true, "open"))} />
+        </section>
+      )}
+
+      {completed.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
+            <CalendarCheck className="text-primary size-4" />
+            Completed — ride memories
+          </h2>
+          <Timeline items={completed.map((ride) => rideToTimelineItem(ride, false, "completed"))} />
+        </section>
+      )}
+
+      {cancelled.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
+            <Ban className="text-primary size-4" />
+            Cancelled
+          </h2>
+          <Timeline items={cancelled.map((ride) => rideToTimelineItem(ride, false, "cancelled"))} />
+        </section>
+      )}
+    </div>
+  );
+}
 
 export default async function MyRidesPage() {
   const user = await getAuthUser();
@@ -19,8 +76,8 @@ export default async function MyRidesPage() {
     redirect("/login");
   }
 
-  const { upcoming, ongoing, completed, cancelled } = await getMyRides(user.id);
-  const hasAnyRides = upcoming.length + ongoing.length + completed.length + cancelled.length > 0;
+  const { community, hosted, booked } = await getMyRidesGrouped(user.id);
+  const hasAnyRides = ridesGroupCount(community) + ridesGroupCount(hosted) + ridesGroupCount(booked) > 0;
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -35,7 +92,7 @@ export default async function MyRidesPage() {
             Dashboard
           </Link>
           <h1 className="font-heading text-2xl font-bold tracking-tight">My rides</h1>
-          <p className="text-muted-foreground">Every ride you&apos;ve organized or joined.</p>
+          <p className="text-muted-foreground">Every ride you&apos;ve organized, joined, or booked.</p>
         </div>
 
         {!hasAnyRides ? (
@@ -57,51 +114,22 @@ export default async function MyRidesPage() {
             }
           />
         ) : (
-          <>
-            {ongoing.length > 0 && (
-              <section className="flex flex-col gap-4">
-                <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
-                  <Radio className="text-primary size-4" />
-                  Ongoing
-                </h2>
-                <Timeline items={ongoing.map((ride) => rideToTimelineItem(ride, true, "live"))} />
-              </section>
-            )}
-
-            {upcoming.length > 0 && (
-              <section className="flex flex-col gap-4">
-                <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
-                  <Compass className="text-primary size-4" />
-                  Upcoming
-                </h2>
-                <Timeline items={upcoming.map((ride) => rideToTimelineItem(ride, true, "open"))} />
-              </section>
-            )}
-
-            {completed.length > 0 && (
-              <section className="flex flex-col gap-4">
-                <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
-                  <CalendarCheck className="text-primary size-4" />
-                  Completed — ride memories
-                </h2>
-                <Timeline
-                  items={completed.map((ride) => rideToTimelineItem(ride, false, "completed"))}
-                />
-              </section>
-            )}
-
-            {cancelled.length > 0 && (
-              <section className="flex flex-col gap-4">
-                <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
-                  <Ban className="text-primary size-4" />
-                  Cancelled
-                </h2>
-                <Timeline
-                  items={cancelled.map((ride) => rideToTimelineItem(ride, false, "cancelled"))}
-                />
-              </section>
-            )}
-          </>
+          <Tabs defaultValue="community">
+            <TabsList>
+              <TabsTrigger value="community">Community rides</TabsTrigger>
+              <TabsTrigger value="hosted">Hosted rides</TabsTrigger>
+              <TabsTrigger value="booked">Booked rides</TabsTrigger>
+            </TabsList>
+            <TabsContent value="community">
+              <RidesGroupSections group={community} />
+            </TabsContent>
+            <TabsContent value="hosted">
+              <RidesGroupSections group={hosted} />
+            </TabsContent>
+            <TabsContent value="booked">
+              <RidesGroupSections group={booked} />
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </div>

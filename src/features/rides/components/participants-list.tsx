@@ -16,6 +16,8 @@ interface ParticipantsListProps {
   isOrganizer: boolean;
   /** True once the ride's departure time has passed — gates attendance marking and hides "Remove". */
   rideStarted: boolean;
+  /** Organized ride bookings are final on payment — no leave/remove action. */
+  isOrganizedRide?: boolean;
 }
 
 export function ParticipantsList({
@@ -23,6 +25,7 @@ export function ParticipantsList({
   currentUserId,
   isOrganizer,
   rideStarted,
+  isOrganizedRide,
 }: ParticipantsListProps) {
   return (
     <Card>
@@ -38,6 +41,7 @@ export function ParticipantsList({
             key={member.id}
             member={member}
             canRemove={
+              !isOrganizedRide &&
               !rideStarted &&
               member.role !== "organizer" &&
               (isOrganizer || (currentUserId !== null && member.user_id === currentUserId))

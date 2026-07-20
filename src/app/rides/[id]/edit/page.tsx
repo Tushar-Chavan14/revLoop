@@ -3,7 +3,9 @@ import { SiteHeader } from "@/components/site-header";
 import { updateRide } from "@/features/rides/actions/ride-actions";
 import { RideForm } from "@/features/rides/components/ride-form";
 import { getAuthUser } from "@/services/profiles";
+import { getPayoutDetails, hasPayoutDetails } from "@/services/organizer-payout";
 import { getRideById } from "@/services/rides";
+import type { ItineraryDay } from "@/features/rides/schema";
 
 export const metadata = {
   title: "Edit ride",
@@ -29,6 +31,8 @@ export default async function EditRidePage({ params }: EditRidePageProps) {
     redirect(`/rides/${id}`);
   }
 
+  const payoutDetails = await getPayoutDetails(user.id);
+
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
@@ -40,6 +44,7 @@ export default async function EditRidePage({ params }: EditRidePageProps) {
           mode="edit"
           action={updateRide.bind(null, id)}
           initialCoverImageUrl={ride.cover_image_url}
+          hasPayoutDetails={hasPayoutDetails(payoutDetails)}
           initialValues={{
             title: ride.title ?? "",
             description: ride.description ?? "",
@@ -72,6 +77,14 @@ export default async function EditRidePage({ params }: EditRidePageProps) {
               ride.estimated_duration_minutes != null && ride.estimated_duration_minutes < 24 * 60
                 ? Math.round(ride.estimated_duration_minutes / 60)
                 : undefined,
+            pricingModel: ride.pricing_model ?? "community",
+            rideFee: ride.ride_fee ?? undefined,
+            bookingDeadline: ride.booking_deadline ? ride.booking_deadline.slice(0, 16) : undefined,
+            minimumRiders: ride.minimum_riders ?? undefined,
+            cancellationPolicy: ride.cancellation_policy ?? undefined,
+            inclusions: ride.ride_inclusions ?? [],
+            exclusions: ride.ride_exclusions ?? [],
+            itinerary: (ride.ride_itinerary as unknown as ItineraryDay[]) ?? [],
           }}
         />
       </div>

@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/site-header";
 import { createRide } from "@/features/rides/actions/ride-actions";
 import { RideForm } from "@/features/rides/components/ride-form";
 import { getAuthUser, getProfileByUserId } from "@/services/profiles";
+import { getPayoutDetails, hasPayoutDetails } from "@/services/organizer-payout";
 import { isProfileComplete } from "@/utils/profile-completeness";
 
 export const metadata = {
@@ -20,6 +21,8 @@ export default async function CreateRidePage() {
     redirect("/profile/setup");
   }
 
+  const payoutDetails = await getPayoutDetails(user.id);
+
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
@@ -35,6 +38,7 @@ export default async function CreateRidePage() {
         <RideForm
           mode="create"
           action={createRide}
+          hasPayoutDetails={hasPayoutDetails(payoutDetails)}
           initialValues={{
             title: "",
             description: "",
@@ -59,6 +63,14 @@ export default async function CreateRidePage() {
             estimatedDistanceKm: undefined,
             estimatedDurationDays: undefined,
             estimatedDurationHours: undefined,
+            pricingModel: "community",
+            rideFee: undefined,
+            bookingDeadline: undefined,
+            minimumRiders: undefined,
+            cancellationPolicy: undefined,
+            inclusions: [],
+            exclusions: [],
+            itinerary: [],
           }}
         />
       </div>

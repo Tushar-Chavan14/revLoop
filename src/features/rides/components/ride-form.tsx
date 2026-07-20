@@ -3,20 +3,29 @@
 import { useState, useTransition, type ReactNode } from "react";
 import { useFormik } from "formik";
 import { format } from "date-fns";
+import { motion } from "framer-motion";
 import {
   Bike,
   Calendar,
   ChevronLeft,
   ChevronRight,
+  Clock,
   ImageIcon,
+  IndianRupee,
+  ListChecks,
   MapPin,
+  Plus,
   Settings2,
+  Trash2,
   Users,
+  X,
 } from "lucide-react";
 import { LocationAutocomplete } from "@/components/location-autocomplete";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -33,38 +42,54 @@ import { StepIndicator } from "@/components/design-system/step-indicator";
 import { RIDE_TYPE_ICONS, RIDE_TYPES } from "@/constants/ride-type";
 import { SPEED_LEVELS } from "@/constants/speed-level";
 import { RIDER_LEVELS } from "@/constants/rider-level";
+import { RIDE_INCLUSIONS } from "@/constants/ride-inclusions";
 import { CoverImageUpload } from "@/features/rides/components/cover-image-upload";
 import { RideMap, type ActiveMarker } from "@/features/rides/components/ride-map";
 import { rideSchema, type RideFormValues } from "@/features/rides/schema";
 import { reverseGeocode } from "@/utils/reverse-geocode";
+import { fadeInUp } from "@/lib/motion";
 
 interface RideFormProps {
   mode: "create" | "edit";
   initialValues: RideFormValues;
   initialCoverImageUrl?: string | null;
   action: (formData: FormData) => Promise<{ error?: string } | void>;
+  hasPayoutDetails?: boolean;
 }
 
-const STEPS = [
-  { label: "Basics", fields: ["title", "description"] as (keyof RideFormValues)[] },
+type StepDef = { label: string; fields: (keyof RideFormValues)[] };
+
+const BASE_STEPS: StepDef[] = [
+  { label: "Ride type", fields: ["pricingModel"] },
+  { label: "Basics", fields: ["title", "description"] },
   {
     label: "When & where",
-    fields: [
-      "rideDate",
-      "departureTime",
-      "meetingPoint",
-      "destination",
-      "city",
-    ] as (keyof RideFormValues)[],
+    fields: ["rideDate", "departureTime", "meetingPoint", "destination", "city"],
   },
-  {
-    label: "Details",
-    fields: ["maxRiders", "rideType", "speed", "difficulty"] as (keyof RideFormValues)[],
-  },
-  { label: "Rules & review", fields: [] as (keyof RideFormValues)[] },
+  { label: "Details", fields: ["maxRiders", "rideType", "speed", "difficulty"] },
 ];
 
-export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: RideFormProps) {
+const ORGANIZED_STEPS: StepDef[] = [
+  { label: "Pricing & booking", fields: ["rideFee", "bookingDeadline", "minimumRiders"] },
+  { label: "Inclusions", fields: [] },
+  { label: "Itinerary", fields: [] },
+];
+
+const FINAL_STEP: StepDef = { label: "Rules & review", fields: [] };
+
+function getSteps(pricingModel: string): StepDef[] {
+  return pricingModel === "organized"
+    ? [...BASE_STEPS, ...ORGANIZED_STEPS, FINAL_STEP]
+    : [...BASE_STEPS, FINAL_STEP];
+}
+
+export function RideForm({
+  mode,
+  initialValues,
+  initialCoverImageUrl,
+  action,
+  hasPayoutDetails,
+}: RideFormProps) {
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
@@ -73,7 +98,7 @@ export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: 
   );
   const [activeMarker, setActiveMarker] = useState<ActiveMarker>("meeting");
   const [step, setStep] = useState(0);
-  const isLastStep = step === STEPS.length - 1;
+  const [exclusionDraft, setExclusionDraft] = useState("");
 
   const formik = useFormik<RideFormValues>({
     initialValues,
@@ -83,6 +108,14 @@ export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: 
 
       const formData = new FormData();
       Object.entries(values).forEach(([key, value]) => {
+        if (key === "inclusions" || key === "exclusions") {
+          (value as string[] | undefined)?.forEach((item) => formData.append(key, item));
+          return;
+        }
+        if (key === "itinerary") {
+          formData.set("itinerary", JSON.stringify(value ?? []));
+          return;
+        }
         if (value !== undefined && value !== null) {
           formData.set(key, String(value));
         }
@@ -99,6 +132,12 @@ export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: 
       });
     },
   });
+
+  const steps = getSteps(formik.values.pricingModel);
+  const currentStep = steps[step];
+  const isLastStep = step === steps.length - 1;
+  const isOrganized = formik.values.pricingModel === "organized";
+  const canCreateOrganized = hasPayoutDetails ?? false;
 
   const fieldError = (field: keyof RideFormValues) =>
     formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : undefined;
@@ -146,7 +185,7 @@ export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: 
   }
 
   async function handleNext() {
-    const stepFields = STEPS[step].fields;
+    const stepFields = currentStep.fields;
     if (stepFields.length === 0) {
       await goToStep(step + 1);
       return;
@@ -162,11 +201,117 @@ export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: 
     }
   }
 
+  function addItineraryDay() {
+    const itinerary = formik.values.itinerary ?? [];
+    formik.setFieldValue("itinerary", [...itinerary, { day: itinerary.length + 1, items: [] }]);
+  }
+
+  function removeItineraryDay(dayIndex: number) {
+    const itinerary = (formik.values.itinerary ?? []).filter((_, i) => i !== dayIndex);
+    formik.setFieldValue(
+      "itinerary",
+      itinerary.map((day, i) => ({ ...day, day: i + 1 })),
+    );
+  }
+
+  function addItineraryItem(dayIndex: number) {
+    const itinerary = [...(formik.values.itinerary ?? [])];
+    itinerary[dayIndex] = { ...itinerary[dayIndex], items: [...itinerary[dayIndex].items, { label: "", time: "" }] };
+    formik.setFieldValue("itinerary", itinerary);
+  }
+
+  function updateItineraryItem(
+    dayIndex: number,
+    itemIndex: number,
+    field: "label" | "time",
+    value: string,
+  ) {
+    const itinerary = [...(formik.values.itinerary ?? [])];
+    const items = [...itinerary[dayIndex].items];
+    items[itemIndex] = { ...items[itemIndex], [field]: value };
+    itinerary[dayIndex] = { ...itinerary[dayIndex], items };
+    formik.setFieldValue("itinerary", itinerary);
+  }
+
+  function removeItineraryItem(dayIndex: number, itemIndex: number) {
+    const itinerary = [...(formik.values.itinerary ?? [])];
+    itinerary[dayIndex] = {
+      ...itinerary[dayIndex],
+      items: itinerary[dayIndex].items.filter((_, i) => i !== itemIndex),
+    };
+    formik.setFieldValue("itinerary", itinerary);
+  }
+
+  function toggleInclusion(value: string, checked: boolean) {
+    const inclusions = formik.values.inclusions ?? [];
+    formik.setFieldValue(
+      "inclusions",
+      checked ? [...inclusions, value] : inclusions.filter((v) => v !== value),
+    );
+  }
+
+  function addExclusion() {
+    const trimmed = exclusionDraft.trim();
+    if (!trimmed) return;
+    const exclusions = formik.values.exclusions ?? [];
+    if (!exclusions.includes(trimmed)) {
+      formik.setFieldValue("exclusions", [...exclusions, trimmed]);
+    }
+    setExclusionDraft("");
+  }
+
+  function removeExclusion(value: string) {
+    formik.setFieldValue(
+      "exclusions",
+      (formik.values.exclusions ?? []).filter((v) => v !== value),
+    );
+  }
+
   return (
     <form onSubmit={formik.handleSubmit} noValidate className="flex flex-col gap-8">
-      <StepIndicator steps={STEPS.map((s) => s.label)} currentStep={step} />
+      <StepIndicator steps={steps.map((s) => s.label)} currentStep={step} />
 
-      {step === 0 && (
+      {currentStep.label === "Ride type" && (
+        <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <IndianRupee className="text-primary size-4" />
+                <CardTitle>Ride type</CardTitle>
+              </div>
+              <CardDescription>
+                Community rides are free to join. Organized rides are paid — riders reserve a
+                seat by paying you directly through the app.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <ToggleGroup
+                variant="outline"
+                spacing={0}
+                value={[formik.values.pricingModel]}
+                onValueChange={(value) => {
+                  const next = value[value.length - 1];
+                  if (!next) return;
+                  formik.setFieldValue("pricingModel", next);
+                }}
+                className="flex-wrap"
+              >
+                <ToggleGroupItem value="community">Community ride</ToggleGroupItem>
+                <ToggleGroupItem value="organized" disabled={!canCreateOrganized}>
+                  Organized ride
+                </ToggleGroupItem>
+              </ToggleGroup>
+              {!canCreateOrganized && (
+                <p className="text-muted-foreground text-xs">
+                  Complete payout setup in your profile before you can create an Organized Ride.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {currentStep.label === "Basics" && (
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -209,7 +354,7 @@ export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: 
         </Card>
       )}
 
-      {step === 1 && (
+      {currentStep.label === "When & where" && (
         <>
           <Card>
             <CardHeader>
@@ -352,7 +497,7 @@ export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: 
         </>
       )}
 
-      {step === 2 && (
+      {currentStep.label === "Details" && (
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -367,7 +512,7 @@ export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: 
                 name="maxRiders"
                 type="number"
                 min={1}
-                max={20}
+                max={isOrganized ? 150 : 20}
                 value={formik.values.maxRiders}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
@@ -476,7 +621,7 @@ export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: 
                     name="estimatedDurationDays"
                     type="number"
                     min={1}
-                    max={4}
+                    max={isOrganized ? 21 : 4}
                     placeholder="1"
                     value={formik.values.estimatedDurationDays ?? ""}
                     onChange={(event) => {
@@ -523,8 +668,237 @@ export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: 
         </Card>
       )}
 
+      {currentStep.label === "Pricing & booking" && (
+        <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <IndianRupee className="text-primary size-4" />
+                <CardTitle>Pricing & booking</CardTitle>
+              </div>
+              <CardDescription>Razorpay settles in INR only, so the fee is in ₹.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Ride fee" htmlFor="rideFee" error={fieldError("rideFee")}>
+                <div className="relative">
+                  <IndianRupee className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                  <Input
+                    id="rideFee"
+                    name="rideFee"
+                    type="number"
+                    min={1}
+                    step="0.01"
+                    className="pl-9"
+                    value={formik.values.rideFee ?? ""}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                  />
+                </div>
+              </Field>
+              <Field
+                label="Booking deadline"
+                htmlFor="bookingDeadline"
+                error={fieldError("bookingDeadline")}
+              >
+                <Input
+                  id="bookingDeadline"
+                  name="bookingDeadline"
+                  type="datetime-local"
+                  value={formik.values.bookingDeadline ?? ""}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+              </Field>
+              <Field
+                label="Minimum riders (optional)"
+                htmlFor="minimumRiders"
+                error={fieldError("minimumRiders")}
+              >
+                <Input
+                  id="minimumRiders"
+                  name="minimumRiders"
+                  type="number"
+                  min={1}
+                  value={formik.values.minimumRiders ?? ""}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+              </Field>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {currentStep.label === "Inclusions" && (
+        <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="flex flex-col gap-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <ListChecks className="text-primary size-4" />
+                <CardTitle>What&apos;s included</CardTitle>
+              </div>
+              <CardDescription>Select everything covered by the ride fee.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {RIDE_INCLUSIONS.map((item) => (
+                <label
+                  key={item.value}
+                  className="flex items-center gap-2 text-sm"
+                  htmlFor={`inclusion-${item.value}`}
+                >
+                  <Checkbox
+                    id={`inclusion-${item.value}`}
+                    checked={(formik.values.inclusions ?? []).includes(item.value)}
+                    onCheckedChange={(checked) => toggleInclusion(item.value, checked === true)}
+                  />
+                  {item.label}
+                </label>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>What&apos;s not included</CardTitle>
+              <CardDescription>Optional — call out costs riders should expect to cover.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="e.g. Personal expenses"
+                  value={exclusionDraft}
+                  onChange={(event) => setExclusionDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      addExclusion();
+                    }
+                  }}
+                />
+                <Button type="button" variant="outline" onClick={addExclusion}>
+                  <Plus className="size-4" />
+                  Add
+                </Button>
+              </div>
+              {(formik.values.exclusions ?? []).length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {(formik.values.exclusions ?? []).map((exclusion) => (
+                    <Badge key={exclusion} variant="outline" className="gap-1">
+                      {exclusion}
+                      <button
+                        type="button"
+                        onClick={() => removeExclusion(exclusion)}
+                        aria-label={`Remove ${exclusion}`}
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {currentStep.label === "Itinerary" && (
+        <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="flex flex-col gap-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Clock className="text-primary size-4" />
+                <CardTitle>Trip itinerary</CardTitle>
+              </div>
+              <CardDescription>
+                Optional — sketch out the plan for each day. You can always fill this in later.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          {(formik.values.itinerary ?? []).map((day, dayIndex) => (
+            <Card key={dayIndex}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Day {day.day}</CardTitle>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeItineraryDay(dayIndex)}
+                  >
+                    <Trash2 className="size-4" />
+                    Remove day
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                {day.items.map((item, itemIndex) => (
+                  <div key={itemIndex} className="flex gap-2">
+                    <Input
+                      placeholder="Time (optional)"
+                      className="w-32 shrink-0"
+                      value={item.time ?? ""}
+                      onChange={(event) =>
+                        updateItineraryItem(dayIndex, itemIndex, "time", event.target.value)
+                      }
+                    />
+                    <Input
+                      placeholder="e.g. Breakfast at CCD"
+                      value={item.label}
+                      onChange={(event) =>
+                        updateItineraryItem(dayIndex, itemIndex, "label", event.target.value)
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeItineraryItem(dayIndex, itemIndex)}
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="self-start"
+                  onClick={() => addItineraryItem(dayIndex)}
+                >
+                  <Plus className="size-4" />
+                  Add stop
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+
+          <Button type="button" variant="outline" onClick={addItineraryDay} className="self-start">
+            <Plus className="size-4" />
+            Add day
+          </Button>
+        </motion.div>
+      )}
+
       {isLastStep && (
         <>
+          {isOrganized && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Cancellation policy</CardTitle>
+                <CardDescription>Optional — shown to riders before they book.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  rows={3}
+                  placeholder="e.g. Full refund up to 7 days before the ride."
+                  value={formik.values.cancellationPolicy ?? ""}
+                  onChange={(event) => formik.setFieldValue("cancellationPolicy", event.target.value)}
+                />
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
@@ -562,8 +936,9 @@ export function RideForm({ mode, initialValues, initialCoverImageUrl, action }: 
 
       {isLastStep && (
         <p className="text-muted-foreground text-xs">
-          Riders who join are responsible for their own expenses — fuel, food, accommodation, and
-          any other costs. You&apos;re not expected to cover these as the organizer.
+          {isOrganized
+            ? "Anything not listed under “What's included” is the rider's own responsibility."
+            : "Riders who join are responsible for their own expenses — fuel, food, accommodation, and any other costs. You're not expected to cover these as the organizer."}
         </p>
       )}
 
@@ -628,7 +1003,18 @@ function RidePreviewCard({
               <Users className="text-primary size-3.5" />
               Up to {values.maxRiders} riders
             </span>
+            {values.pricingModel === "organized" && values.rideFee && (
+              <span className="flex items-center gap-1.5">
+                <IndianRupee className="text-primary size-3.5" />₹{values.rideFee}
+              </span>
+            )}
           </div>
+          {values.pricingModel === "organized" && values.bookingDeadline && (
+            <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
+              <Clock className="text-primary size-3.5 shrink-0" />
+              Book by {format(new Date(values.bookingDeadline), "MMM d, h:mm a")}
+            </p>
+          )}
           {values.destination && (
             <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
               <MapPin className="text-primary size-3.5 shrink-0" />

@@ -97,6 +97,16 @@ export async function respondToJoinRequest(
 
 export async function removeRideMember(rideId: string, userId: string): Promise<ActionResult> {
   const supabase = await createClient();
+
+  const { data: ride } = await supabase
+    .from("rides")
+    .select("pricing_model")
+    .eq("id", rideId)
+    .maybeSingle();
+  if (ride?.pricing_model === "organized") {
+    return { error: "Organized ride bookings can't be left or removed." };
+  }
+
   const { error } = await supabase
     .from("ride_members")
     .delete()

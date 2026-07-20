@@ -7,6 +7,16 @@ function todayIsoDate() {
   return new Date().toISOString().slice(0, 10);
 }
 
+export interface ItineraryItem {
+  time?: string;
+  label: string;
+}
+
+export interface ItineraryDay {
+  day: number;
+  items: ItineraryItem[];
+}
+
 export const rideSchema = Yup.object({
   title: Yup.string().trim().min(3, "Give your ride a title").required("Title is required"),
   description: Yup.string().trim().max(2000, "Keep it under 2000 characters").optional(),
@@ -26,7 +36,11 @@ export const rideSchema = Yup.object({
     .typeError("Enter a number")
     .integer("Enter a whole number")
     .min(1, "At least 1 rider")
-    .max(20, "20 riders max")
+    .when("pricingModel", {
+      is: "organized",
+      then: (schema) => schema.max(150, "150 riders max"),
+      otherwise: (schema) => schema.max(20, "20 riders max"),
+    })
     .required("Maximum riders is required"),
   rideType: Yup.string()
     .oneOf(
@@ -58,7 +72,11 @@ export const rideSchema = Yup.object({
     .typeError("Enter a number")
     .integer("Enter a whole number")
     .min(1, "At least 1 day")
-    .max(4, "4 days max")
+    .when("pricingModel", {
+      is: "organized",
+      then: (schema) => schema.max(21, "21 days max"),
+      otherwise: (schema) => schema.max(4, "4 days max"),
+    })
     .optional(),
   estimatedDurationHours: Yup.number()
     .typeError("Enter a number")
@@ -66,6 +84,41 @@ export const rideSchema = Yup.object({
     .min(0, "Can't be negative")
     .max(23, "23 hours max")
     .optional(),
+  pricingModel: Yup.string()
+    .oneOf(["community", "organized"], "Select a ride type")
+    .required("Select a ride type"),
+  rideFee: Yup.number()
+    .typeError("Enter a number")
+    .min(1, "Enter a fee")
+    .when("pricingModel", {
+      is: "organized",
+      then: (schema) => schema.required("Ride fee is required"),
+      otherwise: (schema) => schema.optional(),
+    }),
+  bookingDeadline: Yup.string().when("pricingModel", {
+    is: "organized",
+    then: (schema) => schema.required("Booking deadline is required"),
+    otherwise: (schema) => schema.optional(),
+  }),
+  minimumRiders: Yup.number()
+    .typeError("Enter a number")
+    .integer("Enter a whole number")
+    .min(1, "At least 1 rider")
+    .optional(),
+  cancellationPolicy: Yup.string().trim().max(1000, "Keep it under 1000 characters").optional(),
+  inclusions: Yup.array(Yup.string().required()).optional(),
+  exclusions: Yup.array(Yup.string().required()).optional(),
+  itinerary: Yup.array(
+    Yup.object({
+      day: Yup.number().required(),
+      items: Yup.array(
+        Yup.object({
+          time: Yup.string().optional(),
+          label: Yup.string().required(),
+        }),
+      ).required(),
+    }),
+  ).optional(),
 });
 
 // rideType/speed/difficulty are widened to `string` (rather than Yup's
@@ -81,6 +134,8 @@ export type RideFormValues = Omit<
   | "meetingLng"
   | "destinationLat"
   | "destinationLng"
+  | "pricingModel"
+  | "itinerary"
 > & {
   rideType: string;
   speed: string;
@@ -89,4 +144,6 @@ export type RideFormValues = Omit<
   meetingLng: number | null;
   destinationLat: number | null;
   destinationLng: number | null;
+  pricingModel: string;
+  itinerary: ItineraryDay[];
 };

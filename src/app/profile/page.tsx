@@ -24,6 +24,8 @@ import { RideCountdown } from "@/components/design-system/ride-countdown";
 import { SiteHeader } from "@/components/site-header";
 import { signOut } from "@/features/auth/actions/auth-actions";
 import { RideRequestsAccordion } from "@/features/rides/components/ride-requests-accordion";
+import { PayoutSetupCard } from "@/features/profile/components/payout-setup-card";
+import { getPayoutDetails } from "@/services/organizer-payout";
 import { getRecentMessagesForUser } from "@/services/ride-chat";
 import {
   getAttendanceStats,
@@ -74,6 +76,7 @@ export default async function ProfilePage() {
     recentMessages,
     communityActivity,
     timeZone,
+    payoutDetails,
   ] = await Promise.all([
     getRequestsForRides(upcoming.map((ride) => ride.id).filter((id) => id !== null)),
     getAttendanceStats(user.id),
@@ -84,6 +87,7 @@ export default async function ProfilePage() {
     getRecentMessagesForUser(user.id, 5),
     getCommunityActivity(6),
     getUserTimeZone(),
+    getPayoutDetails(user.id),
   ]);
   const currentHour = getHourInTimeZone(timeZone);
 
@@ -414,6 +418,8 @@ export default async function ProfilePage() {
             </CardContent>
           </Card>
         )}
+
+        <PayoutSetupCard payoutDetails={payoutDetails} />
       </div>
     </div>
   );

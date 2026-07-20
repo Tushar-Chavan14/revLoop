@@ -5,16 +5,19 @@ import { format } from "date-fns";
 import {
   Bike,
   Calendar,
+  Check,
   Clock,
   Coffee,
   ExternalLink,
   Flag,
   Fuel,
   Hourglass,
+  IndianRupee,
   MapPin,
   ShieldCheck,
   UserRound,
   Users,
+  X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -26,16 +29,20 @@ import { MapContainer } from "@/components/design-system/map-container";
 import { Timeline, type TimelineItemData } from "@/components/design-system/timeline";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { BookRideCard } from "@/features/rides/components/book-ride-card";
 import { JoinRequestCard } from "@/features/rides/components/join-request-card";
 import { ParticipantsList } from "@/features/rides/components/participants-list";
 import { RideMap } from "@/features/rides/components/ride-map";
 import { DEFAULT_RIDE_TYPE_ICON, RIDE_TYPE_ICONS, RIDE_TYPES } from "@/constants/ride-type";
 import { SPEED_LEVELS } from "@/constants/speed-level";
+import { RIDE_INCLUSIONS } from "@/constants/ride-inclusions";
 import { getAuthUser } from "@/services/profiles";
-import { getMyRideRequest, getRideMembers } from "@/services/ride-participation";
+import { getPayoutDetails, hasPayoutDetails } from "@/services/organizer-payout";
+import { getMyRideBooking, getMyRideRequest, getRideMembers } from "@/services/ride-participation";
 import { getRideById, getRideImages } from "@/services/rides";
 import { capitalize } from "@/utils/capitalize";
 import { formatRideDuration } from "@/utils/ride-duration";
+import type { ItineraryDay } from "@/features/rides/schema";
 
 type RideDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -78,9 +85,22 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const user = await getAuthUser();
   const isOrganizer = user?.id === ride.organizer_id;
 
-  const [members, images] = await Promise.all([getRideMembers(id), getRideImages(id)]);
+  const isOrganizedRide = ride.pricing_model === "organized";
+
+  const [members, images, organizerPayoutDetails] = await Promise.all([
+    getRideMembers(id),
+    getRideImages(id),
+    isOrganizedRide && ride.organizer_id ? getPayoutDetails(ride.organizer_id) : null,
+  ]);
   const isMember = user ? members.some((member) => member.user_id === user.id) : false;
-  const myRequest = user && !isOrganizer && !isMember ? await getMyRideRequest(id, user.id) : null;
+  const myRequest =
+    user && !isOrganizedRide && !isOrganizer && !isMember
+      ? await getMyRideRequest(id, user.id)
+      : null;
+  const myBooking =
+    user && isOrganizedRide && !isOrganizer && !isMember
+      ? await getMyRideBooking(id, user.id)
+      : null;
   const isRideFull = ride.seats_available !== null && ride.seats_available <= 0;
   const lowSeats =
     !isRideFull &&
@@ -256,6 +276,20 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             label="Duration"
             value={formatRideDuration(ride.estimated_duration_minutes)}
           />
+          {isOrganizedRide && (
+            <Stat
+              icon={IndianRupee}
+              label="Ride fee"
+              value={ride.ride_fee ? `₹${ride.ride_fee}` : undefined}
+            />
+          )}
+          {isOrganizedRide && ride.booking_deadline && (
+            <Stat
+              icon={Clock}
+              label="Book by"
+              value={format(new Date(ride.booking_deadline), "MMM d, h:mm a")}
+            />
+          )}
         </div>
 
         {ride.description && (
@@ -316,6 +350,68 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           </div>
         )}
 
+        {isOrganizedRide && (ride.ride_inclusions?.length ?? 0) > 0 && (
+          <Card>
+            <CardContent className="flex flex-col gap-3">
+              <h2 className="font-heading text-lg font-semibold">What&apos;s included</h2>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {ride.ride_inclusions?.map((value) => (
+                  <span key={value} className="flex items-center gap-2 text-sm">
+                    <Check className="text-primary size-3.5" />
+                    {RIDE_INCLUSIONS.find((item) => item.value === value)?.label ?? value}
+                  </span>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {isOrganizedRide && (ride.ride_exclusions?.length ?? 0) > 0 && (
+          <Card>
+            <CardContent className="flex flex-col gap-3">
+              <h2 className="font-heading text-lg font-semibold">What&apos;s not included</h2>
+              <div className="flex flex-wrap gap-2">
+                {ride.ride_exclusions?.map((value) => (
+                  <Badge key={value} variant="outline" className="text-muted-foreground">
+                    <X className="size-3.5" />
+                    {value}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {isOrganizedRide && (ride.ride_itinerary as unknown as ItineraryDay[] | null)?.length ? (
+          <Card>
+            <CardContent className="flex flex-col gap-4">
+              <h2 className="font-heading text-lg font-semibold">Trip itinerary</h2>
+              {(ride.ride_itinerary as unknown as ItineraryDay[]).map((day) => (
+                <div key={day.day} className="flex flex-col gap-2">
+                  <p className="text-sm font-medium">Day {day.day}</p>
+                  <ul className="text-muted-foreground flex flex-col gap-1 text-sm">
+                    {day.items.map((item, index) => (
+                      <li key={index} className="flex gap-2">
+                        {item.time && <span className="font-medium">{item.time}</span>}
+                        <span>{item.label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {isOrganizedRide && ride.cancellation_policy && (
+          <Card>
+            <CardContent>
+              <h2 className="font-heading mb-2 text-lg font-semibold">Cancellation policy</h2>
+              <p className="text-muted-foreground text-sm">{ride.cancellation_policy}</p>
+            </CardContent>
+          </Card>
+        )}
+
         {images.length > 0 && (
           <div className="flex flex-col gap-3">
             <h2 className="font-heading text-lg font-semibold">Ride gallery</h2>
@@ -328,10 +424,25 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           currentUserId={user?.id ?? null}
           isOrganizer={isOrganizer}
           rideStarted={rideStarted}
+          isOrganizedRide={isOrganizedRide}
         />
 
         <div id="join" className="scroll-mt-20">
-          {!isOrganizer && !isMember && user && (
+          {!isOrganizer && !isMember && user && isOrganizedRide && (
+            <BookRideCard
+              rideId={id}
+              myBooking={myBooking}
+              isRideFull={isRideFull}
+              rideFee={Number(ride.ride_fee ?? 0)}
+              currency={ride.currency ?? "INR"}
+              bookingClosed={
+                ride.booking_deadline ? new Date(ride.booking_deadline) < new Date() : false
+              }
+              organizerReady={hasPayoutDetails(organizerPayoutDetails)}
+            />
+          )}
+
+          {!isOrganizer && !isMember && user && !isOrganizedRide && (
             <JoinRequestCard rideId={id} myRequest={myRequest} isRideFull={isRideFull} />
           )}
 
