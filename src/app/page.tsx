@@ -37,7 +37,6 @@ import {
   getCommunityStats,
   getFeaturedRide,
   getPopularTripDestinations,
-  getRecentRides,
   getUpcomingRides,
 } from "@/services/rides";
 import { capitalize } from "@/utils/capitalize";
@@ -110,11 +109,10 @@ const TESTIMONIALS = [
 ] as const;
 
 export default async function HomePage() {
-  const [user, upcomingRides, recentRides, popularDestinations, stats, weekend, featuredRide] =
+  const [user, upcomingRides, popularDestinations, stats, weekend, featuredRide] =
     await Promise.all([
       getAuthUser(),
       getUpcomingRides(9),
-      getRecentRides(6),
       getPopularTripDestinations(4),
       getCommunityStats(),
       getWeekendActivity(8),
@@ -395,18 +393,6 @@ export default async function HomePage() {
               </div>
             </section>
           </Reveal>
-        )}
-
-        {/* Recently created rides */}
-        {recentRides.length > 0 && (
-          <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-            <h2 className="font-heading text-2xl font-bold tracking-tight">Recently created</h2>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {recentRides.map((ride) => (
-                <RideCard key={ride.id} ride={ride} />
-              ))}
-            </div>
-          </section>
         )}
 
         {/* Community statistics */}

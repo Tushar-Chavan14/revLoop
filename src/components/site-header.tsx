@@ -5,12 +5,17 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { getAuthUser } from "@/services/profiles";
 import { getRecentNotifications, getUnreadNotificationCount } from "@/services/notifications";
+import { getCommunityActivity } from "@/services/rides";
 
 export async function SiteHeader() {
   const user = await getAuthUser();
-  const [notifications, unreadCount] = user
-    ? await Promise.all([getRecentNotifications(user.id), getUnreadNotificationCount(user.id)])
-    : [[], 0];
+  const [notifications, unreadCount, communityActivity] = user
+    ? await Promise.all([
+        getRecentNotifications(user.id),
+        getUnreadNotificationCount(user.id),
+        getCommunityActivity(8),
+      ])
+    : [[], 0, []];
 
   return (
     <header className="border-border/60 bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md">
@@ -41,6 +46,7 @@ export async function SiteHeader() {
               currentUserId={user.id}
               initialNotifications={notifications}
               initialUnreadCount={unreadCount}
+              communityActivity={communityActivity}
             />
           )}
           <Button

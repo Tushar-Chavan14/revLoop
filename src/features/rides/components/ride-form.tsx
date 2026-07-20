@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, type ReactNode } from "react";
+import Link from "next/link";
 import { useFormik } from "formik";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
@@ -306,7 +307,11 @@ export function RideForm({
               </ToggleGroup>
               {!canCreateOrganized && (
                 <p className="text-muted-foreground text-xs">
-                  Complete payout setup in your profile before you can create an Organized Ride.
+                  Complete{" "}
+                  <Link href="/profile#payout" className="text-primary underline">
+                    payout setup in your profile
+                  </Link>{" "}
+                  before you can create an Organized Ride.
                 </p>
               )}
             </CardContent>

@@ -33,6 +33,7 @@ import { BookRideCard } from "@/features/rides/components/book-ride-card";
 import { JoinRequestCard } from "@/features/rides/components/join-request-card";
 import { ParticipantsList } from "@/features/rides/components/participants-list";
 import { RideMap } from "@/features/rides/components/ride-map";
+import { ShareRideButton } from "@/features/rides/components/share-ride-button";
 import { DEFAULT_RIDE_TYPE_ICON, RIDE_TYPE_ICONS, RIDE_TYPES } from "@/constants/ride-type";
 import { SPEED_LEVELS } from "@/constants/speed-level";
 import { RIDE_INCLUSIONS } from "@/constants/ride-inclusions";
@@ -222,33 +223,39 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           </div>
         </div>
 
-        {(isOrganizer || isMember) && (
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex gap-2">
-              {isOrganizer && (
-                <Button
-                  nativeButton={false}
-                  render={<Link href={`/rides/${id}/edit`}>Edit ride</Link>}
-                  variant="outline"
-                  size="sm"
-                />
-              )}
-              {isMember && (
-                <Button
-                  nativeButton={false}
-                  render={<Link href={`/rides/${id}/chat`}>Ride chat</Link>}
-                  variant="outline"
-                  size="sm"
-                />
-              )}
-            </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap gap-2">
             {isOrganizer && (
-              <Link href="/profile" className="text-muted-foreground text-xs hover:underline">
-                Manage join requests from your dashboard →
-              </Link>
+              <Button
+                nativeButton={false}
+                render={<Link href={`/rides/${id}/edit`}>Edit ride</Link>}
+                variant="outline"
+                size="sm"
+              />
             )}
+            {isMember && (
+              <Button
+                nativeButton={false}
+                render={<Link href={`/rides/${id}/chat`}>Ride chat</Link>}
+                variant="outline"
+                size="sm"
+              />
+            )}
+            <ShareRideButton
+              title={ride.title ?? "Ride"}
+              text={
+                ride.destination
+                  ? `Join me on this ride to ${ride.destination}!`
+                  : `Join me on this ride!`
+              }
+            />
           </div>
-        )}
+          {isOrganizer && (
+            <Link href="/profile" className="text-muted-foreground text-xs hover:underline">
+              Manage join requests from your dashboard →
+            </Link>
+          )}
+        </div>
 
         <div className="grid grid-cols-3 gap-4 sm:grid-cols-6">
           <Stat

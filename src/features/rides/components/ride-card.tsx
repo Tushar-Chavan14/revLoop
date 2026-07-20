@@ -53,7 +53,10 @@ export function RideCard({ ride }: { ride: RideWithOrganizer }) {
           ) : (
             <CoverIcon className="text-secondary-foreground/20 absolute -right-4 -bottom-4 size-32" />
           )}
-          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/10 to-transparent" />
+          {/* Darkens top and bottom regardless of the uploaded photo's own
+              brightness — a light/white cover photo would otherwise make the
+              white badge text and title illegible. */}
+          <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/0 to-black/80" />
 
           <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-2">
             <Badge variant="secondary" className="bg-white/15 text-white backdrop-blur-sm">
