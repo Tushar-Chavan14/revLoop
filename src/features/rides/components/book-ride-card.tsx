@@ -97,7 +97,6 @@ export function BookRideCard({
 
   return (
     <>
-      {confirming && <FullscreenLoader message="Confirming your booking..." />}
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       <Card>
         <CardHeader>
@@ -133,13 +132,15 @@ export function BookRideCard({
                 className="self-start"
                 onClick={handleReserve}
               >
-                {isPending
-                  ? "Starting payment..."
-                  : status === "failed"
-                    ? "Try again"
-                    : status === "created"
-                      ? "Resume payment"
-                      : `Reserve spot — ${currency === "INR" ? "₹" : `${currency} `}${rideFee}`}
+                {confirming
+                  ? "Confirming..."
+                  : isPending
+                    ? "Starting payment..."
+                    : status === "failed"
+                      ? "Try again"
+                      : status === "created"
+                        ? "Resume payment"
+                        : `Reserve spot — ${currency === "INR" ? "₹" : `${currency} `}${rideFee}`}
               </Button>
             </>
           )}

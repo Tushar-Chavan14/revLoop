@@ -9,7 +9,7 @@ export function FullscreenLoader({ message }: FullscreenLoaderProps) {
   return (
     <div className="bg-background/90 fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 backdrop-blur-sm">
       {/* eslint-disable-next-line @next/next/no-img-element -- self-animating (SMIL) SVG, not a next/image candidate */}
-      <img src="/Motorcycle_Loading.svg" alt="" className="h-48 w-48" />
+      <img src="/Motorcycle_Loading.svg" alt="" className="h-96 w-96" />
       <p className="text-foreground text-sm font-medium">{message}</p>
     </div>
   );
