@@ -9,6 +9,10 @@ import {
   createBookingOrder,
   getBookingStatus,
 } from "@/features/rides/actions/ride-booking-actions";
+import {
+  BookingFailureAnimation,
+  BookingSuccessAnimation,
+} from "@/features/rides/components/booking-status-animation";
 import type { RideBooking } from "@/services/ride-participation";
 
 declare global {
@@ -107,7 +111,7 @@ export function BookRideCard({
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {status === "paid" ? (
-            <p className="text-sm font-medium">You&apos;re booked ✓</p>
+            <BookingSuccessAnimation />
           ) : !organizerReady ? (
             <p className="text-muted-foreground text-sm">
               This organizer hasn&apos;t completed payout setup yet.
@@ -119,22 +123,25 @@ export function BookRideCard({
               The booking deadline for this ride has passed.
             </p>
           ) : (
-            <Button
-              type="button"
-              disabled={isPending || confirming}
-              className="self-start"
-              onClick={handleReserve}
-            >
-              {confirming
-                ? "Confirming..."
-                : isPending
-                  ? "Starting payment..."
-                  : status === "failed"
-                    ? "Payment failed, try again"
-                    : status === "created"
-                      ? "Resume payment"
-                      : `Reserve spot — ${currency === "INR" ? "₹" : `${currency} `}${rideFee}`}
-            </Button>
+            <>
+              {status === "failed" && <BookingFailureAnimation />}
+              <Button
+                type="button"
+                disabled={isPending || confirming}
+                className="self-start"
+                onClick={handleReserve}
+              >
+                {confirming
+                  ? "Confirming..."
+                  : isPending
+                    ? "Starting payment..."
+                    : status === "failed"
+                      ? "Try again"
+                      : status === "created"
+                        ? "Resume payment"
+                        : `Reserve spot — ${currency === "INR" ? "₹" : `${currency} `}${rideFee}`}
+              </Button>
+            </>
           )}
           {error && <p className="text-destructive text-sm">{error}</p>}
         </CardContent>
