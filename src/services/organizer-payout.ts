@@ -16,3 +16,13 @@ export async function getPayoutDetails(userId: string): Promise<OrganizerPayoutD
 export function hasPayoutDetails(details: OrganizerPayoutDetails | null): boolean {
   return details !== null;
 }
+
+// For checking someone ELSE's payout setup (e.g. a rider checking the
+// organizer's) — RLS rightly blocks reading another user's payout row
+// directly, so this goes through a SECURITY DEFINER function that only
+// answers yes/no, never exposing the bank/UPI details themselves.
+export async function organizerHasPayoutDetails(organizerId: string): Promise<boolean> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("has_payout_details", { uid: organizerId });
+  return data ?? false;
+}

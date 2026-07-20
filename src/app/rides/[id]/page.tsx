@@ -37,7 +37,7 @@ import { DEFAULT_RIDE_TYPE_ICON, RIDE_TYPE_ICONS, RIDE_TYPES } from "@/constants
 import { SPEED_LEVELS } from "@/constants/speed-level";
 import { RIDE_INCLUSIONS } from "@/constants/ride-inclusions";
 import { getAuthUser } from "@/services/profiles";
-import { getPayoutDetails, hasPayoutDetails } from "@/services/organizer-payout";
+import { organizerHasPayoutDetails } from "@/services/organizer-payout";
 import { getMyRideBooking, getMyRideRequest, getRideMembers } from "@/services/ride-participation";
 import { getRideById, getRideImages } from "@/services/rides";
 import { capitalize } from "@/utils/capitalize";
@@ -87,10 +87,10 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
   const isOrganizedRide = ride.pricing_model === "organized";
 
-  const [members, images, organizerPayoutDetails] = await Promise.all([
+  const [members, images, organizerReady] = await Promise.all([
     getRideMembers(id),
     getRideImages(id),
-    isOrganizedRide && ride.organizer_id ? getPayoutDetails(ride.organizer_id) : null,
+    isOrganizedRide && ride.organizer_id ? organizerHasPayoutDetails(ride.organizer_id) : false,
   ]);
   const isMember = user ? members.some((member) => member.user_id === user.id) : false;
   const myRequest =
@@ -438,7 +438,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
               bookingClosed={
                 ride.booking_deadline ? new Date(ride.booking_deadline) < new Date() : false
               }
-              organizerReady={hasPayoutDetails(organizerPayoutDetails)}
+              organizerReady={organizerReady}
             />
           )}
 

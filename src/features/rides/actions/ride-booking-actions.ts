@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createBookingOrder as createRazorpayOrder } from "@/lib/razorpay/client";
+import { organizerHasPayoutDetails } from "@/services/organizer-payout";
 
 type ActionResult = { error: string };
 
@@ -65,13 +66,7 @@ export async function createBookingOrder(
     return { error: "You've already booked this ride." };
   }
 
-  const { data: organizerPayoutDetails } = await supabase
-    .from("organizer_payout_details")
-    .select("id")
-    .eq("user_id", ride.organizer_id)
-    .maybeSingle();
-
-  if (!organizerPayoutDetails) {
+  if (!(await organizerHasPayoutDetails(ride.organizer_id))) {
     return { error: "This organizer hasn't completed payout setup yet." };
   }
 

@@ -709,6 +709,7 @@ export type Database = {
       }
     }
     Functions: {
+      has_payout_details: { Args: { uid: string }; Returns: boolean }
       is_admin: { Args: { uid: string }; Returns: boolean }
       update_ride_lifecycle_status: { Args: never; Returns: undefined }
     }
