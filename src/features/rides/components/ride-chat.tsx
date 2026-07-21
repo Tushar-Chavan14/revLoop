@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { ChatBubble } from "@/components/design-system/chat-bubble";
 import { RIDE_MESSAGE_SENDER_SELECT } from "@/constants/ride-chat";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 import type { RideMessageWithSender, RiderProfile } from "@/services/ride-chat";
 
 const VISIBLE_AVATAR_COUNT = 5;
@@ -32,6 +33,7 @@ interface RideChatProps {
     meetingPoint: string | null;
   };
   participants: RiderProfile[];
+  className?: string;
 }
 
 export function RideChat({
@@ -41,6 +43,7 @@ export function RideChat({
   senderProfiles,
   ride,
   participants,
+  className,
 }: RideChatProps) {
   const [messages, setMessages] = useState(initialMessages);
   const [body, setBody] = useState("");
@@ -129,7 +132,12 @@ export function RideChat({
   const extraParticipants = participants.length - visibleParticipants.length;
 
   return (
-    <div className="border-border bg-card flex h-[75vh] flex-col overflow-hidden rounded-2xl border">
+    <div
+      className={cn(
+        "border-border bg-card flex h-[75vh] flex-col overflow-hidden rounded-2xl border",
+        className,
+      )}
+    >
       <div className="border-border/60 flex items-center gap-3 border-b p-3">
         <div className="bg-secondary relative size-11 shrink-0 overflow-hidden rounded-xl">
           {ride.coverImageUrl && (

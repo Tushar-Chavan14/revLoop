@@ -32,6 +32,7 @@ import { SiteHeader } from "@/components/site-header";
 import { BookRideCard } from "@/features/rides/components/book-ride-card";
 import { JoinRequestCard } from "@/features/rides/components/join-request-card";
 import { ParticipantsList } from "@/features/rides/components/participants-list";
+import { RideChatWidget } from "@/features/rides/components/ride-chat-widget";
 import { RideMap } from "@/features/rides/components/ride-map";
 import { ShareRideButton } from "@/features/rides/components/share-ride-button";
 import { DEFAULT_RIDE_TYPE_ICON, RIDE_TYPE_ICONS, RIDE_TYPES } from "@/constants/ride-type";
@@ -40,6 +41,7 @@ import { RIDE_INCLUSIONS } from "@/constants/ride-inclusions";
 import { getAuthUser } from "@/services/profiles";
 import { organizerHasPayoutDetails } from "@/services/organizer-payout";
 import { getMyRideBooking, getMyRideRequest, getRideMembers } from "@/services/ride-participation";
+import { getRideMessages } from "@/services/ride-chat";
 import { getRideById, getRideImages } from "@/services/rides";
 import { capitalize } from "@/utils/capitalize";
 import { formatRideDuration } from "@/utils/ride-duration";
@@ -94,6 +96,14 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
     isOrganizedRide && ride.organizer_id ? organizerHasPayoutDetails(ride.organizer_id) : false,
   ]);
   const isMember = user ? members.some((member) => member.user_id === user.id) : false;
+  const chatMessages = isMember ? await getRideMessages(id) : [];
+  const chatSenderProfiles = isMember
+    ? Object.fromEntries(
+        members
+          .filter((member) => member.profile)
+          .map((member) => [member.user_id, member.profile!]),
+      )
+    : {};
   const myRequest =
     user && !isOrganizedRide && !isOrganizer && !isMember
       ? await getMyRideRequest(id, user.id)
@@ -145,6 +155,13 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   ].filter(Boolean) as string[];
 
   const CoverIcon = (ride.ride_type && RIDE_TYPE_ICONS[ride.ride_type]) || DEFAULT_RIDE_TYPE_ICON;
+
+  // "Not included" is every catalog option the organizer didn't check off as
+  // included — derived from the same list, rather than a separately
+  // hand-typed exclusions field that can drift out of sync with it.
+  const notIncluded = RIDE_INCLUSIONS.filter(
+    (item) => !(ride.ride_inclusions ?? []).includes(item.value),
+  );
 
   const timelineItems: TimelineItemData[] = [
     {
@@ -229,14 +246,6 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
               <Button
                 nativeButton={false}
                 render={<Link href={`/rides/${id}/edit`}>Edit ride</Link>}
-                variant="outline"
-                size="sm"
-              />
-            )}
-            {isMember && (
-              <Button
-                nativeButton={false}
-                render={<Link href={`/rides/${id}/chat`}>Ride chat</Link>}
                 variant="outline"
                 size="sm"
               />
@@ -373,15 +382,15 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           </Card>
         )}
 
-        {isOrganizedRide && (ride.ride_exclusions?.length ?? 0) > 0 && (
+        {isOrganizedRide && notIncluded.length > 0 && (
           <Card>
             <CardContent className="flex flex-col gap-3">
               <h2 className="font-heading text-lg font-semibold">What&apos;s not included</h2>
               <div className="flex flex-wrap gap-2">
-                {ride.ride_exclusions?.map((value) => (
-                  <Badge key={value} variant="outline" className="text-muted-foreground">
+                {notIncluded.map((item) => (
+                  <Badge key={item.value} variant="outline" className="text-muted-foreground">
                     <X className="size-3.5" />
-                    {value}
+                    {item.label}
                   </Badge>
                 ))}
               </div>
@@ -470,6 +479,22 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         </div>
       </div>
       <SiteFooter />
+
+      {isMember && user && (
+        <RideChatWidget
+          rideId={id}
+          currentUserId={user.id}
+          initialMessages={chatMessages}
+          senderProfiles={chatSenderProfiles}
+          ride={{
+            title: ride.title,
+            destination: ride.destination,
+            coverImageUrl: ride.cover_image_url,
+            meetingPoint: ride.meeting_point,
+          }}
+          participants={members.filter((member) => member.profile).map((member) => member.profile!)}
+        />
+      )}
     </div>
   );
 }
