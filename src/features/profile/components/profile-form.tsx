@@ -71,7 +71,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
           <SectionHeader
             step={1}
             icon={UserRound}
-            title="Photo & basics"
+            title="Photo & Basics"
             description="How other riders will recognize you."
           />
           <CardContent className="flex flex-col gap-5">
@@ -86,7 +86,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
               onError={setFormError}
             />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Full name" htmlFor="name" error={fieldError("name")}>
+              <Field label="Full Name" htmlFor="name" error={fieldError("name")}>
                 <Input
                   id="name"
                   name="name"
@@ -112,11 +112,11 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
           <SectionHeader
             step={2}
             icon={Bike}
-            title="Riding details"
+            title="Riding Details"
             description="What you ride and how long you've been at it."
           />
           <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Bike brand" htmlFor="bikeBrand" error={fieldError("bikeBrand")}>
+            <Field label="Bike Brand" htmlFor="bikeBrand" error={fieldError("bikeBrand")}>
               <Input
                 id="bikeBrand"
                 name="bikeBrand"
@@ -125,7 +125,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
                 onBlur={formik.handleBlur}
               />
             </Field>
-            <Field label="Bike model" htmlFor="bikeModel" error={fieldError("bikeModel")}>
+            <Field label="Bike Model" htmlFor="bikeModel" error={fieldError("bikeModel")}>
               <Input
                 id="bikeModel"
                 name="bikeModel"
@@ -135,7 +135,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
               />
             </Field>
             <Field
-              label="Experience level"
+              label="Experience Level"
               htmlFor="experienceLevel"
               error={fieldError("experienceLevel")}
             >
@@ -158,7 +158,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Years riding" htmlFor="yearsRiding" error={fieldError("yearsRiding")}>
+            <Field label="Years Riding" htmlFor="yearsRiding" error={fieldError("yearsRiding")}>
               <Input
                 id="yearsRiding"
                 name="yearsRiding"
@@ -177,7 +177,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
           <SectionHeader
             step={3}
             icon={MapPin}
-            title="Where you ride"
+            title="Where You Ride"
             description="Used to surface rides near you."
           />
           <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -221,7 +221,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
           <SectionHeader
             step={4}
             icon={PenLine}
-            title="About you"
+            title="About You"
             description="Optional, but it helps riders get to know you."
           />
           <CardContent className="flex flex-col gap-4">
@@ -255,7 +255,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
       {formError && <p className="text-destructive text-sm">{formError}</p>}
 
       <Button type="submit" disabled={isPending} size="lg" className="self-start">
-        {isPending ? "Saving..." : mode === "create" ? "Complete profile" : "Save changes"}
+        {isPending ? "Saving..." : mode === "create" ? "Complete Profile" : "Save Changes"}
       </Button>
     </form>
   );

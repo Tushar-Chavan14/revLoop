@@ -111,7 +111,7 @@ export function CityPicker({ cityOptions, value, onChange }: CityPickerProps) {
       >
         <span className="flex min-w-0 items-center gap-1.5">
           <MapPin className="text-primary size-4 shrink-0" />
-          <span className="truncate">{value ? value.label : "All cities"}</span>
+          <span className="truncate">{value ? value.label : "All Cities"}</span>
         </span>
         <ChevronDown className="text-muted-foreground size-4 shrink-0" />
       </PopoverTrigger>
@@ -131,7 +131,7 @@ export function CityPicker({ cityOptions, value, onChange }: CityPickerProps) {
             className="text-primary hover:bg-muted flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium disabled:opacity-60"
           >
             <LocateFixed className="size-4" />
-            {locating ? "Detecting..." : "Use my location"}
+            {locating ? "Detecting..." : "Use My Location"}
           </button>
           {locateError && <p className="text-destructive text-xs">{locateError}</p>}
         </div>
@@ -141,13 +141,13 @@ export function CityPicker({ cityOptions, value, onChange }: CityPickerProps) {
             onClick={() => selectCity(null)}
             className="hover:bg-muted flex w-full items-center px-3 py-2 text-left text-sm"
           >
-            All cities
+            All Cities
           </button>
 
           {matchedCities.length > 0 && (
             <div className="flex flex-col">
               <p className="text-muted-foreground px-3 pt-2 text-xs font-medium tracking-wide uppercase">
-                Cities with rides
+                Cities With Rides
               </p>
               {matchedCities.map((option) => (
                 <button
@@ -170,7 +170,7 @@ export function CityPicker({ cityOptions, value, onChange }: CityPickerProps) {
           {query.trim().length >= 2 && (
             <div className="flex flex-col">
               <p className="text-muted-foreground px-3 pt-2 text-xs font-medium tracking-wide uppercase">
-                Other cities
+                Other Cities
               </p>
               {searching && <p className="text-muted-foreground px-3 py-2 text-sm">Searching...</p>}
               {!searching &&
@@ -194,7 +194,7 @@ export function CityPicker({ cityOptions, value, onChange }: CityPickerProps) {
                   </button>
                 ))}
               {!searching && otherResults.length === 0 && (
-                <p className="text-muted-foreground px-3 py-2 text-sm">No matches</p>
+                <p className="text-muted-foreground px-3 py-2 text-sm">No Matches</p>
               )}
             </div>
           )}

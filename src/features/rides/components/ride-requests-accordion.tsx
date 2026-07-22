@@ -40,7 +40,7 @@ export function RideRequestsAccordion({ rides, requests }: RideRequestsAccordion
   return (
     <Card className="border-border border">
       <CardHeader>
-        <CardTitle>Join requests</CardTitle>
+        <CardTitle>Join Requests</CardTitle>
       </CardHeader>
       <CardContent>
         {entries.length === 0 ? (

@@ -5,7 +5,7 @@ import { themedPhoto } from "@/lib/placeholder-image";
 import { APP_DESCRIPTION } from "@/constants/site";
 
 export const metadata = {
-  title: "Sign in",
+  title: "Sign In",
 };
 
 type LoginPageProps = {
@@ -57,7 +57,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <Logo className="lg:hidden" />
 
           <div className="flex flex-col gap-2">
-            <h2 className="font-heading text-2xl font-bold tracking-tight">Welcome back</h2>
+            <h2 className="font-heading text-2xl font-bold tracking-tight">Welcome Back</h2>
             <p className="text-muted-foreground">Sign in to plan your next ride.</p>
           </div>
 

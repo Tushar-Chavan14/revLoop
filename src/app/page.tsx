@@ -45,12 +45,12 @@ import { getUpcomingWeekendRange } from "@/utils/weekend";
 const PAIN_POINTS = [
   {
     icon: MessageSquareX,
-    pain: "Buried in group chats",
+    pain: "Buried In Group Chats",
     fix: "Ride plans die under 400 unread messages. On RevLoop, every ride is its own page — date, route, pace, and rules in one place.",
   },
   {
     icon: UserX,
-    pain: "No idea who's coming",
+    pain: "No Idea Who's Coming",
     fix: "Seat counts and join requests mean you know exactly who's riding — and organizers choose who joins.",
   },
   {
@@ -63,19 +63,19 @@ const PAIN_POINTS = [
 const HOW_IT_WORKS = [
   {
     icon: Compass,
-    title: "Find or post a ride",
+    title: "Find Or Post A Ride",
     description:
       "Browse loops near your city — breakfast runs, ghat roads, overnight tours — or post your own with the route mapped out.",
   },
   {
     icon: UserPlus,
-    title: "Request your seat",
+    title: "Request Your Seat",
     description:
       "One tap to ask in. The organizer sees your profile and your machine, and accepts from their dashboard.",
   },
   {
     icon: MessageSquare,
-    title: "Sync up in ride chat",
+    title: "Sync Up In Ride Chat",
     description:
       "Once you're in, the ride chat opens up — sort out timing, luggage, and where breakfast is happening.",
   },
@@ -120,7 +120,7 @@ export default async function HomePage() {
     ]);
 
   const primaryCtaHref = user ? "/rides/create" : "/login";
-  const primaryCtaLabel = user ? "Create a ride" : "Get started";
+  const primaryCtaLabel = user ? "Create A Ride" : "Get Started";
 
   // The destination's own Wikipedia lead photo where one genuinely matches,
   // else a real photo geotagged nearby, else a themed stock photo.
@@ -136,7 +136,7 @@ export default async function HomePage() {
   );
   const displayedUpcoming = (weekendRides.length > 0 ? weekendRides : upcomingRides).slice(0, 6);
   const upcomingSectionTitle =
-    weekendRides.length > 0 ? "Upcoming weekend rides" : "Upcoming rides";
+    weekendRides.length > 0 ? "Upcoming Weekend Rides" : "Upcoming Rides";
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -179,7 +179,7 @@ export default async function HomePage() {
             />
             <Button
               nativeButton={false}
-              render={<Link href="/rides">Discover rides</Link>}
+              render={<Link href="/rides">Discover Rides</Link>}
               size="lg"
               variant="outline"
               className="border-white/25 bg-transparent text-white hover:bg-white/10"
@@ -190,7 +190,7 @@ export default async function HomePage() {
             <div className="mt-4 w-full max-w-lg rounded-3xl bg-white/10 p-5 text-left ring-1 ring-white/15 backdrop-blur-md">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-medium tracking-wide text-white/60 uppercase">
-                  Featured ride
+                  Featured Ride
                 </p>
                 {featuredRide.member_count !== null && featuredRide.member_count > 0 && (
                   <span className="text-xs text-white/60">
@@ -223,7 +223,7 @@ export default async function HomePage() {
                 <Button
                   nativeButton={false}
                   size="sm"
-                  render={<Link href={`/rides/${featuredRide.id}#join`}>Join ride</Link>}
+                  render={<Link href={`/rides/${featuredRide.id}#join`}>Join Ride</Link>}
                 />
               </div>
             </div>
@@ -243,7 +243,7 @@ export default async function HomePage() {
             </div>
             <Button
               nativeButton={false}
-              render={<Link href="/rides">See all</Link>}
+              render={<Link href="/rides">See All</Link>}
               variant="ghost"
               size="sm"
               className="hidden sm:inline-flex"
@@ -257,7 +257,7 @@ export default async function HomePage() {
             </div>
           ) : (
             <EmptyState
-              title="No rides planned yet"
+              title="No Rides Planned Yet"
               description="Start your next adventure — be the first to post a ride this weekend."
               action={
                 <Button
@@ -274,7 +274,7 @@ export default async function HomePage() {
           <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
             <div>
               <h2 className="font-heading text-2xl font-bold tracking-tight">
-                Who&apos;s riding this weekend
+                Who&apos;s Riding This Weekend
               </h2>
               <p className="text-muted-foreground">
                 Riders already locked in across the community.
@@ -307,7 +307,7 @@ export default async function HomePage() {
           <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
             <div>
               <h2 className="font-heading text-2xl font-bold tracking-tight">
-                Popular destinations
+                Popular Destinations
               </h2>
               <p className="text-muted-foreground">Where the community keeps heading back to.</p>
             </div>
@@ -352,7 +352,7 @@ export default async function HomePage() {
                   )}
                 </div>
                 <div className="flex flex-col justify-center gap-4 p-8 sm:p-10">
-                  <Badge className="w-fit">Ride of the week</Badge>
+                  <Badge className="w-fit">Ride Of The Week</Badge>
                   <h2 className="font-heading text-3xl font-bold tracking-tight text-balance">
                     {featuredRide.title}
                   </h2>
@@ -381,12 +381,12 @@ export default async function HomePage() {
                   <div className="flex flex-wrap gap-3 pt-2">
                     <Button
                       nativeButton={false}
-                      render={<Link href={`/rides/${featuredRide.id}#join`}>Join this ride</Link>}
+                      render={<Link href={`/rides/${featuredRide.id}#join`}>Join This Ride</Link>}
                     />
                     <Button
                       nativeButton={false}
                       variant="outline"
-                      render={<Link href={`/rides/${featuredRide.id}`}>View details</Link>}
+                      render={<Link href={`/rides/${featuredRide.id}`}>View Details</Link>}
                     />
                   </div>
                 </div>
@@ -400,16 +400,16 @@ export default async function HomePage() {
           <section className="mx-auto w-full max-w-6xl">
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <StatCard icon={Users} label="Riders" value={stats.ridersCount} suffix="+" />
-              <StatCard icon={Calendar} label="Rides planned" value={stats.upcomingRidesCount} />
+              <StatCard icon={Calendar} label="Rides Planned" value={stats.upcomingRidesCount} />
               <StatCard icon={MapPin} label="Cities" value={stats.citiesCount} />
-              <StatCard icon={Flag} label="Rides this weekend" value={weekend.rideCount} />
+              <StatCard icon={Flag} label="Rides This Weekend" value={weekend.rideCount} />
             </div>
           </section>
         </Reveal>
 
         {/* Testimonials */}
         <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-          <h2 className="font-heading text-2xl font-bold tracking-tight">Riders on RevLoop</h2>
+          <h2 className="font-heading text-2xl font-bold tracking-tight">Riders On RevLoop</h2>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
             {TESTIMONIALS.map((testimonial, index) => (
               <Reveal key={testimonial.name} delay={index * 120}>
@@ -501,7 +501,7 @@ export default async function HomePage() {
         </section>
 
         <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-          <h2 className="font-heading text-2xl font-bold tracking-tight">Every kind of ride</h2>
+          <h2 className="font-heading text-2xl font-bold tracking-tight">Every Kind Of Ride</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {RIDE_TYPES.map((type) => {
               const Icon = RIDE_TYPE_ICONS[type.value];

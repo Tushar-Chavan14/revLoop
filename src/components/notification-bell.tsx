@@ -125,7 +125,7 @@ export function NotificationBell({
                 onClick={handleMarkAllRead}
                 className="shrink-0"
               >
-                Mark all read
+                Mark All Read
               </Button>
             )}
           </div>
@@ -168,7 +168,7 @@ export function NotificationBell({
               onClick={() => setOpen(false)}
               className="text-primary hover:bg-muted border-border block border-t px-3 py-2.5 text-center text-xs font-medium"
             >
-              See all notifications
+              See All Notifications
             </Link>
           </TabsContent>
 

@@ -15,13 +15,13 @@ export function SiteFooter() {
             href="/rides"
             className="text-secondary-foreground/70 hover:text-secondary-foreground transition-colors"
           >
-            Discover rides
+            Discover Rides
           </Link>
           <Link
             href="/rides/create"
             className="text-secondary-foreground/70 hover:text-secondary-foreground transition-colors"
           >
-            Create a ride
+            Create A Ride
           </Link>
           <Link
             href="/profile"

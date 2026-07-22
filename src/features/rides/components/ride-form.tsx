@@ -61,22 +61,22 @@ interface RideFormProps {
 type StepDef = { label: string; fields: (keyof RideFormValues)[] };
 
 const BASE_STEPS: StepDef[] = [
-  { label: "Ride type", fields: ["pricingModel"] },
+  { label: "Ride Type", fields: ["pricingModel"] },
   { label: "Basics", fields: ["title", "description"] },
   {
-    label: "When & where",
+    label: "When & Where",
     fields: ["rideDate", "departureTime", "meetingPoint", "destination", "city"],
   },
   { label: "Details", fields: ["maxRiders", "rideType", "speed", "difficulty"] },
 ];
 
 const ORGANIZED_STEPS: StepDef[] = [
-  { label: "Pricing & booking", fields: ["rideFee", "bookingDeadline", "minimumRiders"] },
+  { label: "Pricing & Booking", fields: ["rideFee", "bookingDeadline", "minimumRiders"] },
   { label: "Inclusions", fields: [] },
   { label: "Itinerary", fields: [] },
 ];
 
-const FINAL_STEP: StepDef = { label: "Rules & review", fields: [] };
+const FINAL_STEP: StepDef = { label: "Rules & Review", fields: [] };
 
 function getSteps(pricingModel: string): StepDef[] {
   return pricingModel === "organized"
@@ -275,13 +275,13 @@ export function RideForm({
     <form onSubmit={formik.handleSubmit} noValidate className="flex flex-col gap-8">
       <StepIndicator steps={steps.map((s) => s.label)} currentStep={step} />
 
-      {currentStep.label === "Ride type" && (
+      {currentStep.label === "Ride Type" && (
         <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
                 <IndianRupee className="text-primary size-4" />
-                <CardTitle>Ride type</CardTitle>
+                <CardTitle>Ride Type</CardTitle>
               </div>
               <CardDescription>
                 Community rides are free to join. Organized rides are paid — riders reserve a seat
@@ -300,9 +300,9 @@ export function RideForm({
                 }}
                 className="flex-wrap"
               >
-                <ToggleGroupItem value="community">Community ride</ToggleGroupItem>
+                <ToggleGroupItem value="community">Community Ride</ToggleGroupItem>
                 <ToggleGroupItem value="organized" disabled={!canCreateOrganized}>
-                  Organized ride
+                  Organized Ride
                 </ToggleGroupItem>
               </ToggleGroup>
               {!canCreateOrganized && (
@@ -324,7 +324,7 @@ export function RideForm({
           <CardHeader>
             <div className="flex items-center gap-2">
               <ImageIcon className="text-primary size-4" />
-              <CardTitle>Ride basics</CardTitle>
+              <CardTitle>Ride Basics</CardTitle>
             </div>
             <CardDescription>What is this ride, and what does it look like?</CardDescription>
           </CardHeader>
@@ -362,7 +362,7 @@ export function RideForm({
         </Card>
       )}
 
-      {currentStep.label === "When & where" && (
+      {currentStep.label === "When & Where" && (
         <>
           <Card>
             <CardHeader>
@@ -372,7 +372,7 @@ export function RideForm({
               </div>
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Ride date" htmlFor="rideDate" error={fieldError("rideDate")}>
+              <Field label="Ride Date" htmlFor="rideDate" error={fieldError("rideDate")}>
                 <Input
                   id="rideDate"
                   name="rideDate"
@@ -383,7 +383,7 @@ export function RideForm({
                 />
               </Field>
               <Field
-                label="Departure time"
+                label="Departure Time"
                 htmlFor="departureTime"
                 error={fieldError("departureTime")}
               >
@@ -411,7 +411,7 @@ export function RideForm({
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <Field
-                label="Meeting point"
+                label="Meeting Point"
                 htmlFor="meetingPoint"
                 error={fieldError("meetingPoint")}
               >
@@ -455,7 +455,7 @@ export function RideForm({
                 />
               </Field>
               <Field
-                label="Google Maps link (optional)"
+                label="Google Maps Link (Optional)"
                 htmlFor="destinationMapUrl"
                 error={fieldError("destinationMapUrl")}
               >
@@ -477,7 +477,7 @@ export function RideForm({
                   size="sm"
                   onClick={() => setActiveMarker("meeting")}
                 >
-                  Placing: Meeting point
+                  Placing: Meeting Point
                 </Button>
                 <Button
                   type="button"
@@ -510,11 +510,11 @@ export function RideForm({
           <CardHeader>
             <div className="flex items-center gap-2">
               <Bike className="text-primary size-4" />
-              <CardTitle>Ride details</CardTitle>
+              <CardTitle>Ride Details</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Maximum riders" htmlFor="maxRiders" error={fieldError("maxRiders")}>
+            <Field label="Maximum Riders" htmlFor="maxRiders" error={fieldError("maxRiders")}>
               <Input
                 id="maxRiders"
                 name="maxRiders"
@@ -527,7 +527,7 @@ export function RideForm({
               />
             </Field>
             <Field
-              label="Ride type"
+              label="Ride Type"
               htmlFor="rideType"
               error={fieldError("rideType")}
               className="sm:col-span-2"
@@ -602,7 +602,7 @@ export function RideForm({
               </Select>
             </Field>
             <Field
-              label="Estimated distance (km)"
+              label="Estimated Distance (km)"
               htmlFor="estimatedDistanceKm"
               error={fieldError("estimatedDistanceKm")}
             >
@@ -618,7 +618,7 @@ export function RideForm({
               />
             </Field>
             <Field
-              label="Estimated duration"
+              label="Estimated Duration"
               htmlFor="estimatedDurationDays"
               error={fieldError("estimatedDurationDays") ?? fieldError("estimatedDurationHours")}
             >
@@ -676,18 +676,18 @@ export function RideForm({
         </Card>
       )}
 
-      {currentStep.label === "Pricing & booking" && (
+      {currentStep.label === "Pricing & Booking" && (
         <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
                 <IndianRupee className="text-primary size-4" />
-                <CardTitle>Pricing & booking</CardTitle>
+                <CardTitle>Pricing & Booking</CardTitle>
               </div>
               <CardDescription>Razorpay settles in INR only, so the fee is in ₹.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Ride fee" htmlFor="rideFee" error={fieldError("rideFee")}>
+              <Field label="Ride Fee" htmlFor="rideFee" error={fieldError("rideFee")}>
                 <div className="relative">
                   <IndianRupee className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                   <Input
@@ -704,7 +704,7 @@ export function RideForm({
                 </div>
               </Field>
               <Field
-                label="Booking deadline"
+                label="Booking Deadline"
                 htmlFor="bookingDeadline"
                 error={fieldError("bookingDeadline")}
               >
@@ -718,7 +718,7 @@ export function RideForm({
                 />
               </Field>
               <Field
-                label="Minimum riders (optional)"
+                label="Minimum Riders (Optional)"
                 htmlFor="minimumRiders"
                 error={fieldError("minimumRiders")}
               >
@@ -748,7 +748,7 @@ export function RideForm({
             <CardHeader>
               <div className="flex items-center gap-2">
                 <ListChecks className="text-primary size-4" />
-                <CardTitle>What&apos;s included</CardTitle>
+                <CardTitle>What&apos;s Included</CardTitle>
               </div>
               <CardDescription>Select everything covered by the ride fee.</CardDescription>
             </CardHeader>
@@ -772,7 +772,7 @@ export function RideForm({
 
           <Card>
             <CardHeader>
-              <CardTitle>What&apos;s not included</CardTitle>
+              <CardTitle>What&apos;s Not Included</CardTitle>
               <CardDescription>
                 Optional — call out costs riders should expect to cover.
               </CardDescription>
@@ -827,7 +827,7 @@ export function RideForm({
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Clock className="text-primary size-4" />
-                <CardTitle>Trip itinerary</CardTitle>
+                <CardTitle>Trip Itinerary</CardTitle>
               </div>
               <CardDescription>
                 Optional — sketch out the plan for each day. You can always fill this in later.
@@ -847,7 +847,7 @@ export function RideForm({
                     onClick={() => removeItineraryDay(dayIndex)}
                   >
                     <Trash2 className="size-4" />
-                    Remove day
+                    Remove Day
                   </Button>
                 </div>
               </CardHeader>
@@ -887,7 +887,7 @@ export function RideForm({
                   onClick={() => addItineraryItem(dayIndex)}
                 >
                   <Plus className="size-4" />
-                  Add stop
+                  Add Stop
                 </Button>
               </CardContent>
             </Card>
@@ -895,7 +895,7 @@ export function RideForm({
 
           <Button type="button" variant="outline" onClick={addItineraryDay} className="self-start">
             <Plus className="size-4" />
-            Add day
+            Add Day
           </Button>
         </motion.div>
       )}
@@ -905,7 +905,7 @@ export function RideForm({
           {isOrganized && (
             <Card>
               <CardHeader>
-                <CardTitle>Cancellation policy</CardTitle>
+                <CardTitle>Cancellation Policy</CardTitle>
                 <CardDescription>Optional — shown to riders before they book.</CardDescription>
               </CardHeader>
               <CardContent>
@@ -925,27 +925,27 @@ export function RideForm({
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Settings2 className="text-primary size-4" />
-                <CardTitle>Ride rules</CardTitle>
+                <CardTitle>Ride Rules</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <ToggleField
-                label="Breakfast stop"
+                label="Breakfast Stop"
                 checked={formik.values.breakfastStop}
                 onCheckedChange={(checked) => formik.setFieldValue("breakfastStop", checked)}
               />
               <ToggleField
-                label="Fuel stop"
+                label="Fuel Stop"
                 checked={formik.values.fuelStop}
                 onCheckedChange={(checked) => formik.setFieldValue("fuelStop", checked)}
               />
               <ToggleField
-                label="Helmet required"
+                label="Helmet Required"
                 checked={formik.values.helmetRequired}
                 onCheckedChange={(checked) => formik.setFieldValue("helmetRequired", checked)}
               />
               <ToggleField
-                label="Pillion allowed"
+                label="Pillion Allowed"
                 checked={formik.values.pillionAllowed}
                 onCheckedChange={(checked) => formik.setFieldValue("pillionAllowed", checked)}
               />
@@ -959,7 +959,7 @@ export function RideForm({
       {isLastStep && (
         <p className="text-muted-foreground text-xs">
           {isOrganized
-            ? "Anything not listed under “What's included” is the rider's own responsibility."
+            ? "Anything not listed under “What's Included” is the rider's own responsibility."
             : "Riders who join are responsible for their own expenses — fuel, food, accommodation, and any other costs. You're not expected to cover these as the organizer."}
         </p>
       )}
@@ -977,7 +977,7 @@ export function RideForm({
         )}
         {isLastStep ? (
           <Button key="submit" type="submit" disabled={isPending} size="lg">
-            {isPending ? "Saving..." : mode === "create" ? "Create ride" : "Save changes"}
+            {isPending ? "Saving..." : mode === "create" ? "Create Ride" : "Save Changes"}
           </Button>
         ) : (
           <Button key="next" type="button" size="lg" onClick={handleNext}>

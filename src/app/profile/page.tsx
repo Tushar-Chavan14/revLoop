@@ -44,7 +44,7 @@ import { capitalize } from "@/utils/capitalize";
 import { getHourInTimeZone } from "@/utils/timezone";
 
 export const metadata = {
-  title: "Your dashboard",
+  title: "Your Dashboard",
 };
 
 function greeting(hour: number) {
@@ -91,22 +91,22 @@ export default async function ProfilePage() {
   const stats = [
     {
       icon: Check,
-      label: "Rides completed",
+      label: "Rides Completed",
       value: attendance.attended > 0 ? String(attendance.attended) : undefined,
     },
     {
       icon: Compass,
-      label: "Rides organized",
+      label: "Rides Organized",
       value: organizedCount > 0 ? String(organizedCount) : undefined,
     },
     {
       icon: MapPin,
-      label: "Based in",
+      label: "Based In",
       value: [profile.city, profile.country].filter(Boolean).join(", "),
     },
     {
       icon: Bike,
-      label: "Rides a",
+      label: "Rides A",
       value: [profile.bike_brand, profile.bike_model].filter(Boolean).join(" "),
     },
     {
@@ -150,20 +150,20 @@ export default async function ProfilePage() {
                 href={`/riders/${profile.username}`}
                 className="text-muted-foreground text-sm hover:underline"
               >
-                @{profile.username} · View public profile
+                @{profile.username} · View Public Profile
               </Link>
             </div>
           </div>
           <div className="flex gap-2">
             <Button
               nativeButton={false}
-              render={<Link href="/profile/edit">Edit profile</Link>}
+              render={<Link href="/profile/edit">Edit Profile</Link>}
               variant="outline"
               size="sm"
             />
             <form action={signOut}>
               <Button type="submit" variant="ghost" size="sm">
-                Sign out
+                Sign Out
               </Button>
             </form>
           </div>
@@ -201,11 +201,11 @@ export default async function ProfilePage() {
                     pulse
                     className="w-fit border-white/20 bg-white/10 text-white"
                   >
-                    Ride in progress
+                    Ride In Progress
                   </StatusChip>
                 )}
                 <h2 className="font-heading text-2xl font-bold tracking-tight">
-                  {nextRide.status === "ongoing" ? "Your ride: " : "Your next ride: "}
+                  {nextRide.status === "ongoing" ? "Your Ride: " : "Your Next Ride: "}
                   {nextRide.title}
                 </h2>
                 <p className="text-secondary-foreground/70 flex items-center gap-1.5 text-sm">
@@ -227,25 +227,25 @@ export default async function ProfilePage() {
                 )}
                 <Button
                   nativeButton={false}
-                  render={<Link href={`/rides/${nextRide.id}`}>View ride</Link>}
+                  render={<Link href={`/rides/${nextRide.id}`}>View Ride</Link>}
                 />
               </div>
             </div>
           </div>
         ) : (
           <EmptyState
-            title="No rides planned yet"
+            title="No Rides Planned Yet"
             description="Start your next adventure — create a ride or find one to join."
             action={
               <div className="flex gap-2">
                 <Button
                   nativeButton={false}
-                  render={<Link href="/rides/create">Create a ride</Link>}
+                  render={<Link href="/rides/create">Create A Ride</Link>}
                 />
                 <Button
                   nativeButton={false}
                   variant="outline"
-                  render={<Link href="/rides">Discover rides</Link>}
+                  render={<Link href="/rides">Discover Rides</Link>}
                 />
               </div>
             }
@@ -256,7 +256,7 @@ export default async function ProfilePage() {
           <div className="flex flex-col gap-8 lg:col-span-2">
             <section className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <h2 className="font-heading text-lg font-bold tracking-tight">Pending requests</h2>
+                <h2 className="font-heading text-lg font-bold tracking-tight">Pending Requests</h2>
               </div>
               <RideRequestsAccordion rides={upcoming} requests={requests} />
             </section>
@@ -265,13 +265,13 @@ export default async function ProfilePage() {
               <div className="flex items-center justify-between">
                 <h2 className="font-heading text-lg font-bold tracking-tight">
                   <Compass className="text-primary mr-1.5 inline size-4" />
-                  Your rides
+                  Your Rides
                 </h2>
                 <Button
                   nativeButton={false}
                   variant="ghost"
                   size="sm"
-                  render={<Link href="/profile/rides">See all</Link>}
+                  render={<Link href="/profile/rides">See All</Link>}
                 />
               </div>
               {myRides.ongoing.length + myRides.upcoming.length > 0 ? (
@@ -313,7 +313,7 @@ export default async function ProfilePage() {
             <section className="flex flex-col gap-3">
               <h2 className="font-heading flex items-center gap-1.5 text-lg font-bold tracking-tight">
                 <Users className="text-primary size-4" />
-                Riders you&apos;ll see again
+                Riders You&apos;ll See Again
               </h2>
               {fellowRiders.length > 0 ? (
                 <div className="flex flex-col gap-2">
@@ -341,7 +341,7 @@ export default async function ProfilePage() {
             <section className="flex flex-col gap-3">
               <h2 className="font-heading flex items-center gap-1.5 text-lg font-bold tracking-tight">
                 <MessageSquare className="text-primary size-4" />
-                Recent messages
+                Recent Messages
               </h2>
               {recentMessages.length > 0 ? (
                 <div className="flex flex-col gap-1">

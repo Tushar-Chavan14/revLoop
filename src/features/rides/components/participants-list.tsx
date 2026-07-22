@@ -110,7 +110,7 @@ function ParticipantRow({
           <Badge variant="secondary">Attended</Badge>
         )}
         {!canMarkAttendance && attendance === "no_show" && (
-          <Badge variant="destructive">No-show</Badge>
+          <Badge variant="destructive">No-Show</Badge>
         )}
         {error && <p className="text-destructive text-xs">{error}</p>}
       </div>
@@ -137,7 +137,7 @@ function ParticipantRow({
               aria-pressed={attendance === "no_show"}
             >
               <X className="size-3.5" />
-              No-show
+              No-Show
             </Button>
           </>
         )}

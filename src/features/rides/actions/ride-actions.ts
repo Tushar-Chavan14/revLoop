@@ -6,6 +6,7 @@ import { rideSchema, type ItineraryDay } from "@/features/rides/schema";
 import { getProfileByUserId } from "@/services/profiles";
 import { getPayoutDetails, hasPayoutDetails } from "@/services/organizer-payout";
 import { isProfileComplete } from "@/utils/profile-completeness";
+import { toTitleCase } from "@/utils/capitalize";
 import type { Enums, Json } from "@/types/supabase";
 
 const COVER_BUCKET = "ride-covers";
@@ -31,18 +32,18 @@ function parseRideFormData(formData: FormData) {
   }
 
   return {
-    title: String(formData.get("title") ?? "").trim(),
+    title: toTitleCase(String(formData.get("title") ?? "").trim()),
     description: (formData.get("description") as string)?.trim() || undefined,
     rideDate: String(formData.get("rideDate") ?? ""),
     departureTime: String(formData.get("departureTime") ?? ""),
-    meetingPoint: String(formData.get("meetingPoint") ?? "").trim(),
+    meetingPoint: toTitleCase(String(formData.get("meetingPoint") ?? "").trim()),
     meetingLat: optionalNumber(formData.get("meetingLat")),
     meetingLng: optionalNumber(formData.get("meetingLng")),
-    destination: String(formData.get("destination") ?? "").trim(),
+    destination: toTitleCase(String(formData.get("destination") ?? "").trim()),
     destinationLat: optionalNumber(formData.get("destinationLat")),
     destinationLng: optionalNumber(formData.get("destinationLng")),
     destinationMapUrl: (formData.get("destinationMapUrl") as string)?.trim() || undefined,
-    city: String(formData.get("city") ?? "").trim(),
+    city: toTitleCase(String(formData.get("city") ?? "").trim()),
     maxRiders: optionalNumber(formData.get("maxRiders")),
     rideType: String(formData.get("rideType") ?? ""),
     speed: String(formData.get("speed") ?? ""),

@@ -40,7 +40,7 @@ export function ShareRideButton({ title, text, className }: ShareRideButtonProps
   return (
     <Button type="button" variant="outline" size="sm" onClick={handleShare} className={className}>
       {copied ? <Check className="size-4" /> : <Share2 className="size-4" />}
-      {copied ? "Link copied" : "Share"}
+      {copied ? "Link Copied" : "Share"}
     </Button>
   );
 }

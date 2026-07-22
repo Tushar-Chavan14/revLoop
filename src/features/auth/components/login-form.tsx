@@ -31,7 +31,7 @@ export function LoginForm({ error, message }: LoginFormProps) {
     <div className="flex w-full max-w-sm flex-col gap-6">
       <form action={signInWithGoogle}>
         <Button type="submit" variant="outline" className="w-full">
-          Continue with Google
+          Continue With Google
         </Button>
       </form>
 
@@ -59,7 +59,7 @@ export function LoginForm({ error, message }: LoginFormProps) {
           )}
         </div>
         <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? "Sending..." : "Send magic link"}
+          {isPending ? "Sending..." : "Send Magic Link"}
         </Button>
       </form>
 

@@ -10,15 +10,15 @@ export default function NotFound() {
       <Logo />
       <EmptyState
         icon={Compass}
-        title="This road doesn't go anywhere"
+        title="This Road Doesn't Go Anywhere"
         description="The page you're looking for took a wrong turn. Let's get you back on route."
         action={
           <div className="flex gap-2">
-            <Button nativeButton={false} render={<Link href="/">Back home</Link>} />
+            <Button nativeButton={false} render={<Link href="/">Back Home</Link>} />
             <Button
               nativeButton={false}
               variant="outline"
-              render={<Link href="/rides">Discover rides</Link>}
+              render={<Link href="/rides">Discover Rides</Link>}
             />
           </div>
         }

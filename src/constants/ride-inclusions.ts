@@ -9,10 +9,10 @@ export const RIDE_INCLUSIONS = [
   { value: "parking", label: "Parking" },
   { value: "guide", label: "Guide" },
   { value: "photographer", label: "Photographer" },
-  { value: "support_vehicle", label: "Support vehicle" },
-  { value: "luggage_support", label: "Luggage support" },
-  { value: "mechanical_support", label: "Mechanical support" },
-  { value: "first_aid", label: "First aid" },
+  { value: "support_vehicle", label: "Support Vehicle" },
+  { value: "luggage_support", label: "Luggage Support" },
+  { value: "mechanical_support", label: "Mechanical Support" },
+  { value: "first_aid", label: "First Aid" },
 ] as const;
 
 export type RideInclusion = (typeof RIDE_INCLUSIONS)[number]["value"];

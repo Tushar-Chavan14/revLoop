@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { profileSchema } from "@/features/profile/schema";
 import type { Enums } from "@/types/supabase";
 import { getOAuthAvatarUrl } from "@/utils/oauth-metadata";
+import { toTitleCase } from "@/utils/capitalize";
 
 const AVATAR_BUCKET = "avatars";
 
@@ -12,14 +13,14 @@ type ProfileActionResult = { error?: string } | void;
 
 function parseProfileFormData(formData: FormData) {
   return {
-    name: String(formData.get("name") ?? "").trim(),
+    name: toTitleCase(String(formData.get("name") ?? "").trim()),
     username: String(formData.get("username") ?? "")
       .trim()
       .toLowerCase(),
-    city: String(formData.get("city") ?? "").trim(),
-    country: String(formData.get("country") ?? "").trim(),
-    bikeBrand: String(formData.get("bikeBrand") ?? "").trim(),
-    bikeModel: String(formData.get("bikeModel") ?? "").trim(),
+    city: toTitleCase(String(formData.get("city") ?? "").trim()),
+    country: toTitleCase(String(formData.get("country") ?? "").trim()),
+    bikeBrand: toTitleCase(String(formData.get("bikeBrand") ?? "").trim()),
+    bikeModel: toTitleCase(String(formData.get("bikeModel") ?? "").trim()),
     experienceLevel: String(formData.get("experienceLevel") ?? ""),
     yearsRiding: Number(formData.get("yearsRiding")),
     bio: (formData.get("bio") as string)?.trim() || undefined,

@@ -11,7 +11,7 @@ import { getAuthUser } from "@/services/profiles";
 import { getMyRidesGrouped, type MyRides } from "@/services/rides";
 
 export const metadata = {
-  title: "My rides",
+  title: "My Rides",
 };
 
 function ridesGroupCount(group: MyRides) {
@@ -53,7 +53,7 @@ function RidesGroupSections({ group }: { group: MyRides }) {
         <section className="flex flex-col gap-4">
           <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
             <CalendarCheck className="text-primary size-4" />
-            Completed — ride memories
+            Completed — Ride Memories
           </h2>
           <Timeline items={completed.map((ride) => rideToTimelineItem(ride, false, "completed"))} />
         </section>
@@ -94,7 +94,7 @@ export default async function MyRidesPage() {
             <ArrowLeft className="size-4" />
             Dashboard
           </Link>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">My rides</h1>
+          <h1 className="font-heading text-2xl font-bold tracking-tight">My Rides</h1>
           <p className="text-muted-foreground">
             Every ride you&apos;ve organized, joined, or booked.
           </p>
@@ -102,18 +102,18 @@ export default async function MyRidesPage() {
 
         {!hasAnyRides ? (
           <EmptyState
-            title="No rides planned yet"
+            title="No Rides Planned Yet"
             description="Start your next adventure — create a ride or find one to join."
             action={
               <div className="flex gap-2">
                 <Button
                   nativeButton={false}
-                  render={<Link href="/rides/create">Create a ride</Link>}
+                  render={<Link href="/rides/create">Create A Ride</Link>}
                 />
                 <Button
                   nativeButton={false}
                   variant="outline"
-                  render={<Link href="/rides">Discover rides</Link>}
+                  render={<Link href="/rides">Discover Rides</Link>}
                 />
               </div>
             }
@@ -121,9 +121,9 @@ export default async function MyRidesPage() {
         ) : (
           <Tabs defaultValue="community">
             <TabsList>
-              <TabsTrigger value="community">Community rides</TabsTrigger>
-              <TabsTrigger value="hosted">Hosted rides</TabsTrigger>
-              <TabsTrigger value="booked">Booked rides</TabsTrigger>
+              <TabsTrigger value="community">Community Rides</TabsTrigger>
+              <TabsTrigger value="hosted">Hosted Rides</TabsTrigger>
+              <TabsTrigger value="booked">Booked Rides</TabsTrigger>
             </TabsList>
             <TabsContent value="community">
               <RidesGroupSections group={community} />

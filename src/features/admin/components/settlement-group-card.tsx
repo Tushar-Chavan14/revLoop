@@ -44,7 +44,7 @@ export function SettlementGroupCard({ group }: { group: OrganizerSettlementGroup
             disabled={isPending}
             onClick={() => settle(remaining.map((b) => b.id))}
           >
-            Mark all settled — ₹{remainingTotal.toFixed(2)}
+            Mark All Settled — ₹{remainingTotal.toFixed(2)}
           </Button>
         </div>
       </CardHeader>
@@ -80,7 +80,7 @@ export function SettlementGroupCard({ group }: { group: OrganizerSettlementGroup
                 disabled={isPending}
                 onClick={() => settle([booking.id])}
               >
-                Mark settled
+                Mark Settled
               </Button>
             </div>
           ))}

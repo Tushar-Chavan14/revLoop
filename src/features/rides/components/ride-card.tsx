@@ -134,7 +134,7 @@ export function RideCard({ ride }: { ride: RideWithOrganizer }) {
             variant={isFull ? "outline" : "default"}
             className="shrink-0"
             render={
-              <Link href={`/rides/${ride.id}#join`}>{isFull ? "View ride" : "Join ride"}</Link>
+              <Link href={`/rides/${ride.id}#join`}>{isFull ? "View Ride" : "Join Ride"}</Link>
             }
           />
         </div>

@@ -26,15 +26,15 @@ import type { DestinationSummary } from "@/services/rides";
 const SORT_OPTIONS = [
   { value: "soonest", label: "Soonest" },
   { value: "newest", label: "Newest" },
-  { value: "seats", label: "Most seats" },
+  { value: "seats", label: "Most Seats" },
 ] as const;
 
 // Buckets for the ride's own trip length (estimated_distance_km) — distinct
 // from the fixed 50km "how far from the selected city" radius used for
 // nearby-city search, which isn't user-configurable.
 const DISTANCE_OPTIONS = [
-  { value: "any", label: "Any distance", min: undefined, max: undefined },
-  { value: "0-50", label: "Up to 50 km", min: undefined, max: 50 },
+  { value: "any", label: "Any Distance", min: undefined, max: undefined },
+  { value: "0-50", label: "Up To 50 km", min: undefined, max: 50 },
   { value: "50-150", label: "50–150 km", min: 50, max: 150 },
   { value: "150-300", label: "150–300 km", min: 150, max: 300 },
   { value: "300+", label: "300+ km", min: 300, max: undefined },
@@ -42,8 +42,8 @@ const DISTANCE_OPTIONS = [
 
 // Community = free rides, Organized = paid rides (rides.pricing_model).
 const PRICING_OPTIONS = [
-  { value: "community", label: "Community (free)" },
-  { value: "organized", label: "Organized (paid)" },
+  { value: "community", label: "Community (Free)" },
+  { value: "organized", label: "Organized (Paid)" },
 ] as const;
 
 export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[] }) {
@@ -185,7 +185,7 @@ export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[
       {filtersOpen && (
         <div className="border-border flex flex-col gap-4 border-t pt-4">
           <div className="flex flex-col gap-2">
-            <Label className="text-muted-foreground text-xs">Ride type</Label>
+            <Label className="text-muted-foreground text-xs">Ride Type</Label>
             <ToggleGroup
               multiple
               variant="outline"
@@ -279,7 +279,7 @@ export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="filter-distance" className="text-muted-foreground text-xs">
-                Ride distance
+                Ride Distance
               </Label>
               <Select
                 value={distance}
@@ -300,7 +300,7 @@ export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[
               </Select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label className="text-muted-foreground text-xs">Date range</Label>
+              <Label className="text-muted-foreground text-xs">Date Range</Label>
               <div className="flex items-center">
                 <Input
                   type="date"
@@ -331,13 +331,13 @@ export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[
                 onCheckedChange={(checked) => updateParams({ seats: checked ? "1" : null })}
               />
               <Label htmlFor="open-seats-only" className="text-sm font-normal">
-                Open seats only
+                Open Seats Only
               </Label>
             </div>
             {hasActiveFilters && (
               <Button type="button" variant="ghost" size="sm" onClick={clearAll}>
                 <X className="size-3.5" />
-                Clear filters
+                Clear Filters
               </Button>
             )}
           </div>

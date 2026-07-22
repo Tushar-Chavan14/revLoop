@@ -8,7 +8,7 @@ import { getRideById } from "@/services/rides";
 import type { ItineraryDay } from "@/features/rides/schema";
 
 export const metadata = {
-  title: "Edit ride",
+  title: "Edit Ride",
 };
 
 type EditRidePageProps = {
@@ -38,7 +38,7 @@ export default async function EditRidePage({ params }: EditRidePageProps) {
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
         <div className="flex flex-col gap-2">
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Edit ride</h1>
+          <h1 className="font-heading text-2xl font-bold tracking-tight">Edit Ride</h1>
         </div>
         <RideForm
           mode="edit"

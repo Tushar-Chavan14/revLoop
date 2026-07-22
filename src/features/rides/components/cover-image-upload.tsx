@@ -51,7 +51,7 @@ export function CoverImageUpload({
         ) : (
           <div className="text-muted-foreground flex flex-col items-center gap-1.5">
             <ImageIcon className="size-6" />
-            <span className="text-sm">Add a cover photo</span>
+            <span className="text-sm">Add A Cover Photo</span>
           </div>
         )}
         <div className="absolute inset-0 flex items-center justify-center bg-black/0 text-transparent transition-colors group-hover:bg-black/40 group-hover:text-white">

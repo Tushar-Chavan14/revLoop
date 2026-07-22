@@ -56,7 +56,7 @@ export function RidesExplorer({ initialResult, filters }: RidesExplorerProps) {
 
       {rides.length === 0 ? (
         <EmptyState
-          title="No rides match those filters"
+          title="No Rides Match Those Filters"
           description="Try widening your search, or start your next adventure yourself."
         />
       ) : (

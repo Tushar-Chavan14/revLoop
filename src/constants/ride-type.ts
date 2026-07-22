@@ -17,7 +17,7 @@ export const RIDE_TYPES = [
   { value: "night_ride", label: "Night Ride" },
   { value: "touring", label: "Touring" },
   { value: "adventure", label: "Adventure" },
-  { value: "off_road", label: "Off-road" },
+  { value: "off_road", label: "Off-Road" },
   { value: "city_ride", label: "City Ride" },
   { value: "mountain_ride", label: "Mountain Ride" },
 ] as const;

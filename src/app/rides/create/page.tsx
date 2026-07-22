@@ -7,7 +7,7 @@ import { getPayoutDetails, hasPayoutDetails } from "@/services/organizer-payout"
 import { isProfileComplete } from "@/utils/profile-completeness";
 
 export const metadata = {
-  title: "Create a ride",
+  title: "Create A Ride",
 };
 
 export default async function CreateRidePage() {
@@ -29,7 +29,7 @@ export default async function CreateRidePage() {
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
         <div className="flex flex-col gap-2">
           <h1 className="font-heading text-2xl font-bold tracking-tight">
-            Plan your next adventure
+            Plan Your Next Adventure
           </h1>
           <p className="text-muted-foreground">
             A few steps and your ride is live for the whole community to join.

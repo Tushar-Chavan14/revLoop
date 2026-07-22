@@ -4,13 +4,14 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { createProfile } from "@/features/profile/actions/profile-actions";
 import { ProfileForm } from "@/features/profile/components/profile-form";
 import { getAuthUser, getProfileByUserId } from "@/services/profiles";
+import { toTitleCase } from "@/utils/capitalize";
 import { getOAuthAvatarUrl } from "@/utils/oauth-metadata";
 
 export const metadata = {
-  title: "Set up your profile",
+  title: "Set Up Your Profile",
 };
 
-const STEPS = ["Basics", "Riding details", "Location", "About you"];
+const STEPS = ["Basics", "Riding Details", "Location", "About You"];
 
 export default async function ProfileSetupPage() {
   const user = await getAuthUser();
@@ -45,7 +46,7 @@ export default async function ProfileSetupPage() {
           </div>
 
           <h1 className="font-display mt-2 text-4xl text-white uppercase sm:text-5xl">
-            Welcome to the crew
+            Welcome To The Crew
           </h1>
           <p className="max-w-md text-white/70">
             Tell other riders who you are before you create or join a ride. It only takes a couple
@@ -72,7 +73,9 @@ export default async function ProfileSetupPage() {
           initialAvatarUrl={getOAuthAvatarUrl(user.user_metadata)}
           initialValues={{
             name:
-              typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "",
+              typeof user.user_metadata?.full_name === "string"
+                ? toTitleCase(user.user_metadata.full_name)
+                : "",
             username: "",
             city: "",
             country: "",

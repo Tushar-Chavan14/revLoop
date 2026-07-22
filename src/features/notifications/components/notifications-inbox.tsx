@@ -20,13 +20,13 @@ function notificationHref(notification: Notification) {
   return notification.ride_id ? `/rides/${notification.ride_id}` : "/profile";
 }
 
-const GROUP_ORDER = ["Today", "Yesterday", "This week", "Earlier"] as const;
+const GROUP_ORDER = ["Today", "Yesterday", "This Week", "Earlier"] as const;
 
 function groupLabel(createdAt: string): (typeof GROUP_ORDER)[number] {
   const date = new Date(createdAt);
   if (isToday(date)) return "Today";
   if (isYesterday(date)) return "Yesterday";
-  if (isThisWeek(date)) return "This week";
+  if (isThisWeek(date)) return "This Week";
   return "Earlier";
 }
 
@@ -71,7 +71,7 @@ export function NotificationsInbox({
     return (
       <EmptyState
         icon={Bell}
-        title="You're all caught up"
+        title="You're All Caught Up"
         description="Join requests, ride updates, and reminders will show up here."
       />
     );
@@ -83,7 +83,7 @@ export function NotificationsInbox({
         <div className="flex items-center justify-between">
           <p className="text-muted-foreground text-sm">{unreadCount} unread</p>
           <Button variant="ghost" size="sm" onClick={handleMarkAllRead}>
-            Mark all read
+            Mark All Read
           </Button>
         </div>
       )}

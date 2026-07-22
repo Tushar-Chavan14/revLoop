@@ -26,7 +26,7 @@ export default async function AdminSettlementsPage() {
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
         <div className="flex flex-col gap-2">
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Organizer settlements</h1>
+          <h1 className="font-heading text-2xl font-bold tracking-tight">Organizer Settlements</h1>
           <p className="text-muted-foreground">
             Paid Organized Ride bookings awaiting manual payout to the organizer.
           </p>
@@ -34,7 +34,7 @@ export default async function AdminSettlementsPage() {
 
         {groups.length === 0 ? (
           <EmptyState
-            title="Nothing to settle"
+            title="Nothing To Settle"
             description="Every paid Organized Ride booking has been settled."
           />
         ) : (

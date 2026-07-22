@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: RiderProfilePageProps) {
   const { username } = await params;
   const profile = await getProfileByUsername(username);
   if (!profile) {
-    return { title: "Rider not found" };
+    return { title: "Rider Not Found" };
   }
 
   return {
@@ -82,12 +82,12 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
   const stats = [
     {
       icon: MapPin,
-      label: "Based in",
+      label: "Based In",
       value: [profile.city, profile.country].filter(Boolean).join(", "),
     },
     {
       icon: Bike,
-      label: "Rides a",
+      label: "Rides A",
       value: [profile.bike_brand, profile.bike_model].filter(Boolean).join(" "),
     },
     {
@@ -105,9 +105,9 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
   ].filter((stat) => stat.value);
 
   const badges = [
-    { icon: Flame, label: "First ride", earned: attendance.attended >= 1 },
-    { icon: Medal, label: "Regular rider", earned: attendance.attended >= 5 },
-    { icon: Award, label: "Road veteran", earned: attendance.attended >= 10 },
+    { icon: Flame, label: "First Ride", earned: attendance.attended >= 1 },
+    { icon: Medal, label: "Regular Rider", earned: attendance.attended >= 5 },
+    { icon: Award, label: "Road Veteran", earned: attendance.attended >= 10 },
   ];
 
   return (
@@ -159,21 +159,21 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
           <Card size="sm">
             <CardContent className="flex flex-col gap-1.5">
               <Check className="text-primary size-4" />
-              <p className="text-muted-foreground text-xs">Rides completed</p>
+              <p className="text-muted-foreground text-xs">Rides Completed</p>
               <p className="text-sm font-medium">{attendance.attended}</p>
             </CardContent>
           </Card>
           <Card size="sm">
             <CardContent className="flex flex-col gap-1.5">
               <X className="text-primary size-4" />
-              <p className="text-muted-foreground text-xs">No-shows</p>
+              <p className="text-muted-foreground text-xs">No-Shows</p>
               <p className="text-sm font-medium">{attendance.noShow}</p>
             </CardContent>
           </Card>
           <Card size="sm">
             <CardContent className="flex flex-col gap-1.5">
               <Compass className="text-primary size-4" />
-              <p className="text-muted-foreground text-xs">Rides organized</p>
+              <p className="text-muted-foreground text-xs">Rides Organized</p>
               <p className="text-sm font-medium">{organizedCount}</p>
             </CardContent>
           </Card>
@@ -227,7 +227,7 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
 
         {myRides.completed.length > 0 && (
           <section className="flex flex-col gap-3">
-            <h2 className="font-heading text-lg font-bold tracking-tight">Ride history</h2>
+            <h2 className="font-heading text-lg font-bold tracking-tight">Ride History</h2>
             <Timeline
               items={myRides.completed
                 .slice(0, 8)
@@ -237,12 +237,12 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
         )}
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-heading text-lg font-bold tracking-tight">Ride gallery</h2>
+          <h2 className="font-heading text-lg font-bold tracking-tight">Ride Gallery</h2>
           {gallery.length > 0 ? (
             <ImageGallery images={gallery.map((image) => ({ url: image.image_url }))} />
           ) : (
             <EmptyState
-              title="No photos yet"
+              title="No Photos Yet"
               description="Ride photos posted to shared rides will show up here."
             />
           )}

@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: RideDetailPageProps) {
   const { id } = await params;
   const ride = await getRideById(id);
   if (!ride) {
-    return { title: "Ride not found" };
+    return { title: "Ride Not Found" };
   }
 
   const parts = [
@@ -148,10 +148,10 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   ].filter(Boolean);
 
   const rules = [
-    ride.breakfast_stop && "Breakfast stop",
-    ride.fuel_stop && "Fuel stop",
-    ride.helmet_required && "Helmet required",
-    ride.pillion_allowed && "Pillion allowed",
+    ride.breakfast_stop && "Breakfast Stop",
+    ride.fuel_stop && "Fuel Stop",
+    ride.helmet_required && "Helmet Required",
+    ride.pillion_allowed && "Pillion Allowed",
   ].filter(Boolean) as string[];
 
   const CoverIcon = (ride.ride_type && RIDE_TYPE_ICONS[ride.ride_type]) || DEFAULT_RIDE_TYPE_ICON;
@@ -166,15 +166,15 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const timelineItems: TimelineItemData[] = [
     {
       icon: MapPin,
-      title: canSeeMeetingPoint ? (ride.meeting_point ?? "Meeting point") : "Meeting point",
+      title: canSeeMeetingPoint ? (ride.meeting_point ?? "Meeting Point") : "Meeting Point",
       time: ride.departure_time?.slice(0, 5),
       description: canSeeMeetingPoint ? undefined : "Shared once your join request is accepted",
       active: true,
     },
     ...(ride.breakfast_stop
-      ? [{ icon: Coffee, title: "Breakfast stop", description: "Along the route" }]
+      ? [{ icon: Coffee, title: "Breakfast Stop", description: "Along the route" }]
       : []),
-    ...(ride.fuel_stop ? [{ icon: Fuel, title: "Fuel stop", description: "Along the route" }] : []),
+    ...(ride.fuel_stop ? [{ icon: Fuel, title: "Fuel Stop", description: "Along the route" }] : []),
     {
       icon: Flag,
       title: ride.destination ?? "Destination",
@@ -245,7 +245,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             {isOrganizer && (
               <Button
                 nativeButton={false}
-                render={<Link href={`/rides/${id}/edit`}>Edit ride</Link>}
+                render={<Link href={`/rides/${id}/edit`}>Edit Ride</Link>}
                 variant="outline"
                 size="sm"
               />
@@ -295,14 +295,14 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           {isOrganizedRide && (
             <Stat
               icon={IndianRupee}
-              label="Ride fee"
+              label="Ride Fee"
               value={ride.ride_fee ? `₹${ride.ride_fee}` : undefined}
             />
           )}
           {isOrganizedRide && ride.booking_deadline && (
             <Stat
               icon={Clock}
-              label="Book by"
+              label="Book By"
               value={format(new Date(ride.booking_deadline), "MMM d, h:mm a")}
             />
           )}
@@ -327,7 +327,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
                 className="text-primary -mt-4 ml-13 flex items-center gap-1.5 text-xs hover:underline"
               >
                 <ExternalLink className="size-3.5" />
-                Get directions to meeting point
+                Get Directions To Meeting Point
               </a>
             )}
             {ride.destination_map_url && (
@@ -338,7 +338,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
                 className="text-primary -mt-4 ml-13 flex items-center gap-1.5 text-xs hover:underline"
               >
                 <ExternalLink className="size-3.5" />
-                View destination on Google Maps
+                View Destination On Google Maps
               </a>
             )}
             <MapContainer>
@@ -355,7 +355,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           <div className="flex flex-wrap gap-2">
             {rules.map((rule) => (
               <Badge key={rule} variant="outline" className="text-muted-foreground">
-                {rule === "Fuel stop" ? (
+                {rule === "Fuel Stop" ? (
                   <Fuel className="size-3.5" />
                 ) : (
                   <ShieldCheck className="size-3.5" />
@@ -369,7 +369,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         {isOrganizedRide && (ride.ride_inclusions?.length ?? 0) > 0 && (
           <Card>
             <CardContent className="flex flex-col gap-3">
-              <h2 className="font-heading text-lg font-semibold">What&apos;s included</h2>
+              <h2 className="font-heading text-lg font-semibold">What&apos;s Included</h2>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {ride.ride_inclusions?.map((value) => (
                   <span key={value} className="flex items-center gap-2 text-sm">
@@ -385,7 +385,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         {isOrganizedRide && notIncluded.length > 0 && (
           <Card>
             <CardContent className="flex flex-col gap-3">
-              <h2 className="font-heading text-lg font-semibold">What&apos;s not included</h2>
+              <h2 className="font-heading text-lg font-semibold">What&apos;s Not Included</h2>
               <div className="flex flex-wrap gap-2">
                 {notIncluded.map((item) => (
                   <Badge key={item.value} variant="outline" className="text-muted-foreground">
@@ -401,7 +401,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         {isOrganizedRide && (ride.ride_itinerary as unknown as ItineraryDay[] | null)?.length ? (
           <Card>
             <CardContent className="flex flex-col gap-4">
-              <h2 className="font-heading text-lg font-semibold">Trip itinerary</h2>
+              <h2 className="font-heading text-lg font-semibold">Trip Itinerary</h2>
               {(ride.ride_itinerary as unknown as ItineraryDay[]).map((day) => (
                 <div key={day.day} className="flex flex-col gap-2">
                   <p className="text-sm font-medium">Day {day.day}</p>
@@ -422,7 +422,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         {isOrganizedRide && ride.cancellation_policy && (
           <Card>
             <CardContent>
-              <h2 className="font-heading mb-2 text-lg font-semibold">Cancellation policy</h2>
+              <h2 className="font-heading mb-2 text-lg font-semibold">Cancellation Policy</h2>
               <p className="text-muted-foreground text-sm">{ride.cancellation_policy}</p>
             </CardContent>
           </Card>
@@ -430,7 +430,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
         {images.length > 0 && (
           <div className="flex flex-col gap-3">
-            <h2 className="font-heading text-lg font-semibold">Ride gallery</h2>
+            <h2 className="font-heading text-lg font-semibold">Ride Gallery</h2>
             <ImageGallery images={images.map((image) => ({ url: image.image_url }))} />
           </div>
         )}
@@ -471,7 +471,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
                 <Button
                   nativeButton={false}
                   size="sm"
-                  render={<Link href="/login">Sign in</Link>}
+                  render={<Link href="/login">Sign In</Link>}
                 />
               </CardContent>
             </Card>
