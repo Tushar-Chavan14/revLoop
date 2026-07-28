@@ -42,7 +42,7 @@ export function UserMenu({ name, username, avatarUrl }: UserMenuProps) {
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<Link href="/profile" />}>
           <UserRound />
-          Dashboard
+          Rider Home
         </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/profile/rides" />}>
           <Compass />

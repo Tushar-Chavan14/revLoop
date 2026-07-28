@@ -5,8 +5,10 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * RevLoop Design System — tokens
- * Brand: adventure / freedom / brotherhood, not SaaS-dashboard.
+ * RoadKin Design System — tokens
+ * The home of weekend riders. Premium adventure, not SaaS-dashboard —
+ * BMW Motorrad / Triumph / RE Himalayan / Garmin / Peak Design / Apple.
+ * Burnt orange stays an accent; earthy neutrals + photography carry the mood.
  * Slot names (--color-primary etc.) match the shadcn component contracts
  * already wired into ui/button.tsx, ui/card.tsx, ui/badge.tsx, ui/input.tsx —
  * changing the values here re-skins every existing component at once.
@@ -16,7 +18,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-heading: var(--font-inter);
+  --font-heading: var(--font-manrope);
   --font-display: var(--font-bebas-neue);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -51,6 +53,19 @@
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
   --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  /* Ride semantics — each ride status/type reads as its own hue so burnt
+     orange stays reserved for the brand accent. */
+  --color-ride-community: var(--ride-community);
+  --color-ride-organized: var(--ride-organized);
+  --color-ride-completed: var(--ride-completed);
+  --color-ride-cancelled: var(--ride-cancelled);
+  --color-level-beginner: var(--level-beginner);
+  --color-level-intermediate: var(--level-intermediate);
+  --color-level-experienced: var(--level-experienced);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -81,109 +96,137 @@
 }
 
 :root {
-  /* Surfaces */
-  --background: #f7f7f7;
-  --foreground: #111111;
+  /* Surfaces — cream page, pure-white cards floating over a warm off-white
+     surface tint. Three tones give depth without a single cold grey. */
+  --background: #f8f8f6;
+  --foreground: #161616;
   --card: #ffffff;
-  --card-foreground: #111111;
+  --card-foreground: #161616;
+  --surface: #f2f2ef;
+  --surface-foreground: #161616;
   --popover: #ffffff;
-  --popover-foreground: #111111;
+  --popover-foreground: #161616;
 
-  /* Brand */
-  --primary: #ff6b35;
-  --primary-hover: #ff5a1f;
+  /* Brand — burnt adventure orange, reserved for CTAs / active nav / links /
+     ride badges. Everything else stays neutral so this reads as intent. */
+  --primary: #e76f24;
+  --primary-hover: #d65f18;
   --primary-foreground: #ffffff;
-  --primary-soft: #ffe6dc;
+  --primary-soft: #fff1e8;
   --primary-soft-foreground: #b3401a;
 
-  /* Dark "night ride" band used for hero/footer/callout sections regardless
+  /* Near-black "night ride" band for hero/footer/callout sections regardless
      of light/dark mode — an intentional accent surface, not inverted text. */
-  --secondary: #111111;
+  --secondary: #0d0d0d;
   --secondary-foreground: #ffffff;
 
-  --muted: #efefef;
-  --muted-foreground: #666666;
-  --accent: #ffe6dc;
-  --accent-foreground: #111111;
+  --muted: #f2f2ef;
+  --muted-foreground: #6a6a6a;
+  --accent: #fff1e8;
+  --accent-foreground: #161616;
 
-  --border: #eaeaea;
-  --input: #eaeaea;
-  --ring: #ff6b35;
+  --border: #e5e5e0;
+  --input: #e5e5e0;
+  --ring: #e76f24;
 
-  --destructive: #ef4444;
+  --destructive: #e5484d;
   --destructive-foreground: #ffffff;
-  --success: #22c55e;
+  --success: #2e8b57;
   --success-foreground: #ffffff;
-  --warning: #f59e0b;
-  --warning-foreground: #111111;
+  --warning: #f5a623;
+  --warning-foreground: #161616;
+  --info: #3b82f6;
+  --info-foreground: #ffffff;
 
-  --chart-1: #ff6b35;
-  --chart-2: #111111;
-  --chart-3: #666666;
-  --chart-4: #22c55e;
-  --chart-5: #f59e0b;
+  /* Ride semantics */
+  --ride-community: #2563eb;
+  --ride-organized: #e76f24;
+  --ride-completed: #16a34a;
+  --ride-cancelled: #737373;
+  --level-beginner: #22c55e;
+  --level-intermediate: #f59e0b;
+  --level-experienced: #dc2626;
+
+  --chart-1: #e76f24;
+  --chart-2: #161616;
+  --chart-3: #6a6a6a;
+  --chart-4: #2e8b57;
+  --chart-5: #f5a623;
 
   --radius: 0.625rem;
 
   --sidebar: #ffffff;
-  --sidebar-foreground: #111111;
-  --sidebar-primary: #ff6b35;
+  --sidebar-foreground: #161616;
+  --sidebar-primary: #e76f24;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ffe6dc;
-  --sidebar-accent-foreground: #111111;
-  --sidebar-border: #eaeaea;
-  --sidebar-ring: #ff6b35;
+  --sidebar-accent: #fff1e8;
+  --sidebar-accent-foreground: #161616;
+  --sidebar-border: #e5e5e0;
+  --sidebar-ring: #e76f24;
 }
 
 .dark {
-  --background: #090909;
+  --background: #0d0d0d;
   --foreground: #ffffff;
-  --card: #181818;
+  --card: #202020;
   --card-foreground: #ffffff;
-  --popover: #121212;
+  --surface: #171717;
+  --surface-foreground: #ffffff;
+  --popover: #171717;
   --popover-foreground: #ffffff;
 
-  --primary: #ff6b35;
-  --primary-hover: #ff824f;
+  --primary: #e76f24;
+  --primary-hover: #ff8a4d;
   --primary-foreground: #ffffff;
-  --primary-soft: color-mix(in oklch, #ff6b35 18%, #181818);
+  --primary-soft: color-mix(in oklch, #e76f24 18%, #202020);
   --primary-soft-foreground: #ffb08a;
 
-  --secondary: #121212;
+  --secondary: #171717;
   --secondary-foreground: #ffffff;
 
-  --muted: #181818;
-  --muted-foreground: #b0b0b0;
-  --accent: #2a2a2a;
+  --muted: #171717;
+  --muted-foreground: #b3b3b3;
+  --accent: #303030;
   --accent-foreground: #ffffff;
 
-  --border: #2a2a2a;
-  --input: #2a2a2a;
-  --ring: #ff6b35;
+  --border: #303030;
+  --input: #303030;
+  --ring: #e76f24;
 
-  --destructive: #ef4444;
+  --destructive: #e5484d;
   --destructive-foreground: #ffffff;
-  --success: #22c55e;
-  --success-foreground: #071b0f;
-  --warning: #f59e0b;
+  --success: #2e8b57;
+  --success-foreground: #ffffff;
+  --warning: #f5a623;
   --warning-foreground: #1a1204;
+  --info: #3b82f6;
+  --info-foreground: #ffffff;
 
-  --chart-1: #ff6b35;
+  /* Ride semantics — nudged brighter to hold up on near-black. */
+  --ride-community: #3b82f6;
+  --ride-organized: #ff8a4d;
+  --ride-completed: #22c55e;
+  --ride-cancelled: #8a8a8a;
+  --level-beginner: #22c55e;
+  --level-intermediate: #f5a623;
+  --level-experienced: #f2545b;
+
+  --chart-1: #e76f24;
   --chart-2: #ffffff;
-  --chart-3: #b0b0b0;
-  --chart-4: #22c55e;
-  --chart-5: #f59e0b;
+  --chart-3: #b3b3b3;
+  --chart-4: #2e8b57;
+  --chart-5: #f5a623;
 
   --shadow-color: 0 0% 0%;
 
-  --sidebar: #121212;
+  --sidebar: #171717;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #ff6b35;
+  --sidebar-primary: #e76f24;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #2a2a2a;
+  --sidebar-accent: #303030;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #2a2a2a;
-  --sidebar-ring: #ff6b35;
+  --sidebar-border: #303030;
+  --sidebar-ring: #e76f24;
 }
 
 @layer base {
@@ -215,4 +258,21 @@
   font-family: var(--font-display);
   letter-spacing: 0.01em;
   line-height: 0.95;
+}
+
+/* Sunrise gradient — the dawn-departure accent (many crews roll out at first
+   light). Used sparingly on the hero and primary CTAs so orange never sits as
+   a flat fill. */
+@utility bg-sunrise {
+  background-image: linear-gradient(135deg, #e76f24 0%, #f4a261 100%);
+}
+
+/* Instrument-panel label — small uppercase caps with wide tracking and
+   tabular figures, the way a trip meter or GPS readout is set. Used for
+   eyebrows, live counts, and data readouts. */
+@utility text-telemetry {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
 }

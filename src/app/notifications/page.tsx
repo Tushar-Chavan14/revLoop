@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { PageHeading } from "@/components/design-system/page-heading";
 import { SiteHeader } from "@/components/site-header";
 import { NotificationsInbox } from "@/features/notifications/components/notifications-inbox";
 import { getAuthUser } from "@/services/profiles";
@@ -20,7 +21,7 @@ export default async function NotificationsPage() {
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-12">
-        <h1 className="font-heading text-2xl font-bold tracking-tight">Notifications</h1>
+        <PageHeading eyebrow="From The Road" title="Notifications" />
         <NotificationsInbox initialNotifications={notifications} />
       </div>
     </div>

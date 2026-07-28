@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { PageHeading } from "@/components/design-system/page-heading";
 import { SiteHeader } from "@/components/site-header";
 import { createRide } from "@/features/rides/actions/ride-actions";
 import { RideForm } from "@/features/rides/components/ride-form";
@@ -27,14 +28,11 @@ export default async function CreateRidePage() {
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
-        <div className="flex flex-col gap-2">
-          <h1 className="font-heading text-2xl font-bold tracking-tight">
-            Plan Your Next Adventure
-          </h1>
-          <p className="text-muted-foreground">
-            A few steps and your ride is live for the whole community to join.
-          </p>
-        </div>
+        <PageHeading
+          eyebrow="Post A Ride"
+          title="Plan your next adventure"
+          description="A few steps and your ride is live for your whole road family to join."
+        />
         <RideForm
           mode="create"
           action={createRide}

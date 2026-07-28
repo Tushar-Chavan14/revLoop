@@ -66,7 +66,7 @@ export function JoinRequestCard({ rideId, myRequest, isRideFull }: JoinRequestCa
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <UserPlus className="text-primary size-4" />
+          <UserPlus className="text-muted-foreground size-4" />
           <CardTitle>Want To Ride Along?</CardTitle>
         </div>
         <CardDescription>

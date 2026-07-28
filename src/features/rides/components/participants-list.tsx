@@ -31,7 +31,7 @@ export function ParticipantsList({
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Users className="text-primary size-4" />
+          <Users className="text-muted-foreground size-4" />
           <CardTitle>Riders ({members.length})</CardTitle>
         </div>
       </CardHeader>
@@ -48,6 +48,7 @@ export function ParticipantsList({
             }
             canMarkAttendance={rideStarted && isOrganizer && member.role !== "organizer"}
             isSelf={currentUserId !== null && member.user_id === currentUserId}
+            isOrganizedRide={isOrganizedRide}
           />
         ))}
       </CardContent>
@@ -60,11 +61,13 @@ function ParticipantRow({
   canRemove,
   canMarkAttendance,
   isSelf,
+  isOrganizedRide,
 }: {
   member: RideMemberWithProfile;
   canRemove: boolean;
   canMarkAttendance: boolean;
   isSelf: boolean;
+  isOrganizedRide?: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -105,7 +108,9 @@ function ParticipantRow({
         ) : (
           <span className="truncate text-sm font-medium">{member.profile?.name ?? "Rider"}</span>
         )}
-        {member.role === "organizer" && <Badge variant="secondary">Organizer</Badge>}
+        {member.role === "organizer" && (
+          <Badge variant="secondary">{isOrganizedRide ? "Ride Captain" : "Organizer"}</Badge>
+        )}
         {!canMarkAttendance && attendance === "attended" && (
           <Badge variant="secondary">Attended</Badge>
         )}

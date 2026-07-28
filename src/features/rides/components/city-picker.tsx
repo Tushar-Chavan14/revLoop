@@ -110,7 +110,7 @@ export function CityPicker({ cityOptions, value, onChange }: CityPickerProps) {
         className={cn(buttonVariants({ variant: "outline" }), "w-full justify-between sm:w-56")}
       >
         <span className="flex min-w-0 items-center gap-1.5">
-          <MapPin className="text-primary size-4 shrink-0" />
+          <MapPin className="text-muted-foreground size-4 shrink-0" />
           <span className="truncate">{value ? value.label : "All Cities"}</span>
         </span>
         <ChevronDown className="text-muted-foreground size-4 shrink-0" />

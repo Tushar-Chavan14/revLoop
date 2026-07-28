@@ -24,7 +24,7 @@ function RidesGroupSections({ group }: { group: MyRides }) {
   const { upcoming, ongoing, completed, cancelled } = group;
 
   if (ridesGroupCount(group) === 0) {
-    return <p className="text-muted-foreground py-6 text-sm">Nothing here yet.</p>;
+    return <p className="text-muted-foreground py-6 text-sm">Nothing here yet — go find one.</p>;
   }
 
   return (
@@ -32,7 +32,7 @@ function RidesGroupSections({ group }: { group: MyRides }) {
       {ongoing.length > 0 && (
         <section className="flex flex-col gap-4">
           <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
-            <Radio className="text-primary size-4" />
+            <Radio className="text-muted-foreground size-4" />
             Ongoing
           </h2>
           <Timeline items={ongoing.map((ride) => rideToTimelineItem(ride, true, "live"))} />
@@ -42,7 +42,7 @@ function RidesGroupSections({ group }: { group: MyRides }) {
       {upcoming.length > 0 && (
         <section className="flex flex-col gap-4">
           <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
-            <Compass className="text-primary size-4" />
+            <Compass className="text-muted-foreground size-4" />
             Upcoming
           </h2>
           <Timeline items={upcoming.map((ride) => rideToTimelineItem(ride, true, "open"))} />
@@ -52,7 +52,7 @@ function RidesGroupSections({ group }: { group: MyRides }) {
       {completed.length > 0 && (
         <section className="flex flex-col gap-4">
           <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
-            <CalendarCheck className="text-primary size-4" />
+            <CalendarCheck className="text-muted-foreground size-4" />
             Completed — Ride Memories
           </h2>
           <Timeline items={completed.map((ride) => rideToTimelineItem(ride, false, "completed"))} />
@@ -62,7 +62,7 @@ function RidesGroupSections({ group }: { group: MyRides }) {
       {cancelled.length > 0 && (
         <section className="flex flex-col gap-4">
           <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
-            <Ban className="text-primary size-4" />
+            <Ban className="text-muted-foreground size-4" />
             Cancelled
           </h2>
           <Timeline items={cancelled.map((ride) => rideToTimelineItem(ride, false, "cancelled"))} />
@@ -92,9 +92,10 @@ export default async function MyRidesPage() {
             className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-sm"
           >
             <ArrowLeft className="size-4" />
-            Dashboard
+            Rider Home
           </Link>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">My Rides</h1>
+          <p className="text-telemetry text-primary text-[11px]">Your Garage</p>
+          <h1 className="font-heading text-3xl font-extrabold tracking-tight">My rides</h1>
           <p className="text-muted-foreground">
             Every ride you&apos;ve organized, joined, or booked.
           </p>
@@ -108,7 +109,7 @@ export default async function MyRidesPage() {
               <div className="flex gap-2">
                 <Button
                   nativeButton={false}
-                  render={<Link href="/rides/create">Create A Ride</Link>}
+                  render={<Link href="/rides/create">Post A Ride</Link>}
                 />
                 <Button
                   nativeButton={false}

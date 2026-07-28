@@ -30,7 +30,7 @@ export function ProfileCard({
     <div
       data-slot="profile-card"
       className={cn(
-        "bg-card ring-foreground/10 flex items-center gap-4 rounded-2xl p-4 ring-1",
+        "bg-card ring-foreground/10 flex items-center gap-4 rounded-2xl p-4 ring-1 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg",
         className,
       )}
     >

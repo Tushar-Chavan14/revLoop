@@ -84,7 +84,7 @@ export function RideMap({
           // MapLibre's style spec only parses hex/rgb/hsl — no oklch() — so
           // this is the same brand orange as the meeting marker, spelled out
           // as a hex literal instead of the CSS variable used elsewhere.
-          "line-color": "#f97316",
+          "line-color": "#e76f24",
           "line-width": 3,
           "line-dasharray": [2, 1.5],
         },
@@ -103,7 +103,7 @@ export function RideMap({
       });
     }
 
-    const meetingMarker = new maplibregl.Marker({ color: "#f97316", draggable: interactive });
+    const meetingMarker = new maplibregl.Marker({ color: "#e76f24", draggable: interactive });
     meetingMarker.on("dragend", () => {
       const lngLat = meetingMarker.getLngLat();
       meetingDraggedRef.current = true;

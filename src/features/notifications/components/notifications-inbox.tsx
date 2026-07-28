@@ -89,9 +89,7 @@ export function NotificationsInbox({
       )}
       {groups.map((group) => (
         <section key={group.label} className="flex flex-col gap-2">
-          <h2 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-            {group.label}
-          </h2>
+          <h2 className="text-telemetry text-muted-foreground text-[11px]">{group.label}</h2>
           <div className="flex flex-col gap-2">
             {group.items.map((notification) => (
               <Link

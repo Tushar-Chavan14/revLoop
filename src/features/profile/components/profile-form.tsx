@@ -279,7 +279,7 @@ function SectionHeader({
           {step}
         </span>
         <div className="flex items-center gap-2">
-          <Icon className="text-primary size-4" />
+          <Icon className="text-muted-foreground size-4" />
           <CardTitle>{title}</CardTitle>
         </div>
       </div>

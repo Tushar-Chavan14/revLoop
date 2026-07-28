@@ -1,3 +1,4 @@
+import { PageHeading } from "@/components/design-system/page-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { RIDE_TYPES } from "@/constants/ride-type";
@@ -5,6 +6,8 @@ import { SPEED_LEVELS } from "@/constants/speed-level";
 import { RIDER_LEVELS } from "@/constants/rider-level";
 import { RidesExplorer } from "@/features/rides/components/rides-explorer";
 import { RidesFilters } from "@/features/rides/components/rides-filters";
+import { getAuthUser } from "@/services/profiles";
+import { getJoinedRideIds } from "@/services/ride-participation";
 import {
   getPopularDestinations,
   listRides,
@@ -84,29 +87,48 @@ export default async function RidesPage({ searchParams }: RidesPageProps) {
   const params = await searchParams;
   const filters = parseFilters(params);
   const cityLabel = first(params.cityLabel);
-  const [result, cityOptions] = await Promise.all([listRides(filters), getPopularDestinations(50)]);
+  const [user, result, cityOptions] = await Promise.all([
+    getAuthUser(),
+    listRides(filters),
+    getPopularDestinations(50),
+  ]);
+  const joinedRideIds = user
+    ? await getJoinedRideIds(
+        user.id,
+        result.rides.map((ride) => ride.id).filter((id): id is string => id !== null),
+      )
+    : [];
 
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
       <main className="flex flex-1 flex-col gap-6 px-6 py-10">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-2">
-          <h1 className="font-heading text-3xl font-bold tracking-tight">
-            {cityLabel ? `Rides near ${cityLabel}` : "Discover Rides"}
-          </h1>
-          <p className="text-muted-foreground">
-            {cityLabel
-              ? "Includes rides in and around this city."
-              : "Real riders, real routes — filter by type, pace, and date to find your next weekend loop."}
-          </p>
+        <div className="mx-auto w-full max-w-6xl">
+          <PageHeading
+            eyebrow="Where Are We Riding?"
+            title={cityLabel ? `Rides near ${cityLabel}` : "Discover rides"}
+            description={
+              cityLabel
+                ? "Every ride rolling out in and around this city."
+                : "Real riders, real routes — find the weekend ride with your name on it."
+            }
+          />
         </div>
 
-        <div className="bg-background/95 sticky top-16.25 z-30 mx-auto w-full max-w-6xl py-2 backdrop-blur-md">
-          <RidesFilters cityOptions={cityOptions} />
+        <div className="sticky top-16.25 z-30 mx-auto w-full max-w-6xl">
+          <div className="bg-background/70 supports-backdrop-filter:bg-background/55 ring-border rounded-2xl p-2 shadow-lg ring-1 backdrop-blur-xl">
+            <RidesFilters cityOptions={cityOptions} />
+          </div>
         </div>
 
         <div className="mx-auto w-full max-w-6xl">
-          <RidesExplorer key={JSON.stringify(filters)} initialResult={result} filters={filters} />
+          <RidesExplorer
+            key={JSON.stringify(filters)}
+            initialResult={result}
+            filters={filters}
+            currentUserId={user?.id ?? null}
+            initialJoinedRideIds={joinedRideIds}
+          />
         </div>
       </main>
       <SiteFooter />

@@ -1,4 +1,4 @@
-export const APP_NAME = "RevLoop";
-export const APP_TAGLINE = "Find Your Loop. Find Your Ride.";
+export const APP_NAME = "RoadKin";
+export const APP_TAGLINE = "Never Ride Alone Again.";
 export const APP_DESCRIPTION =
-  "RevLoop connects riders for breakfast runs, weekend loops, and everything in between.";
+  "RoadKin is the home of weekend riders — find your people on Friday and roll out together on Saturday.";

@@ -371,15 +371,21 @@ export interface DestinationSummary {
 
 // The single ride the hero banner leads with — favors what's happening soon
 // and already has momentum (riders joined) over a ride nobody's noticed yet.
-export async function getFeaturedRide(): Promise<RideWithOrganizer | null> {
+export async function getFeaturedRide(
+  pricingModel?: Enums<"pricing_model">,
+): Promise<RideWithOrganizer | null> {
   const supabase = await createClient();
   const today = new Date().toISOString().slice(0, 10);
-  const { data } = await supabase
+  let query = supabase
     .from("rides_with_stats")
     .select(RIDE_WITH_ORGANIZER_SELECT)
     .eq("status", "upcoming")
     .gte("ride_date", today)
-    .gt("member_count", 1)
+    .gt("member_count", 1);
+  if (pricingModel) {
+    query = query.eq("pricing_model", pricingModel);
+  }
+  const { data } = await query
     .order("member_count", { ascending: false })
     .order("ride_date", { ascending: true })
     .limit(1)
@@ -390,12 +396,16 @@ export async function getFeaturedRide(): Promise<RideWithOrganizer | null> {
   }
 
   // No ride has other riders yet (new/quiet community) — fall back to
-  // whatever's soonest so the hero always has something to show.
-  const { data: soonest } = await supabase
+  // whatever's soonest so the section always has something to show.
+  let fallback = supabase
     .from("rides_with_stats")
     .select(RIDE_WITH_ORGANIZER_SELECT)
     .eq("status", "upcoming")
-    .gte("ride_date", today)
+    .gte("ride_date", today);
+  if (pricingModel) {
+    fallback = fallback.eq("pricing_model", pricingModel);
+  }
+  const { data: soonest } = await fallback
     .order("ride_date", { ascending: true })
     .limit(1)
     .maybeSingle();

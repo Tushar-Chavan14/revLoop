@@ -12,7 +12,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const RESEND_FROM = Deno.env.get("RESEND_FROM") ?? "RevLoop <onboarding@resend.dev>";
+const RESEND_FROM = Deno.env.get("RESEND_FROM") ?? "RoadKin <onboarding@resend.dev>";
 const SITE_URL = Deno.env.get("SITE_URL") ?? "http://localhost:3000";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 
@@ -132,13 +132,61 @@ Deno.serve(async (req) => {
   }
 
   const rideUrl = notification.ride_id ? `${SITE_URL}/rides/${notification.ride_id}` : null;
-  const subject = SUBJECTS[notification.type] ?? "RevLoop notification";
+  const subject = SUBJECTS[notification.type] ?? "RoadKin notification";
   const html = `
-    <div style="font-family: sans-serif; font-size: 15px; color: #1a1a1a; line-height: 1.5;">
-      <p>${escapeHtml(notification.message)}</p>
-      ${rideUrl ? `<p><a href="${rideUrl}">View ride</a></p>` : ""}
-      <p style="color: #888; font-size: 12px; margin-top: 24px;">— RevLoop</p>
-    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8f8f6; padding: 32px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 480px; background-color: #ffffff; border-radius: 16px; overflow: hidden;">
+            <tr>
+              <td style="background-color: #0d0d0d; padding: 28px 32px;" align="center">
+                <span style="font-size: 15px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: #ffffff;">
+                  Road<span style="color: #e76f24;">Kin</span>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td style="background-color: #e76f24; height: 3px; line-height: 3px; font-size: 0;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td style="padding: 32px 32px 8px 32px;">
+                <p style="margin: 0 0 8px 0; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #e76f24;">
+                  From The Road
+                </p>
+                <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6; color: #161616;">
+                  ${escapeHtml(notification.message)}
+                </p>
+              </td>
+            </tr>
+            ${
+              rideUrl
+                ? `<tr>
+                    <td style="padding: 0 32px 8px 32px;" align="center">
+                      <table role="presentation" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td style="border-radius: 10px; background-color: #e76f24;" align="center">
+                            <a href="${rideUrl}" style="display: inline-block; padding: 12px 32px; font-size: 15px; font-weight: 700; color: #ffffff; text-decoration: none;">
+                              View Ride
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>`
+                : ""
+            }
+            <tr>
+              <td style="padding: 24px 32px 32px 32px;">
+                <hr style="border: none; border-top: 1px solid #eeeeee; margin: 0 0 16px 0;" />
+                <p style="margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #bbbbbb;">
+                  RoadKin · Never Ride Alone Again
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
   `;
 
   const resendResponse = await fetch("https://api.resend.com/emails", {

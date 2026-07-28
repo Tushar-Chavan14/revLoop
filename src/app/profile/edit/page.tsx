@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { PageHeading } from "@/components/design-system/page-heading";
 import { SiteHeader } from "@/components/site-header";
 import { updateProfile } from "@/features/profile/actions/profile-actions";
 import { ProfileForm } from "@/features/profile/components/profile-form";
@@ -23,10 +24,11 @@ export default async function EditProfilePage() {
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-12">
-        <div className="flex flex-col gap-2">
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Edit Profile</h1>
-          <p className="text-muted-foreground">Keep your rider details up to date.</p>
-        </div>
+        <PageHeading
+          eyebrow="Your Profile"
+          title="Edit profile"
+          description="Keep your rider details up to date."
+        />
         <ProfileForm
           mode="edit"
           action={updateProfile}

@@ -26,9 +26,12 @@ export default async function AdminSettlementsPage() {
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
         <div className="flex flex-col gap-2">
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Organizer Settlements</h1>
+          <p className="text-telemetry text-primary text-[11px]">Payouts</p>
+          <h1 className="font-heading text-3xl font-extrabold tracking-tight">
+            Ride Captain settlements
+          </h1>
           <p className="text-muted-foreground">
-            Paid Organized Ride bookings awaiting manual payout to the organizer.
+            Paid Organized Ride bookings awaiting manual payout to the Ride Captain.
           </p>
         </div>
 

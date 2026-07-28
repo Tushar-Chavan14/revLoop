@@ -1,14 +1,18 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/design-system/state-panel";
+import { Logo } from "@/components/logo";
 
 export default function AuthCodeErrorPage() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-      <h1 className="text-2xl font-semibold tracking-tight">Sign-In Link Expired</h1>
-      <p className="text-muted-foreground max-w-sm">
-        That link is invalid or has expired. Request a new one to continue.
-      </p>
-      <Button nativeButton={false} render={<Link href="/login">Back To Login</Link>} />
+    <div className="flex min-h-svh flex-col items-center justify-center gap-8 px-6 py-16">
+      <Logo />
+      <EmptyState
+        title="That Link's Run Out Of Road"
+        description="It's expired or already used — request a fresh one to sign in."
+        action={<Button nativeButton={false} render={<Link href="/login">Back To Sign In</Link>} />}
+        className="border-none"
+      />
     </div>
   );
 }

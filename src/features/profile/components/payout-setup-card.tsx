@@ -37,7 +37,7 @@ export function PayoutSetupCard({ payoutDetails }: PayoutSetupCardProps) {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Landmark className="text-primary size-4" />
+          <Landmark className="text-muted-foreground size-4" />
           <CardTitle>Payouts For Organized Rides</CardTitle>
         </div>
         <CardDescription>
@@ -49,7 +49,7 @@ export function PayoutSetupCard({ payoutDetails }: PayoutSetupCardProps) {
         {!editing && payoutDetails && (
           <>
             <p className="flex items-center gap-2 text-sm font-medium">
-              <CircleCheck className="text-primary size-4" />
+              <CircleCheck className="text-success size-4" />
               {payoutDetails.payout_method === "upi"
                 ? `UPI: ${payoutDetails.upi_id}`
                 : `Bank: ${payoutDetails.bank_account_name} · ${payoutDetails.bank_account_number}`}

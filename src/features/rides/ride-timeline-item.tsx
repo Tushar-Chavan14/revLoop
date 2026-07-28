@@ -20,6 +20,7 @@ export function rideToTimelineItem(
     description: ride.destination ?? undefined,
     active,
     href: `/rides/${ride.id}`,
+    accent: ride.pricing_model === "organized" ? "organized" : "community",
     badge:
       riderCount > 0 ? (
         <StatusChip status={chipStatus} pulse={chipStatus === "live"} className="shrink-0">

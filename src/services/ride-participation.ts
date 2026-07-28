@@ -40,6 +40,21 @@ export async function getRequestsForRides(rideIds: string[]): Promise<RideReques
   return (data ?? []) as RideRequestWithRequester[];
 }
 
+/** Which of these rides the rider is already a member of — lets a listing show "You're In" instead of a Join CTA. */
+export async function getJoinedRideIds(userId: string, rideIds: string[]): Promise<string[]> {
+  if (rideIds.length === 0) {
+    return [];
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("ride_members")
+    .select("ride_id")
+    .eq("user_id", userId)
+    .in("ride_id", rideIds);
+  return (data ?? []).map((row) => row.ride_id);
+}
+
 export async function getMyRideRequest(
   rideId: string,
   userId: string,

@@ -20,7 +20,7 @@ interface WikipediaSummary {
 const COMMONS_API = "https://commons.wikimedia.org/w/api.php";
 const WIKIPEDIA_SUMMARY_API = "https://en.wikipedia.org/api/rest_v1/page/summary";
 // A descriptive UA is part of Wikimedia's API etiquette (unlabeled traffic risks being blocked).
-const USER_AGENT = "RevLoop/1.0 (https://revloop.app; motorcycle riding community app)";
+const USER_AGENT = "RoadKin/1.0 (https://roadkin.in; motorcycle riding community app)";
 // A wrong-topic match (e.g. a film or person sharing the destination's name)
 // won't have coordinates anywhere near the real place — reject anything
 // further than this away instead of risking an unrelated photo.

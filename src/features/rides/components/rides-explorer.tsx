@@ -10,13 +10,23 @@ import type { RideFilters, RideListResult, RideWithOrganizer } from "@/services/
 interface RidesExplorerProps {
   initialResult: RideListResult;
   filters: RideFilters;
+  currentUserId?: string | null;
+  initialJoinedRideIds?: string[];
 }
 
 /** Infinite-scrolling list over the current filtered result set. */
-export function RidesExplorer({ initialResult, filters }: RidesExplorerProps) {
+export function RidesExplorer({
+  initialResult,
+  filters,
+  currentUserId = null,
+  initialJoinedRideIds = [],
+}: RidesExplorerProps) {
   const [rides, setRides] = useState<RideWithOrganizer[]>(initialResult.rides);
   const [page, setPage] = useState(initialResult.page);
   const [total, setTotal] = useState(initialResult.total);
+  const [joinedRideIds, setJoinedRideIds] = useState<Set<string>>(
+    new Set(initialJoinedRideIds),
+  );
   const [isPending, startTransition] = useTransition();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -34,10 +44,11 @@ export function RidesExplorer({ initialResult, filters }: RidesExplorerProps) {
       (entries) => {
         if (entries[0]?.isIntersecting && !isPending) {
           startTransition(async () => {
-            const next = await loadMoreRides(filters, page + 1);
+            const next = await loadMoreRides(filters, page + 1, currentUserId);
             setRides((current) => [...current, ...next.rides]);
             setPage(next.page);
             setTotal(next.total);
+            setJoinedRideIds((current) => new Set([...current, ...next.joinedRideIds]));
           });
         }
       },
@@ -50,8 +61,8 @@ export function RidesExplorer({ initialResult, filters }: RidesExplorerProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-muted-foreground text-sm">
-        {total} ride{total === 1 ? "" : "s"} found
+      <p className="text-telemetry text-muted-foreground text-[11px]">
+        {total} ride{total === 1 ? "" : "s"} on the map
       </p>
 
       {rides.length === 0 ? (
@@ -63,7 +74,7 @@ export function RidesExplorer({ initialResult, filters }: RidesExplorerProps) {
         <>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {rides.map((ride) => (
-              <RideCard key={ride.id} ride={ride} />
+              <RideCard key={ride.id} ride={ride} isJoined={joinedRideIds.has(ride.id ?? "")} />
             ))}
             {isPending && Array.from({ length: 3 }).map((_, i) => <RideCardSkeleton key={i} />)}
           </div>

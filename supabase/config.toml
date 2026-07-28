@@ -8,5 +8,5 @@ project_id = "revloop"
 verify_jwt = true
 
 [auth.email.template.magic_link]
-subject = "Sign in to RevLoop"
+subject = "Sign in to RoadKin"
 content_path = "./supabase/templates/magic_link.html"

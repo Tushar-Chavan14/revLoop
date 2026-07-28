@@ -1,7 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { MapPin } from "lucide-react";
+import { Check, MapPin } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +12,8 @@ import { StatusChip } from "@/components/ui/status-chip";
 import { DEFAULT_RIDE_TYPE_ICON, RIDE_TYPE_ICONS, RIDE_TYPES } from "@/constants/ride-type";
 import { RIDER_LEVELS } from "@/constants/rider-level";
 import { SPEED_LEVELS } from "@/constants/speed-level";
+import { hoverLift } from "@/lib/motion";
+import { cn } from "@/lib/utils";
 import type { RideWithOrganizer } from "@/services/rides";
 import { formatRideDuration } from "@/utils/ride-duration";
 
@@ -24,7 +29,21 @@ function difficultyLabel(value: string | null) {
   return RIDER_LEVELS.find((level) => level.value === value)?.label ?? value;
 }
 
-export function RideCard({ ride }: { ride: RideWithOrganizer }) {
+// Difficulty reads as its own colour — beginner/intermediate/experienced —
+// rather than a flat neutral badge, so pace is legible at a glance.
+const DIFFICULTY_COLOR: Record<string, string> = {
+  beginner: "border-level-beginner/30 text-level-beginner bg-level-beginner/10",
+  intermediate: "border-level-intermediate/30 text-level-intermediate bg-level-intermediate/10",
+  experienced: "border-level-experienced/30 text-level-experienced bg-level-experienced/10",
+};
+
+export function RideCard({
+  ride,
+  isJoined = false,
+}: {
+  ride: RideWithOrganizer;
+  isJoined?: boolean;
+}) {
   const isFull = ride.seats_available !== null && ride.seats_available <= 0;
   const lowSeats =
     !isFull &&
@@ -34,14 +53,24 @@ export function RideCard({ ride }: { ride: RideWithOrganizer }) {
   const CoverIcon = (ride.ride_type && RIDE_TYPE_ICONS[ride.ride_type]) || DEFAULT_RIDE_TYPE_ICON;
   const duration = formatRideDuration(ride.estimated_duration_minutes);
   const riderCount = ride.member_count ?? 0;
+  const isOrganized = ride.pricing_model === "organized";
+
+  const cta = isJoined
+    ? { label: "You're In", variant: "outline" as const, href: `/rides/${ride.id}` }
+    : isFull
+      ? { label: "View Ride", variant: "outline" as const, href: `/rides/${ride.id}` }
+      : { label: "Claim Your Seat", variant: "default" as const, href: `/rides/${ride.id}#join` };
 
   return (
-    <div className="group bg-card ring-foreground/10 hover:ring-primary/50 flex flex-col overflow-hidden rounded-2xl ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+    <motion.div
+      {...hoverLift}
+      className="group bg-card ring-foreground/10 hover:ring-primary/40 flex flex-col overflow-hidden rounded-2xl ring-1 transition-shadow duration-300 hover:shadow-xl"
+    >
       <Link
         href={`/rides/${ride.id}`}
         className="focus-visible:ring-primary flex flex-1 flex-col outline-none focus-visible:ring-2"
       >
-        <div className="from-secondary via-secondary/60 to-primary/30 relative aspect-4/3 w-full overflow-hidden bg-linear-to-br">
+        <div className="from-secondary via-secondary/60 to-secondary/20 relative aspect-4/3 w-full overflow-hidden bg-linear-to-br">
           {ride.cover_image_url ? (
             <Image
               src={ride.cover_image_url}
@@ -56,7 +85,7 @@ export function RideCard({ ride }: { ride: RideWithOrganizer }) {
           {/* Darkens top and bottom regardless of the uploaded photo's own
               brightness — a light/white cover photo would otherwise make the
               white badge text and title illegible. */}
-          <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/0 to-black/80" />
+          <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/0 to-black/85" />
 
           <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-2">
             <Badge variant="secondary" className="bg-white/15 text-white backdrop-blur-sm">
@@ -72,10 +101,23 @@ export function RideCard({ ride }: { ride: RideWithOrganizer }) {
             )}
           </div>
 
-          <div className="absolute inset-x-3 bottom-3">
+          <div className="absolute inset-x-3 bottom-3 flex flex-col gap-1.5">
             <p className="font-heading truncate text-lg font-semibold text-balance text-white">
               {ride.title}
             </p>
+            {ride.organizer && (
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    "size-1.5 shrink-0 rounded-full",
+                    isOrganized ? "bg-ride-organized" : "bg-ride-community",
+                  )}
+                />
+                <p className="text-telemetry truncate text-[10px] text-white/70">
+                  {isOrganized ? "Captain" : "Led by"} {ride.organizer.name}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -87,7 +129,13 @@ export function RideCard({ ride }: { ride: RideWithOrganizer }) {
               </Badge>
             )}
             {ride.difficulty && (
-              <Badge variant="outline" className="text-muted-foreground">
+              <Badge
+                variant="outline"
+                className={cn(
+                  DIFFICULTY_COLOR[ride.difficulty] ?? "text-muted-foreground",
+                  "border",
+                )}
+              >
                 {difficultyLabel(ride.difficulty)}
               </Badge>
             )}
@@ -104,14 +152,14 @@ export function RideCard({ ride }: { ride: RideWithOrganizer }) {
           </div>
 
           <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
-            <MapPin className="text-primary size-3.5 shrink-0" />
+            <MapPin className="text-muted-foreground size-3.5 shrink-0" />
             <span className="truncate">{ride.destination}</span>
           </div>
 
           <p className="text-muted-foreground text-xs">
             {ride.ride_date && format(new Date(ride.ride_date), "EEE, MMM d")}
             {ride.departure_time && ` · ${ride.departure_time.slice(0, 5)}`}
-            {riderCount > 0 && ` · ${riderCount} rider${riderCount === 1 ? "" : "s"} joined`}
+            {riderCount > 0 && ` · ${riderCount} rider${riderCount === 1 ? "" : "s"} in`}
           </p>
         </div>
       </Link>
@@ -126,19 +174,22 @@ export function RideCard({ ride }: { ride: RideWithOrganizer }) {
               />
               <AvatarFallback>{ride.organizer.name?.[0]?.toUpperCase()}</AvatarFallback>
             </Avatar>
-            <p className="text-muted-foreground truncate text-xs">By {ride.organizer.name}</p>
+            <p className="text-muted-foreground truncate text-xs">{ride.organizer.name}</p>
           </div>
           <Button
             nativeButton={false}
             size="sm"
-            variant={isFull ? "outline" : "default"}
+            variant={cta.variant}
             className="shrink-0"
             render={
-              <Link href={`/rides/${ride.id}#join`}>{isFull ? "View Ride" : "Join Ride"}</Link>
+              <Link href={cta.href}>
+                {isJoined && <Check className="size-3.5" />}
+                {cta.label}
+              </Link>
             }
           />
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

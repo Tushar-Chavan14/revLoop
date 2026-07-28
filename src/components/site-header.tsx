@@ -22,22 +22,22 @@ export async function SiteHeader() {
     : [[], 0, [], null];
 
   return (
-    <header className="border-border/60 bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md">
+    <header className="border-border/60 bg-background/70 supports-backdrop-filter:bg-background/55 sticky top-0 z-40 border-b backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
-        <Link href="/">
+        <Link href="/" className="transition-opacity hover:opacity-80">
           <Logo />
         </Link>
-        <nav className="hidden items-center gap-6 text-sm font-medium sm:flex">
+        <nav className="hidden items-center gap-8 sm:flex">
           <Link
             href="/rides"
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-foreground text-telemetry text-[11px] transition-colors"
           >
             Discover Rides
           </Link>
           {user && (
             <Link
               href="/profile/rides"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground text-telemetry text-[11px] transition-colors"
             >
               My Rides
             </Link>
@@ -57,7 +57,7 @@ export async function SiteHeader() {
             nativeButton={false}
             render={
               <Link href={user ? "/rides/create" : "/login"}>
-                {user ? "Create A Ride" : "Get Started"}
+                {user ? "Post a Ride" : "Get Started"}
               </Link>
             }
             size="sm"

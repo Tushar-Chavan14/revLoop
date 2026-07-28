@@ -1,10 +1,8 @@
 "use client";
 
-import { Bebas_Neue, Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
-const bebasNeue = Bebas_Neue({ variable: "--font-bebas-neue", subsets: ["latin"], weight: "400" });
+import { APP_NAME } from "@/constants/site";
+import { bebasNeue, inter, manrope } from "./fonts";
 
 export default function GlobalError({
   unstable_retry,
@@ -13,9 +11,12 @@ export default function GlobalError({
   unstable_retry: () => void;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${bebasNeue.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${manrope.variable} ${bebasNeue.variable} h-full antialiased`}
+    >
       <body className="bg-background text-foreground flex min-h-full flex-col items-center justify-center gap-6 px-6 py-16">
-        <p className="font-display text-5xl uppercase">RevLoop</p>
+        <p className="font-display text-5xl uppercase">{APP_NAME}</p>
         <div className="flex max-w-sm flex-col items-center gap-3 text-center">
           <p className="font-heading text-xl font-bold">Something went badly wrong</p>
           <p className="text-muted-foreground text-sm">

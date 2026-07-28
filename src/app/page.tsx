@@ -5,20 +5,16 @@ import {
   ArrowRight,
   Bike,
   Calendar,
-  Compass,
   Flag,
   MapPin,
-  MessageSquare,
   MessageSquareX,
   Quote,
-  UserPlus,
   Users,
   UserX,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { StatusChip } from "@/components/ui/status-chip";
 import { DestinationCard } from "@/components/design-system/destination-card";
 import { EmptyState } from "@/components/design-system/state-panel";
 import { ProfileCard } from "@/components/design-system/profile-card";
@@ -26,8 +22,7 @@ import { StatCard } from "@/components/design-system/stat-card";
 import { Reveal } from "@/components/reveal";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { RIDE_TYPE_ICONS, RIDE_TYPES } from "@/constants/ride-type";
-import { APP_DESCRIPTION } from "@/constants/site";
+import { cn } from "@/lib/utils";
 import { RideCard } from "@/features/rides/components/ride-card";
 import { themedPhoto } from "@/lib/placeholder-image";
 import { getDestinationPhoto } from "@/lib/wikimedia-photo";
@@ -38,52 +33,37 @@ import {
   getFeaturedRide,
   getPopularTripDestinations,
   getUpcomingRides,
+  type RideWithOrganizer,
 } from "@/services/rides";
 import { capitalize } from "@/utils/capitalize";
 import { getUpcomingWeekendRange } from "@/utils/weekend";
+
+// Curated cinematic motorcycle photography carries the emotion — golden-hour
+// open roads and real machines. Hotlinked from Unsplash's CDN (keyless,
+// unoptimized), hand-picked frames rather than random keyword matches.
+const unsplash = (id: string, w = 2000) =>
+  `https://images.unsplash.com/photo-${id}?w=${w}&q=80&auto=format&fit=crop`;
+const IMG = {
+  hero: unsplash("1558981806-ec527fa84c39"), // rider cruising into golden hour
+  featuredCommunity: unsplash("1600298881974-6be191ceeda1"), // rugged peaks
+  featuredOrganized: unsplash("1454496522488-7a8e488e8606"), // snow summit
+};
 
 const PAIN_POINTS = [
   {
     icon: MessageSquareX,
     pain: "Buried In Group Chats",
-    fix: "Ride plans die under 400 unread messages. On RevLoop, every ride is its own page — date, route, pace, and rules in one place.",
+    fix: "Ride plans die under 400 unread messages. On RoadKin, every ride is its own page — date, route, pace, and rules in one place.",
   },
   {
     icon: UserX,
     pain: "No Idea Who's Coming",
-    fix: "Seat counts and join requests mean you know exactly who's riding — and organizers choose who joins.",
+    fix: "Seat counts and join requests mean you know exactly who's riding — and the organizer waves in the crew.",
   },
   {
     icon: MapPin,
     pain: "“Meet near the flyover”",
     fix: "Every ride pins an exact meeting point on the map. No more circling the highway exit calling everyone.",
-  },
-] as const;
-
-const HOW_IT_WORKS = [
-  {
-    icon: Compass,
-    title: "Find Or Post A Ride",
-    description:
-      "Browse loops near your city — breakfast runs, ghat roads, overnight tours — or post your own with the route mapped out.",
-  },
-  {
-    icon: UserPlus,
-    title: "Request Your Seat",
-    description:
-      "One tap to ask in. The organizer sees your profile and your machine, and accepts from their dashboard.",
-  },
-  {
-    icon: MessageSquare,
-    title: "Sync Up In Ride Chat",
-    description:
-      "Once you're in, the ride chat opens up — sort out timing, luggage, and where breakfast is happening.",
-  },
-  {
-    icon: Flag,
-    title: "Meet at the pin. Roll out.",
-    description:
-      "The exact meeting point is on the map, and you get notified of every update until kickstands go up.",
   },
 ] as const;
 
@@ -98,29 +78,37 @@ const TESTIMONIALS = [
     name: "Arjun K.",
     city: "Bengaluru",
     quote:
-      "RevLoop turned “someone should organize a ride” into an actual Saturday plan with a pin on the map and eleven other riders confirmed.",
+      "RoadKin turned “someone should organize a ride” into an actual Saturday plan with a pin on the map and eleven other riders confirmed.",
   },
   {
     name: "Meera S.",
     city: "Mumbai",
     quote:
-      "A meeting point on a map beats fifteen “where are you guys” texts every single time. This is how group rides should work.",
+      "A meeting point on a map beats fifteen “where are you guys” texts every single time. This is how weekend rides should work.",
   },
 ] as const;
 
 export default async function HomePage() {
-  const [user, upcomingRides, popularDestinations, stats, weekend, featuredRide] =
-    await Promise.all([
-      getAuthUser(),
-      getUpcomingRides(9),
-      getPopularTripDestinations(4),
-      getCommunityStats(),
-      getWeekendActivity(8),
-      getFeaturedRide(),
-    ]);
+  const [
+    user,
+    upcomingRides,
+    popularDestinations,
+    stats,
+    weekend,
+    featuredCommunityRide,
+    featuredOrganizedRide,
+  ] = await Promise.all([
+    getAuthUser(),
+    getUpcomingRides(9),
+    getPopularTripDestinations(4),
+    getCommunityStats(),
+    getWeekendActivity(8),
+    getFeaturedRide("community"),
+    getFeaturedRide("organized"),
+  ]);
 
   const primaryCtaHref = user ? "/rides/create" : "/login";
-  const primaryCtaLabel = user ? "Create A Ride" : "Get Started";
+  const primaryCtaLabel = user ? "Post A Ride" : "Find Your Crew";
 
   // The destination's own Wikipedia lead photo where one genuinely matches,
   // else a real photo geotagged nearby, else a themed stock photo.
@@ -135,120 +123,91 @@ export default async function HomePage() {
     (ride) => ride.ride_date && ride.ride_date >= start && ride.ride_date <= end,
   );
   const displayedUpcoming = (weekendRides.length > 0 ? weekendRides : upcomingRides).slice(0, 6);
-  const upcomingSectionTitle =
-    weekendRides.length > 0 ? "Upcoming Weekend Rides" : "Upcoming Rides";
+  const isWeekend = weekendRides.length > 0;
 
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
 
-      {/* Hero */}
-      <section className="bg-secondary text-secondary-foreground relative overflow-hidden">
+      {/* Hero — the home of weekend riders. Golden-hour photography carries it. */}
+      <section className="bg-secondary text-secondary-foreground relative flex min-h-svh items-end overflow-hidden">
+        <Image src={IMG.hero} alt="" fill priority unoptimized className="object-cover" />
+        {/* Cinematic scrim — deep at the base for legibility, warm amber glow at
+            the horizon so the whole frame reads golden hour. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,oklch(0.705_0.191_41.6/30%),transparent_55%)]"
+          className="absolute inset-0 bg-linear-to-t from-black via-black/55 to-black/20"
         />
         <div
           aria-hidden
-          className="bg-primary/20 pointer-events-none absolute -right-24 -bottom-24 h-96 w-96 rounded-full blur-3xl"
+          className="absolute inset-0 bg-linear-to-r from-black/85 via-black/20 to-transparent"
         />
         <div
           aria-hidden
-          className="bg-road-dashes text-primary/50 absolute top-0 right-0 left-0 h-1"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_85%_15%,rgba(231,111,36,0.28),transparent_55%)]"
         />
 
-        <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center gap-8 px-6 py-24 text-center sm:py-32">
-          <StatusChip status="live" pulse className="border-white/20 bg-white/10 text-white">
+        <div className="relative mx-auto w-full max-w-6xl px-6 pt-44 pb-24">
+          <div className="text-telemetry flex items-center gap-2.5 text-[11px] text-white/85">
+            <span className="relative flex size-2">
+              <span className="bg-primary absolute inline-flex size-full animate-ping rounded-full opacity-75" />
+              <span className="bg-primary relative inline-flex size-2 rounded-full" />
+            </span>
             {weekend.ridersCount > 0
-              ? `${weekend.ridersCount} riders are riding this weekend`
-              : "Rides happening this weekend"}
-          </StatusChip>
+              ? `${weekend.ridersCount} rider${weekend.ridersCount === 1 ? "" : "s"} out this weekend`
+              : "The home of weekend riders"}
+          </div>
 
-          <h1 className="font-display max-w-4xl text-6xl text-white uppercase sm:text-8xl">
-            {weekend.ridersCount > 0
-              ? `${weekend.ridersCount} riders. one weekend.`
-              : "Your next ride is out there"}
+          <h1 className="font-display mt-8 max-w-5xl text-7xl leading-[0.85] text-white uppercase sm:text-8xl lg:text-[10rem]">
+            Never ride
+            <br />
+            alone again
           </h1>
-          <p className="max-w-xl text-lg text-white/70">{APP_DESCRIPTION}</p>
 
-          <div className="flex flex-wrap justify-center gap-3">
+          <p className="mt-8 max-w-xl text-lg text-pretty text-white/80 sm:text-xl">
+            Open RoadKin on Friday. Find your people. Ride together on Saturday.
+          </p>
+
+          <div className="mt-10 flex flex-wrap items-center gap-4">
             <Button
               nativeButton={false}
               render={<Link href={primaryCtaHref}>{primaryCtaLabel}</Link>}
               size="lg"
+              className="bg-sunrise h-12 border-0 px-6 text-base text-white shadow-xl transition-opacity hover:opacity-90"
             />
             <Button
               nativeButton={false}
               render={<Link href="/rides">Discover Rides</Link>}
               size="lg"
               variant="outline"
-              className="border-white/25 bg-transparent text-white hover:bg-white/10"
+              className="h-12 border-white/30 bg-white/5 px-6 text-base text-white backdrop-blur-sm hover:bg-white/10 hover:text-white"
             />
           </div>
-
-          {featuredRide && (
-            <div className="mt-4 w-full max-w-lg rounded-3xl bg-white/10 p-5 text-left ring-1 ring-white/15 backdrop-blur-md">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-xs font-medium tracking-wide text-white/60 uppercase">
-                  Featured Ride
-                </p>
-                {featuredRide.member_count !== null && featuredRide.member_count > 0 && (
-                  <span className="text-xs text-white/60">
-                    {featuredRide.member_count} riders joined
-                  </span>
-                )}
-              </div>
-              <p className="font-heading mt-1 flex items-center gap-1.5 text-lg font-semibold text-white">
-                {featuredRide.city}
-                <ArrowRight className="size-4 text-white/50" />
-                {featuredRide.destination}
-              </p>
-              <p className="mt-1 text-sm text-white/70">
-                {featuredRide.ride_date && format(new Date(featuredRide.ride_date), "EEEE, MMM d")}
-                {featuredRide.departure_time && ` · ${featuredRide.departure_time.slice(0, 5)}`}
-              </p>
-              <div className="mt-4 flex items-center justify-between gap-3">
-                {featuredRide.organizer && (
-                  <div className="flex items-center gap-2">
-                    <Avatar size="sm">
-                      <AvatarImage
-                        src={featuredRide.organizer.profile_image_url ?? undefined}
-                        alt={featuredRide.organizer.name}
-                      />
-                      <AvatarFallback>{featuredRide.organizer.name?.[0]}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs text-white/70">By {featuredRide.organizer.name}</span>
-                  </div>
-                )}
-                <Button
-                  nativeButton={false}
-                  size="sm"
-                  render={<Link href={`/rides/${featuredRide.id}#join`}>Join Ride</Link>}
-                />
-              </div>
-            </div>
-          )}
         </div>
+
+        <div
+          aria-hidden
+          className="bg-road-dashes absolute inset-x-0 bottom-0 h-px text-white/25"
+        />
       </section>
 
-      <main className="flex flex-1 flex-col gap-20 px-6 py-16">
+      <main className="flex flex-1 flex-col gap-24 px-6 py-20">
         {/* Upcoming weekend rides */}
-        <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <h2 className="font-heading text-2xl font-bold tracking-tight">
-                {upcomingSectionTitle}
-              </h2>
-              <p className="text-muted-foreground">Open the app on Friday. Ride on Saturday.</p>
-            </div>
-            <Button
-              nativeButton={false}
-              render={<Link href="/rides">See All</Link>}
-              variant="ghost"
-              size="sm"
-              className="hidden sm:inline-flex"
-            />
-          </div>
+        <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+          <SectionHeading
+            eyebrow={isWeekend ? "This Weekend" : "Coming Up"}
+            title="Where are we riding?"
+            description="Open RoadKin on Friday. Roll out on Saturday."
+            action={
+              <Button
+                nativeButton={false}
+                render={<Link href="/rides">See All</Link>}
+                variant="ghost"
+                size="sm"
+                className="hidden sm:inline-flex"
+              />
+            }
+          />
           {displayedUpcoming.length > 0 ? (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {displayedUpcoming.map((ride) => (
@@ -258,7 +217,7 @@ export default async function HomePage() {
           ) : (
             <EmptyState
               title="No Rides Planned Yet"
-              description="Start your next adventure — be the first to post a ride this weekend."
+              description="Be the first to post a ride and pull your road family together this weekend."
               action={
                 <Button
                   nativeButton={false}
@@ -271,15 +230,12 @@ export default async function HomePage() {
 
         {/* Who's riding this weekend */}
         {weekend.roster.length > 0 && (
-          <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-            <div>
-              <h2 className="font-heading text-2xl font-bold tracking-tight">
-                Who&apos;s Riding This Weekend
-              </h2>
-              <p className="text-muted-foreground">
-                Riders already locked in across the community.
-              </p>
-            </div>
+          <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+            <SectionHeading
+              eyebrow="Your Road Family"
+              title="Who's riding this weekend"
+              description="Riders already locked in and ready to roll."
+            />
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {weekend.roster.map((rider) => (
                 <ProfileCard
@@ -304,13 +260,12 @@ export default async function HomePage() {
 
         {/* Popular destinations */}
         {popularDestinations.length > 0 && (
-          <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-            <div>
-              <h2 className="font-heading text-2xl font-bold tracking-tight">
-                Popular Destinations
-              </h2>
-              <p className="text-muted-foreground">Where the community keeps heading back to.</p>
-            </div>
+          <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+            <SectionHeading
+              eyebrow="On The Map"
+              title="Where the road keeps pulling us back"
+              description="The destinations your road family rides again and again."
+            />
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               {popularDestinations.map((destination, index) => (
                 <DestinationCard
@@ -319,7 +274,7 @@ export default async function HomePage() {
                   city={destination.destination}
                   rideCount={destination.rideCount}
                   imageUrl={
-                    destinationPhotos[index] ?? themedPhoto("mountains,road,scenic", 200 + index)
+                    destinationPhotos[index] ?? themedPhoto("motorcycle,mountain,road", 200 + index)
                   }
                 />
               ))}
@@ -327,77 +282,42 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* Featured ride spotlight */}
-        {featuredRide && (
+        {/* Featured Community Ride */}
+        {featuredCommunityRide && (
           <Reveal>
-            <section className="mx-auto w-full max-w-6xl">
-              <div className="bg-card ring-foreground/10 grid grid-cols-1 overflow-hidden rounded-3xl ring-1 lg:grid-cols-2">
-                <div className="from-secondary via-secondary/60 to-primary/30 relative aspect-video w-full bg-linear-to-br lg:aspect-auto">
-                  {featuredRide.cover_image_url ? (
-                    <Image
-                      src={featuredRide.cover_image_url}
-                      alt={featuredRide.title ?? "Featured ride"}
-                      fill
-                      unoptimized
-                      className="object-cover"
-                    />
-                  ) : (
-                    <Image
-                      src={themedPhoto("motorcycle,adventure,road", 301)}
-                      alt=""
-                      fill
-                      unoptimized
-                      className="object-cover"
-                    />
-                  )}
-                </div>
-                <div className="flex flex-col justify-center gap-4 p-8 sm:p-10">
-                  <Badge className="w-fit">Ride Of The Week</Badge>
-                  <h2 className="font-heading text-3xl font-bold tracking-tight text-balance">
-                    {featuredRide.title}
-                  </h2>
-                  {featuredRide.description && (
-                    <p className="text-muted-foreground line-clamp-3">{featuredRide.description}</p>
-                  )}
-                  <div className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-                    <span className="flex items-center gap-1.5">
-                      <Calendar className="text-primary size-4" />
-                      {featuredRide.ride_date &&
-                        format(new Date(featuredRide.ride_date), "EEE, MMM d")}
-                    </span>
-                    {featuredRide.estimated_distance_km && (
-                      <span className="flex items-center gap-1.5">
-                        <Bike className="text-primary size-4" />
-                        {featuredRide.estimated_distance_km} km
-                      </span>
-                    )}
-                    {featuredRide.member_count !== null && featuredRide.member_count > 0 && (
-                      <span className="flex items-center gap-1.5">
-                        <Users className="text-primary size-4" />
-                        {featuredRide.member_count} riders joined
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-3 pt-2">
-                    <Button
-                      nativeButton={false}
-                      render={<Link href={`/rides/${featuredRide.id}#join`}>Join This Ride</Link>}
-                    />
-                    <Button
-                      nativeButton={false}
-                      variant="outline"
-                      render={<Link href={`/rides/${featuredRide.id}`}>View Details</Link>}
-                    />
-                  </div>
-                </div>
-              </div>
+            <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+              <SectionHeading
+                eyebrow="Community Ride"
+                eyebrowClassName="text-ride-community"
+                title="This week's community ride"
+              />
+              <FeaturedRideSpotlight
+                ride={featuredCommunityRide}
+                accent="community"
+                fallbackPhoto={IMG.featuredCommunity}
+              />
+            </section>
+          </Reveal>
+        )}
+
+        {/* Featured Organized Ride */}
+        {featuredOrganizedRide && (
+          <Reveal>
+            <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+              <SectionHeading eyebrow="Organized Ride" title="This week's organized tour" />
+              <FeaturedRideSpotlight
+                ride={featuredOrganizedRide}
+                accent="organized"
+                fallbackPhoto={IMG.featuredOrganized}
+              />
             </section>
           </Reveal>
         )}
 
         {/* Community statistics */}
         <Reveal>
-          <section className="mx-auto w-full max-w-6xl">
+          <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+            <SectionHeading eyebrow="By The Numbers" title="One growing road family" />
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <StatCard icon={Users} label="Riders" value={stats.ridersCount} suffix="+" />
               <StatCard icon={Calendar} label="Rides Planned" value={stats.upcomingRidesCount} />
@@ -409,14 +329,14 @@ export default async function HomePage() {
 
         {/* Testimonials */}
         <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-          <h2 className="font-heading text-2xl font-bold tracking-tight">Riders On RevLoop</h2>
+          <SectionHeading eyebrow="From The Saddle" title="Riders on RoadKin" />
           <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
             {TESTIMONIALS.map((testimonial, index) => (
               <Reveal key={testimonial.name} delay={index * 120}>
                 <div className="bg-card ring-foreground/10 flex h-full flex-col gap-4 rounded-2xl p-6 ring-1">
-                  <Quote className="text-primary size-6" />
-                  <p className="text-sm leading-relaxed text-pretty">{testimonial.quote}</p>
-                  <p className="text-muted-foreground mt-auto text-sm font-medium">
+                  <Quote className="text-muted-foreground/40 size-6" />
+                  <p className="leading-relaxed text-pretty">{testimonial.quote}</p>
+                  <p className="text-muted-foreground text-telemetry mt-auto text-[11px]">
                     {testimonial.name} · {testimonial.city}
                   </p>
                 </div>
@@ -425,126 +345,181 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Why RevLoop */}
+        {/* Why RoadKin */}
         <section
-          aria-labelledby="why-revloop"
+          aria-labelledby="why-roadkin"
           className="mx-auto flex w-full max-w-6xl flex-col gap-8"
         >
           <Reveal className="max-w-2xl">
+            <p className="text-telemetry text-primary text-[11px]">Why RoadKin</p>
             <h2
-              id="why-revloop"
-              className="font-heading text-2xl font-bold tracking-tight sm:text-3xl"
+              id="why-roadkin"
+              className="font-heading mt-3 text-3xl font-extrabold tracking-tight text-balance sm:text-4xl"
             >
               Weekend plans shouldn&apos;t die in the group chat
             </h2>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-muted-foreground mt-3">
               Every riding crew knows the drill: someone says &ldquo;Sunday?&rdquo;, forty messages
-              later nobody knows the plan. RevLoop fixes the three ways group rides fall apart.
+              later nobody knows the plan. RoadKin fixes the three ways group rides fall apart.
             </p>
           </Reveal>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
             {PAIN_POINTS.map((point, index) => (
               <Reveal key={point.pain} delay={index * 120}>
-                <div className="border-border hover:border-primary/50 group flex h-full flex-col gap-3 rounded-2xl border p-6 transition-colors">
-                  <point.icon className="text-primary size-6 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6" />
-                  <h3 className="font-heading text-lg font-semibold">{point.pain}</h3>
+                <div className="border-border hover:border-foreground/30 group flex h-full flex-col gap-3 rounded-2xl border p-6 transition-colors">
+                  <point.icon className="text-foreground size-6 transition-transform duration-300 group-hover:scale-110" />
+                  <h3 className="font-heading text-lg font-bold">{point.pain}</h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">{point.fix}</p>
                 </div>
               </Reveal>
             ))}
           </div>
         </section>
-
-        <section
-          aria-labelledby="how-it-works"
-          className="bg-secondary text-secondary-foreground relative -mx-6 overflow-hidden px-6 py-16"
-        >
-          <div
-            aria-hidden
-            className="text-primary/30 bg-road-dashes absolute top-0 right-0 left-0 h-1"
-          />
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
-            <Reveal className="max-w-2xl">
-              <h2
-                id="how-it-works"
-                className="font-heading text-2xl font-bold tracking-tight sm:text-3xl"
-              >
-                From &ldquo;anyone up for a ride?&rdquo; to kickstands up
-              </h2>
-              <p className="text-secondary-foreground/60 mt-2">
-                Four steps between you and the next loop.
-              </p>
-            </Reveal>
-            <div className="relative grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-              <div
-                aria-hidden
-                className="border-primary/30 absolute top-6 right-[12%] left-[12%] hidden border-t border-dashed lg:block"
-              />
-              {HOW_IT_WORKS.map((step, index) => (
-                <Reveal key={step.title} delay={index * 150} className="relative">
-                  <div className="flex flex-col gap-3">
-                    <div className="bg-secondary ring-primary text-primary font-heading relative z-10 flex size-12 items-center justify-center rounded-full text-lg font-semibold ring-2">
-                      {index + 1}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <step.icon className="text-primary size-4" />
-                      <h3 className="font-heading text-lg font-semibold">{step.title}</h3>
-                    </div>
-                    <p className="text-secondary-foreground/60 text-sm leading-relaxed">
-                      {step.description}
-                    </p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-          <h2 className="font-heading text-2xl font-bold tracking-tight">Every Kind Of Ride</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {RIDE_TYPES.map((type) => {
-              const Icon = RIDE_TYPE_ICONS[type.value];
-              return (
-                <Link
-                  key={type.value}
-                  href={`/rides?types=${type.value}`}
-                  className="border-border hover:border-primary/60 hover:bg-primary/5 group flex flex-col items-center gap-2 rounded-xl border py-6 text-center transition-colors"
-                >
-                  <Icon className="text-primary size-5 transition-transform group-hover:scale-110" />
-                  <span className="text-sm font-medium">{type.label}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
       </main>
 
-      {/* Join community CTA */}
-      <section className="bg-secondary text-secondary-foreground relative overflow-hidden px-6 py-20">
-        <Image
-          src={themedPhoto("motorcycle,group,riders", 401, 1920, 900)}
-          alt=""
-          fill
-          unoptimized
-          className="object-cover opacity-25"
+      {/* Join the road family CTA — full-bleed cinematic close. */}
+      <section className="bg-secondary text-secondary-foreground relative flex min-h-[70svh] items-center overflow-hidden px-6 py-28">
+        <Image src="/footer-mountains.jpg" alt="" fill unoptimized className="object-cover" />
+        <div className="absolute inset-0 bg-linear-to-t from-black via-black/60 to-black/70" />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_70%_at_50%_100%,rgba(231,111,36,0.25),transparent_60%)]"
         />
-        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-black/60" />
-        <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
-          <Users className="text-primary size-8" />
-          <h2 className="font-display text-5xl uppercase">Ready to plan your next ride?</h2>
-          <p className="text-secondary-foreground/70">
-            Join the RevLoop community and never ride alone.
+        <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-7 text-center">
+          <p className="text-telemetry text-primary text-[11px]">Never Ride Alone Again</p>
+          <h2 className="font-display text-6xl text-white uppercase sm:text-7xl lg:text-8xl">
+            Find your road family
+          </h2>
+          <p className="max-w-md text-lg text-pretty text-white/75">
+            Open RoadKin, claim your seat on this weekend&apos;s ride, and roll out with people who
+            ride like you do.
           </p>
           <Button
             nativeButton={false}
             render={<Link href={primaryCtaHref}>{primaryCtaLabel}</Link>}
             size="lg"
+            className="bg-sunrise h-12 border-0 px-6 text-base text-white shadow-xl transition-opacity hover:opacity-90"
           />
         </div>
       </section>
 
       <SiteFooter />
+    </div>
+  );
+}
+
+function SectionHeading({
+  eyebrow,
+  title,
+  description,
+  action,
+  eyebrowClassName,
+}: {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+  eyebrowClassName?: string;
+}) {
+  return (
+    <div className="flex items-end justify-between gap-4">
+      <div className="max-w-2xl">
+        <p className={cn("text-telemetry text-primary text-[11px]", eyebrowClassName)}>{eyebrow}</p>
+        <h2 className="font-heading mt-3 text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">
+          {title}
+        </h2>
+        {description && <p className="text-muted-foreground mt-3">{description}</p>}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+const SPOTLIGHT_ACCENT = {
+  community: { badge: "bg-ride-community text-white", icon: "text-ride-community" },
+  organized: { badge: "bg-primary text-primary-foreground", icon: "text-primary" },
+} as const;
+
+function FeaturedRideSpotlight({
+  ride,
+  accent,
+  fallbackPhoto,
+}: {
+  ride: RideWithOrganizer;
+  accent: keyof typeof SPOTLIGHT_ACCENT;
+  fallbackPhoto: string;
+}) {
+  const theme = SPOTLIGHT_ACCENT[accent];
+  return (
+    <div className="bg-card ring-foreground/10 grid grid-cols-1 overflow-hidden rounded-3xl ring-1 lg:grid-cols-2">
+      <div className="from-secondary via-secondary/60 to-secondary/30 relative aspect-video w-full bg-linear-to-br lg:aspect-auto">
+        <Image
+          src={ride.cover_image_url ?? fallbackPhoto}
+          alt={ride.title ?? "Featured ride"}
+          fill
+          unoptimized
+          className="object-cover"
+        />
+      </div>
+      <div className="flex flex-col justify-center gap-4 p-8 sm:p-10">
+        <Badge className={cn("w-fit border-0", theme.badge)}>Ride Of The Week</Badge>
+        <h3 className="font-heading text-3xl font-extrabold tracking-tight text-balance">
+          {ride.title}
+        </h3>
+        {ride.city && ride.destination && (
+          <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
+            {ride.city}
+            <ArrowRight className={cn("size-4", theme.icon)} />
+            {ride.destination}
+          </p>
+        )}
+        {ride.description && (
+          <p className="text-muted-foreground line-clamp-2">{ride.description}</p>
+        )}
+        <div className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+          <span className="flex items-center gap-1.5">
+            <Calendar className={cn("size-4", theme.icon)} />
+            {ride.ride_date && format(new Date(ride.ride_date), "EEE, MMM d")}
+          </span>
+          {ride.estimated_distance_km && (
+            <span className="flex items-center gap-1.5">
+              <Bike className={cn("size-4", theme.icon)} />
+              {ride.estimated_distance_km} km
+            </span>
+          )}
+          {ride.member_count !== null && ride.member_count > 0 && (
+            <span className="flex items-center gap-1.5">
+              <Users className={cn("size-4", theme.icon)} />
+              {ride.member_count} riders in
+            </span>
+          )}
+        </div>
+        {ride.organizer && (
+          <div className="mt-2 flex items-center gap-2">
+            <Avatar size="sm">
+              <AvatarImage
+                src={ride.organizer.profile_image_url ?? undefined}
+                alt={ride.organizer.name}
+              />
+              <AvatarFallback>{ride.organizer.name?.[0]?.toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <span className="text-muted-foreground text-telemetry text-[10px]">
+              {accent === "organized" ? "Captain" : "Led by"} {ride.organizer.name}
+            </span>
+          </div>
+        )}
+        <div className="flex flex-wrap gap-3 pt-2">
+          <Button
+            nativeButton={false}
+            render={<Link href={`/rides/${ride.id}#join`}>Claim Your Seat</Link>}
+          />
+          <Button
+            nativeButton={false}
+            variant="outline"
+            render={<Link href={`/rides/${ride.id}`}>View Ride</Link>}
+          />
+        </div>
+      </div>
     </div>
   );
 }

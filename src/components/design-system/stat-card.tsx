@@ -21,11 +21,11 @@ export function StatCard({ icon: Icon, label, value, suffix, className }: StatCa
         className,
       )}
     >
-      <Icon className="text-primary size-5" aria-hidden />
-      <p className="font-display text-4xl">
+      <Icon className="text-muted-foreground size-5" aria-hidden />
+      <p className="font-display text-5xl tabular-nums">
         <CountUp value={value} suffix={suffix} />
       </p>
-      <p className="text-muted-foreground text-sm tracking-wide uppercase">{label}</p>
+      <p className="text-muted-foreground text-telemetry text-[11px]">{label}</p>
     </div>
   );
 }

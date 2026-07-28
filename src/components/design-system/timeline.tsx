@@ -11,7 +11,14 @@ export interface TimelineItemData {
   active?: boolean;
   href?: string;
   badge?: React.ReactNode;
+  /** Community (blue) vs Organized (orange) — same accent language as RideCard. */
+  accent?: "community" | "organized";
 }
+
+const ACCENT_RING: Record<NonNullable<TimelineItemData["accent"]>, string> = {
+  community: "bg-ride-community text-white ring-ride-community/30",
+  organized: "bg-primary text-primary-foreground ring-primary/30",
+};
 
 /** A vertical route/journey timeline — ride detail stops, My Rides history. */
 export function Timeline({ items, className }: { items: TimelineItemData[]; className?: string }) {
@@ -38,7 +45,8 @@ export function Timeline({ items, className }: { items: TimelineItemData[]; clas
                 className={cn(
                   "flex size-9 shrink-0 items-center justify-center rounded-full ring-2",
                   item.active
-                    ? "bg-primary text-primary-foreground ring-primary/30"
+                    ? (item.accent && ACCENT_RING[item.accent]) ||
+                        "bg-primary text-primary-foreground ring-primary/30"
                     : "bg-muted text-muted-foreground ring-border",
                 )}
               >

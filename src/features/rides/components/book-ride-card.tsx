@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import Script from "next/script";
 import { IndianRupee } from "lucide-react";
+import { APP_NAME } from "@/constants/site";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FullscreenLoader } from "@/components/design-system/fullscreen-loader";
@@ -84,7 +85,7 @@ export function BookRideCard({
         amount: result.amount,
         currency: result.currency,
         order_id: result.orderId,
-        name: "RevLoop",
+        name: APP_NAME,
         description: "Ride booking",
         handler: () => {
           setConfirming(true);
@@ -101,13 +102,13 @@ export function BookRideCard({
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <IndianRupee className="text-primary size-4" />
+            <IndianRupee className="text-muted-foreground size-4" />
             <CardTitle>Reserve Your Spot</CardTitle>
           </div>
           <CardDescription>
             {status === "paid"
               ? "You're booked for this ride."
-              : "Pay the organizer directly through Razorpay to reserve a seat."}
+              : "Pay the Ride Captain directly through Razorpay to reserve a seat."}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
@@ -115,7 +116,7 @@ export function BookRideCard({
             <BookingSuccessAnimation />
           ) : !organizerReady ? (
             <p className="text-muted-foreground text-sm">
-              This organizer hasn&apos;t completed payout setup yet.
+              This Ride Captain hasn&apos;t completed payout setup yet.
             </p>
           ) : isRideFull ? (
             <p className="text-muted-foreground text-sm">This ride is full.</p>

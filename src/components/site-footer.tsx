@@ -10,28 +10,28 @@ export function SiteFooter() {
           <Logo />
           <p className="text-secondary-foreground/60 max-w-sm text-sm">{APP_DESCRIPTION}</p>
         </div>
-        <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+        <nav className="flex flex-wrap gap-x-7 gap-y-2">
           <Link
             href="/rides"
-            className="text-secondary-foreground/70 hover:text-secondary-foreground transition-colors"
+            className="text-secondary-foreground/70 hover:text-secondary-foreground text-telemetry text-[11px] transition-colors"
           >
             Discover Rides
           </Link>
           <Link
             href="/rides/create"
-            className="text-secondary-foreground/70 hover:text-secondary-foreground transition-colors"
+            className="text-secondary-foreground/70 hover:text-secondary-foreground text-telemetry text-[11px] transition-colors"
           >
-            Create A Ride
+            Post a Ride
           </Link>
           <Link
             href="/profile"
-            className="text-secondary-foreground/70 hover:text-secondary-foreground transition-colors"
+            className="text-secondary-foreground/70 hover:text-secondary-foreground text-telemetry text-[11px] transition-colors"
           >
-            Dashboard
+            Rider Home
           </Link>
           <Link
             href="/notifications"
-            className="text-secondary-foreground/70 hover:text-secondary-foreground transition-colors"
+            className="text-secondary-foreground/70 hover:text-secondary-foreground text-telemetry text-[11px] transition-colors"
           >
             Notifications
           </Link>

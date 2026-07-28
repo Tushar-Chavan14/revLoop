@@ -60,7 +60,7 @@ export async function generateMetadata({ params }: RiderProfilePageProps) {
 
   return {
     title: profile.name,
-    description: profile.bio?.slice(0, 160) || `${profile.name}'s rider profile on RevLoop`,
+    description: profile.bio?.slice(0, 160) || `${profile.name}'s rider profile on RoadKin`,
   };
 }
 
@@ -130,7 +130,7 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
         />
         <div
           aria-hidden
-          className="bg-road-dashes text-primary/40 absolute top-0 right-0 left-0 h-1"
+          className="bg-road-dashes absolute top-0 right-0 left-0 h-px text-white/25"
         />
         <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
       </div>
@@ -150,7 +150,8 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
             ) : null}
           </div>
           <div className="pb-1">
-            <h1 className="font-heading text-2xl font-bold tracking-tight">{profile.name}</h1>
+            <p className="text-telemetry text-primary text-[11px]">Rider</p>
+            <h1 className="font-heading text-3xl font-extrabold tracking-tight">{profile.name}</h1>
             <p className="text-muted-foreground">@{profile.username}</p>
           </div>
         </div>
@@ -158,21 +159,21 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
           <Card size="sm">
             <CardContent className="flex flex-col gap-1.5">
-              <Check className="text-primary size-4" />
+              <Check className="text-muted-foreground size-4" />
               <p className="text-muted-foreground text-xs">Rides Completed</p>
               <p className="text-sm font-medium">{attendance.attended}</p>
             </CardContent>
           </Card>
           <Card size="sm">
             <CardContent className="flex flex-col gap-1.5">
-              <X className="text-primary size-4" />
+              <X className="text-muted-foreground size-4" />
               <p className="text-muted-foreground text-xs">No-Shows</p>
               <p className="text-sm font-medium">{attendance.noShow}</p>
             </CardContent>
           </Card>
           <Card size="sm">
             <CardContent className="flex flex-col gap-1.5">
-              <Compass className="text-primary size-4" />
+              <Compass className="text-muted-foreground size-4" />
               <p className="text-muted-foreground text-xs">Rides Organized</p>
               <p className="text-sm font-medium">{organizedCount}</p>
             </CardContent>
@@ -180,7 +181,7 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
           {stats.map((stat) => (
             <Card key={stat.label} size="sm">
               <CardContent className="flex flex-col gap-1.5">
-                <stat.icon className="text-primary size-4" />
+                <stat.icon className="text-muted-foreground size-4" />
                 <p className="text-muted-foreground text-xs">{stat.label}</p>
                 <p className="text-sm font-medium">{stat.value}</p>
               </CardContent>

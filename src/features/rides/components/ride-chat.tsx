@@ -165,7 +165,7 @@ export function RideChat({
 
       {ride.meetingPoint && (
         <div className="border-border/60 bg-primary/5 flex items-center gap-2 border-b px-4 py-2 text-xs">
-          <MapPin className="text-primary size-3.5 shrink-0" />
+          <MapPin className="text-muted-foreground size-3.5 shrink-0" />
           <span className="text-muted-foreground truncate">
             Meeting at <span className="text-foreground font-medium">{ride.meetingPoint}</span>
           </span>

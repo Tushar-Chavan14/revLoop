@@ -85,9 +85,9 @@ export default function DesignSystemPage() {
   //       <Badge variant="outline" className="w-fit">
   //         Internal · not linked from product nav
   //       </Badge>
-  //       <h1 className="font-display text-6xl uppercase sm:text-8xl">RevLoop Design System</h1>
+  //       <h1 className="font-display text-6xl uppercase sm:text-8xl">RoadKin Design System</h1>
   //       <p className="text-muted-foreground max-w-2xl text-lg">
-  //         Adventure, freedom, brotherhood. Every token and component below is what future RevLoop
+  //         Adventure, freedom, brotherhood. Every token and component below is what future RoadKin
   //         screens are built from — photos before illustrations, real rides before product
   //         descriptions.
   //       </p>
@@ -504,7 +504,7 @@ export default function DesignSystemPage() {
   //         <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
   //           <p className="font-heading text-xl font-bold">This is the foundation — not a page.</p>
   //           <p className="text-muted-foreground max-w-md text-sm">
-  //             Every future RevLoop screen is composed from the tokens and components above. No
+  //             Every future RoadKin screen is composed from the tokens and components above. No
   //             redesigned pages ship until this system is signed off.
   //           </p>
   //           <Button

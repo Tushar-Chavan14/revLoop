@@ -31,15 +31,15 @@ export default function OpengraphImage() {
           letterSpacing: -2,
         }}
       >
-        <span style={{ color: "#f97316" }}>Rev</span>
-        <span style={{ marginLeft: -20 }}>Loop</span>
+        <span style={{ color: "#e76f24" }}>Road</span>
+        <span style={{ marginLeft: -20 }}>Kin</span>
       </div>
       <div
         style={{
           marginTop: 24,
           fontSize: 40,
           fontWeight: 700,
-          color: "#f97316",
+          color: "#e76f24",
           textTransform: "uppercase",
           letterSpacing: 2,
         }}
@@ -66,7 +66,7 @@ export default function OpengraphImage() {
           height: 10,
           display: "flex",
           backgroundImage:
-            "repeating-linear-gradient(90deg, #f97316 0, #f97316 40px, transparent 40px, transparent 80px)",
+            "repeating-linear-gradient(90deg, #e76f24 0, #e76f24 40px, transparent 40px, transparent 80px)",
         }}
       />
     </div>,

@@ -102,6 +102,9 @@ export async function createProfile(formData: FormData): Promise<ProfileActionRe
     if (error.code === "23505") {
       return { error: "That username is already taken" };
     }
+    // Logged server-side so a generic user-facing message doesn't also mean
+    // the real cause (RLS, constraint, trigger failure, etc.) is lost.
+    console.error("profiles upsert failed:", error);
     return { error: "Something went wrong, please try again" };
   }
 
@@ -155,6 +158,9 @@ export async function updateProfile(formData: FormData): Promise<ProfileActionRe
     if (error.code === "23505") {
       return { error: "That username is already taken" };
     }
+    // Logged server-side so a generic user-facing message doesn't also mean
+    // the real cause (RLS, constraint, trigger failure, etc.) is lost.
+    console.error("profiles upsert failed:", error);
     return { error: "Something went wrong, please try again" };
   }
 

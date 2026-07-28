@@ -280,7 +280,7 @@ export function RideForm({
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <IndianRupee className="text-primary size-4" />
+                <IndianRupee className="text-muted-foreground size-4" />
                 <CardTitle>Ride Type</CardTitle>
               </div>
               <CardDescription>
@@ -323,7 +323,7 @@ export function RideForm({
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <ImageIcon className="text-primary size-4" />
+              <ImageIcon className="text-muted-foreground size-4" />
               <CardTitle>Ride Basics</CardTitle>
             </div>
             <CardDescription>What is this ride, and what does it look like?</CardDescription>
@@ -367,7 +367,7 @@ export function RideForm({
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Calendar className="text-primary size-4" />
+                <Calendar className="text-muted-foreground size-4" />
                 <CardTitle>When</CardTitle>
               </div>
             </CardHeader>
@@ -402,7 +402,7 @@ export function RideForm({
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <MapPin className="text-primary size-4" />
+                <MapPin className="text-muted-foreground size-4" />
                 <CardTitle>Route</CardTitle>
               </div>
               <CardDescription>
@@ -509,7 +509,7 @@ export function RideForm({
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Bike className="text-primary size-4" />
+              <Bike className="text-muted-foreground size-4" />
               <CardTitle>Ride Details</CardTitle>
             </div>
           </CardHeader>
@@ -681,7 +681,7 @@ export function RideForm({
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <IndianRupee className="text-primary size-4" />
+                <IndianRupee className="text-muted-foreground size-4" />
                 <CardTitle>Pricing & Booking</CardTitle>
               </div>
               <CardDescription>Razorpay settles in INR only, so the fee is in ₹.</CardDescription>
@@ -747,7 +747,7 @@ export function RideForm({
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <ListChecks className="text-primary size-4" />
+                <ListChecks className="text-muted-foreground size-4" />
                 <CardTitle>What&apos;s Included</CardTitle>
               </div>
               <CardDescription>Select everything covered by the ride fee.</CardDescription>
@@ -826,7 +826,7 @@ export function RideForm({
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Clock className="text-primary size-4" />
+                <Clock className="text-muted-foreground size-4" />
                 <CardTitle>Trip Itinerary</CardTitle>
               </div>
               <CardDescription>
@@ -924,7 +924,7 @@ export function RideForm({
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Settings2 className="text-primary size-4" />
+                <Settings2 className="text-muted-foreground size-4" />
                 <CardTitle>Ride Rules</CardTitle>
               </div>
             </CardHeader>
@@ -976,8 +976,14 @@ export function RideForm({
           <span />
         )}
         {isLastStep ? (
-          <Button key="submit" type="submit" disabled={isPending} size="lg">
-            {isPending ? "Saving..." : mode === "create" ? "Create Ride" : "Save Changes"}
+          <Button
+            key="submit"
+            type="submit"
+            disabled={isPending}
+            size="lg"
+            className="bg-sunrise border-0 text-white shadow-lg transition-opacity hover:opacity-90"
+          >
+            {isPending ? "Publishing..." : mode === "create" ? "Publish This Ride" : "Save Changes"}
           </Button>
         ) : (
           <Button key="next" type="button" size="lg" onClick={handleNext}>
@@ -1017,29 +1023,29 @@ function RidePreviewCard({
           <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
             {values.rideDate && (
               <span className="flex items-center gap-1.5">
-                <Calendar className="text-primary size-3.5" />
+                <Calendar className="text-muted-foreground size-3.5" />
                 {format(new Date(values.rideDate), "EEE, MMM d")}
               </span>
             )}
             <span className="flex items-center gap-1.5">
-              <Users className="text-primary size-3.5" />
+              <Users className="text-muted-foreground size-3.5" />
               Up to {values.maxRiders} riders
             </span>
             {values.pricingModel === "organized" && values.rideFee && (
               <span className="flex items-center gap-1.5">
-                <IndianRupee className="text-primary size-3.5" />₹{values.rideFee}
+                <IndianRupee className="text-muted-foreground size-3.5" />₹{values.rideFee}
               </span>
             )}
           </div>
           {values.pricingModel === "organized" && values.bookingDeadline && (
             <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
-              <Clock className="text-primary size-3.5 shrink-0" />
+              <Clock className="text-muted-foreground size-3.5 shrink-0" />
               Book by {format(new Date(values.bookingDeadline), "MMM d, h:mm a")}
             </p>
           )}
           {values.destination && (
             <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
-              <MapPin className="text-primary size-3.5 shrink-0" />
+              <MapPin className="text-muted-foreground size-3.5 shrink-0" />
               {values.destination}
             </p>
           )}
