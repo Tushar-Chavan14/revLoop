@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import { APP_NAME } from "@/constants/site";
 
 interface LogoProps {
   className?: string;
@@ -22,7 +21,7 @@ export function Logo({ className, iconClassName }: LogoProps) {
         className={cn("h-8 w-8", iconClassName)}
       />
       <span className="font-heading text-[15px] font-extrabold tracking-[0.2em] uppercase">
-        {APP_NAME}
+        Road<span className="text-primary">Kin</span>
       </span>
     </div>
   );
