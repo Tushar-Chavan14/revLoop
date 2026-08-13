@@ -23,6 +23,7 @@ export async function SiteHeader() {
       ])
     : [[], 0, [], null, "user" as const];
   const isOrganizer = role === "organizer";
+  const isAdmin = role === "admin";
 
   return (
     <header className="border-border/60 bg-background/70 supports-backdrop-filter:bg-background/55 sticky top-0 z-40 border-b backdrop-blur-xl">
@@ -56,15 +57,17 @@ export async function SiteHeader() {
               communityActivity={communityActivity}
             />
           )}
-          <Button
-            nativeButton={false}
-            render={
-              <Link href={user ? "/rides/create" : "/login"}>
-                {user ? (isOrganizer ? "Host a Ride" : "Post a Ride") : "Get Started"}
-              </Link>
-            }
-            size="sm"
-          />
+          {!isAdmin && (
+            <Button
+              nativeButton={false}
+              render={
+                <Link href={user ? "/rides/create" : "/login"}>
+                  {user ? (isOrganizer ? "Host a Ride" : "Post a Ride") : "Get Started"}
+                </Link>
+              }
+              size="sm"
+            />
+          )}
           {user ? (
             <UserMenu
               name={

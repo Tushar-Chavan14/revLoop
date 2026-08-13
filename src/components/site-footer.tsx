@@ -6,7 +6,9 @@ import { getMyRole } from "@/services/roles";
 
 export async function SiteFooter() {
   const user = await getAuthUser();
-  const isOrganizer = user ? (await getMyRole()) === "organizer" : false;
+  const role = user ? await getMyRole() : null;
+  const isOrganizer = role === "organizer";
+  const isAdmin = role === "admin";
 
   return (
     <footer className="bg-secondary text-secondary-foreground border-t border-white/10">
@@ -22,12 +24,14 @@ export async function SiteFooter() {
           >
             Discover Rides
           </Link>
-          <Link
-            href="/rides/create"
-            className="text-secondary-foreground/70 hover:text-secondary-foreground text-telemetry text-[11px] transition-colors"
-          >
-            {isOrganizer ? "Host a Ride" : "Post a Ride"}
-          </Link>
+          {!isAdmin && (
+            <Link
+              href="/rides/create"
+              className="text-secondary-foreground/70 hover:text-secondary-foreground text-telemetry text-[11px] transition-colors"
+            >
+              {isOrganizer ? "Host a Ride" : "Post a Ride"}
+            </Link>
+          )}
           <Link
             href="/profile"
             className="text-secondary-foreground/70 hover:text-secondary-foreground text-telemetry text-[11px] transition-colors"
