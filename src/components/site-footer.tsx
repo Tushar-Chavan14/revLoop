@@ -46,6 +46,20 @@ export async function SiteFooter() {
           </Link>
         </nav>
       </div>
+      <div className="border-secondary-foreground/10 mx-auto flex w-full max-w-6xl flex-wrap gap-x-6 gap-y-2 border-t px-6 py-5">
+        <Link
+          href="/privacy"
+          className="text-secondary-foreground/50 hover:text-secondary-foreground/80 text-xs transition-colors"
+        >
+          Privacy Policy
+        </Link>
+        <Link
+          href="/terms"
+          className="text-secondary-foreground/50 hover:text-secondary-foreground/80 text-xs transition-colors"
+        >
+          Terms & Conditions
+        </Link>
+      </div>
     </footer>
   );
 }

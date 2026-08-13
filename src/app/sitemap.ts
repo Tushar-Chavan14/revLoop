@@ -31,6 +31,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "hourly",
       priority: 0.9,
     },
+    {
+      url: `${siteUrl}/privacy`,
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
+    {
+      url: `${siteUrl}/terms`,
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
     ...rideEntries,
   ];
 }
