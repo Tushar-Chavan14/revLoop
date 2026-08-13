@@ -7,6 +7,7 @@ import { RIDER_LEVELS } from "@/constants/rider-level";
 import { RidesExplorer } from "@/features/rides/components/rides-explorer";
 import { RidesFilters } from "@/features/rides/components/rides-filters";
 import { getAuthUser } from "@/services/profiles";
+import { getMyRole } from "@/services/roles";
 import { getJoinedRideIds } from "@/services/ride-participation";
 import {
   getPopularDestinations,
@@ -85,13 +86,18 @@ function parseFilters(params: Record<string, string | string[] | undefined>): Ri
 
 export default async function RidesPage({ searchParams }: RidesPageProps) {
   const params = await searchParams;
-  const filters = parseFilters(params);
   const cityLabel = first(params.cityLabel);
-  const [user, result, cityOptions] = await Promise.all([
-    getAuthUser(),
-    listRides(filters),
-    getPopularDestinations(50),
-  ]);
+  const user = await getAuthUser();
+  const isOrganizerViewer = user ? (await getMyRole()) === "organizer" : false;
+
+  // Defense-in-depth: an organizer account only ever sees other organizers'
+  // Organized Rides, regardless of query params they might tamper with —
+  // Community rides are hidden from organizer accounts entirely.
+  const filters = isOrganizerViewer
+    ? { ...parseFilters(params), pricingModel: "organized" as const, excludeOrganizerId: user!.id }
+    : parseFilters(params);
+
+  const [result, cityOptions] = await Promise.all([listRides(filters), getPopularDestinations(50)]);
   const joinedRideIds = user
     ? await getJoinedRideIds(
         user.id,
@@ -117,7 +123,7 @@ export default async function RidesPage({ searchParams }: RidesPageProps) {
 
         <div className="sticky top-16.25 z-30 mx-auto w-full max-w-6xl">
           <div className="bg-background/70 supports-backdrop-filter:bg-background/55 ring-border rounded-2xl p-2 shadow-lg ring-1 backdrop-blur-xl">
-            <RidesFilters cityOptions={cityOptions} />
+            <RidesFilters cityOptions={cityOptions} hidePricingFilter={isOrganizerViewer} />
           </div>
         </div>
 

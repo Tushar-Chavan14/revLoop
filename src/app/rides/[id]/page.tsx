@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import {
+  AtSign,
   Bike,
+  Building2,
   Calendar,
   Check,
   Clock,
@@ -13,7 +15,10 @@ import {
   Fuel,
   Hourglass,
   IndianRupee,
+  Lock,
+  Mail,
   MapPin,
+  Phone,
   ShieldCheck,
   UserRound,
   Users,
@@ -41,6 +46,8 @@ import { RIDE_INCLUSIONS } from "@/constants/ride-inclusions";
 import { cn } from "@/lib/utils";
 import { getAuthUser } from "@/services/profiles";
 import { organizerHasPayoutDetails } from "@/services/organizer-payout";
+import { getMyRole } from "@/services/roles";
+import { getOrganizerDetails } from "@/services/organizer-details";
 import { getMyRideBooking, getMyRideRequest, getRideMembers } from "@/services/ride-participation";
 import { getRideMessages } from "@/services/ride-chat";
 import { getRideById, getRideImages } from "@/services/rides";
@@ -91,11 +98,14 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
   const isOrganizedRide = ride.pricing_model === "organized";
 
-  const [members, images, organizerReady] = await Promise.all([
+  const [viewerRole, members, images, organizerReady, organizerDetails] = await Promise.all([
+    user ? getMyRole() : "user",
     getRideMembers(id),
     getRideImages(id),
     isOrganizedRide && ride.organizer_id ? organizerHasPayoutDetails(ride.organizer_id) : false,
+    isOrganizedRide && ride.organizer_id ? getOrganizerDetails(ride.organizer_id) : null,
   ]);
+  const isOrganizerViewer = viewerRole === "organizer";
   const isMember = user ? members.some((member) => member.user_id === user.id) : false;
   const chatMessages = isMember ? await getRideMessages(id) : [];
   const chatSenderProfiles = isMember
@@ -185,7 +195,22 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
   const joinSlot = (
     <div id="join" className="scroll-mt-24">
-      {!isOrganizer && !isMember && user && isOrganizedRide && (
+      {!isOrganizer && !isMember && user && isOrganizerViewer && (
+        <Card>
+          <CardContent className="flex flex-col gap-1">
+            <p className="text-sm font-medium">Organizer accounts can&apos;t join rides.</p>
+            <p className="text-muted-foreground text-sm">
+              Host your own from your{" "}
+              <Link href="/profile" className="text-primary underline">
+                organizer home
+              </Link>
+              .
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isOrganizer && !isMember && user && !isOrganizerViewer && isOrganizedRide && (
         <BookRideCard
           rideId={id}
           myBooking={myBooking}
@@ -199,7 +224,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         />
       )}
 
-      {!isOrganizer && !isMember && user && !isOrganizedRide && (
+      {!isOrganizer && !isMember && user && !isOrganizerViewer && !isOrganizedRide && (
         <JoinRequestCard rideId={id} myRequest={myRequest} isRideFull={isRideFull} />
       )}
 
@@ -326,7 +351,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             </div>
             {isOrganizer && (
               <Link href="/profile" className="text-muted-foreground text-xs hover:underline">
-                Manage join requests from your Rider Home →
+                Manage join requests from your {isOrganizerViewer ? "Organizer Home" : "Rider Home"} →
               </Link>
             )}
           </div>
@@ -335,6 +360,44 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             <p className="text-muted-foreground text-lg leading-relaxed text-pretty">
               {ride.description}
             </p>
+          )}
+
+          {isOrganizedRide && organizerDetails && (
+            <Card>
+              <CardContent className="flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <Building2 className="text-muted-foreground size-4" />
+                  <h2 className="font-heading text-lg font-bold">{organizerDetails.business_name}</h2>
+                </div>
+                <div className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                  <span>{organizerDetails.events_organised_count} events organised</span>
+                  <span>Signature trip: {organizerDetails.primary_destination}</span>
+                  {organizerDetails.instagram_handle && (
+                    <span className="flex items-center gap-1">
+                      <AtSign className="size-3.5" />
+                      {organizerDetails.instagram_handle}
+                    </span>
+                  )}
+                </div>
+                {isMember ? (
+                  <div className="flex flex-col gap-1.5 text-sm">
+                    <span className="flex items-center gap-2">
+                      <Mail className="text-primary size-3.5" />
+                      {organizerDetails.business_email}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <Phone className="text-primary size-3.5" />
+                      {organizerDetails.business_phone}
+                    </span>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                    <Lock className="size-3" />
+                    Contact details unlock once you&apos;ve joined this ride.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           )}
 
           <section className="flex flex-col gap-4">

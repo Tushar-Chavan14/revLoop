@@ -61,7 +61,6 @@ interface RideFormProps {
 type StepDef = { label: string; fields: (keyof RideFormValues)[] };
 
 const BASE_STEPS: StepDef[] = [
-  { label: "Ride Type", fields: ["pricingModel"] },
   { label: "Basics", fields: ["title", "description"] },
   {
     label: "When & Where",
@@ -275,48 +274,14 @@ export function RideForm({
     <form onSubmit={formik.handleSubmit} noValidate className="flex flex-col gap-8">
       <StepIndicator steps={steps.map((s) => s.label)} currentStep={step} />
 
-      {currentStep.label === "Ride Type" && (
-        <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <IndianRupee className="text-muted-foreground size-4" />
-                <CardTitle>Ride Type</CardTitle>
-              </div>
-              <CardDescription>
-                Community rides are free to join. Organized rides are paid — riders reserve a seat
-                by paying you directly through the app.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <ToggleGroup
-                variant="outline"
-                spacing={0}
-                value={[formik.values.pricingModel]}
-                onValueChange={(value) => {
-                  const next = value[value.length - 1];
-                  if (!next) return;
-                  formik.setFieldValue("pricingModel", next);
-                }}
-                className="flex-wrap"
-              >
-                <ToggleGroupItem value="community">Community Ride</ToggleGroupItem>
-                <ToggleGroupItem value="organized" disabled={!canCreateOrganized}>
-                  Organized Ride
-                </ToggleGroupItem>
-              </ToggleGroup>
-              {!canCreateOrganized && (
-                <p className="text-muted-foreground text-xs">
-                  Complete{" "}
-                  <Link href="/profile#payout" className="text-primary underline">
-                    payout setup in your profile
-                  </Link>{" "}
-                  before you can create an Organized Ride.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
+      {isOrganized && !canCreateOrganized && (
+        <p className="text-muted-foreground text-xs">
+          Complete{" "}
+          <Link href="/profile#payout" className="text-primary underline">
+            payout setup in your profile
+          </Link>{" "}
+          before this ride can go live.
+        </p>
       )}
 
       {currentStep.label === "Basics" && (

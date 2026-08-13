@@ -1,8 +1,13 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { APP_DESCRIPTION } from "@/constants/site";
+import { getAuthUser } from "@/services/profiles";
+import { getMyRole } from "@/services/roles";
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const user = await getAuthUser();
+  const isOrganizer = user ? (await getMyRole()) === "organizer" : false;
+
   return (
     <footer className="bg-secondary text-secondary-foreground border-t border-white/10">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10 sm:flex-row sm:items-center sm:justify-between">
@@ -21,13 +26,13 @@ export function SiteFooter() {
             href="/rides/create"
             className="text-secondary-foreground/70 hover:text-secondary-foreground text-telemetry text-[11px] transition-colors"
           >
-            Post a Ride
+            {isOrganizer ? "Host a Ride" : "Post a Ride"}
           </Link>
           <Link
             href="/profile"
             className="text-secondary-foreground/70 hover:text-secondary-foreground text-telemetry text-[11px] transition-colors"
           >
-            Rider Home
+            {isOrganizer ? "Organizer Home" : "Rider Home"}
           </Link>
           <Link
             href="/notifications"

@@ -31,6 +31,8 @@ export interface RideFilters {
   speed?: Enums<"speed_level">;
   difficulty?: Enums<"rider_level">;
   pricingModel?: Enums<"pricing_model">;
+  /** Excludes a specific organizer's own rides from the feed (used for the organizer-scoped browse view). */
+  excludeOrganizerId?: string;
   dateFrom?: string;
   dateTo?: string;
   openSeatsOnly?: boolean;
@@ -81,6 +83,9 @@ export async function listRides(filters: RideFilters = {}): Promise<RideListResu
   }
   if (filters.pricingModel) {
     query = query.eq("pricing_model", filters.pricingModel);
+  }
+  if (filters.excludeOrganizerId) {
+    query = query.neq("organizer_id", filters.excludeOrganizerId);
   }
   if (filters.dateTo) {
     query = query.lte("ride_date", filters.dateTo);

@@ -53,7 +53,7 @@ export default async function ProfileSetupPage() {
           </div>
 
           <div className="mt-4 flex flex-col gap-4">
-            <p className="text-telemetry text-[11px] text-white/70">New Rider · Welcome Aboard</p>
+            <p className="text-telemetry text-[11px] text-white/70">Welcome Aboard</p>
             <h1 className="font-display text-5xl leading-[0.9] text-white uppercase sm:text-7xl">
               Welcome to the crew
             </h1>
@@ -83,6 +83,7 @@ export default async function ProfileSetupPage() {
           action={createProfile}
           initialAvatarUrl={getOAuthAvatarUrl(user.user_metadata)}
           initialValues={{
+            accountType: "rider",
             name:
               typeof user.user_metadata?.full_name === "string"
                 ? toTitleCase(user.user_metadata.full_name)
@@ -94,6 +95,11 @@ export default async function ProfileSetupPage() {
             bikeModel: "",
             experienceLevel: "",
             yearsRiding: 0,
+            businessName: "",
+            primaryDestination: "",
+            businessEmail: "",
+            businessPhone: "",
+            eventsOrganisedCount: 0,
             bio: "",
             instagramHandle: "",
           }}

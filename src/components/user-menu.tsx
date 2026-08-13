@@ -18,9 +18,10 @@ interface UserMenuProps {
   name: string;
   username?: string | null;
   avatarUrl?: string | null;
+  isOrganizer?: boolean;
 }
 
-export function UserMenu({ name, username, avatarUrl }: UserMenuProps) {
+export function UserMenu({ name, username, avatarUrl, isOrganizer }: UserMenuProps) {
   const [isPending, startTransition] = useTransition();
   const firstName = name.split(" ")[0];
 
@@ -42,7 +43,7 @@ export function UserMenu({ name, username, avatarUrl }: UserMenuProps) {
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<Link href="/profile" />}>
           <UserRound />
-          Rider Home
+          {isOrganizer ? "Organizer Home" : "Rider Home"}
         </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/profile/rides" />}>
           <Compass />

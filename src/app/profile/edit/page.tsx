@@ -4,6 +4,8 @@ import { SiteHeader } from "@/components/site-header";
 import { updateProfile } from "@/features/profile/actions/profile-actions";
 import { ProfileForm } from "@/features/profile/components/profile-form";
 import { getAuthUser, getProfileByUserId } from "@/services/profiles";
+import { getOrganizerDetails } from "@/services/organizer-details";
+import { getMyRole } from "@/services/roles";
 
 export const metadata = {
   title: "Edit Profile",
@@ -20,6 +22,10 @@ export default async function EditProfilePage() {
     redirect("/profile/setup");
   }
 
+  const role = await getMyRole();
+  const isOrganizer = role === "organizer";
+  const organizerDetails = isOrganizer ? await getOrganizerDetails(user.id) : null;
+
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
@@ -27,13 +33,18 @@ export default async function EditProfilePage() {
         <PageHeading
           eyebrow="Your Profile"
           title="Edit profile"
-          description="Keep your rider details up to date."
+          description={
+            isOrganizer
+              ? "Keep your business details up to date."
+              : "Keep your rider details up to date."
+          }
         />
         <ProfileForm
           mode="edit"
           action={updateProfile}
           initialAvatarUrl={profile.profile_image_url}
           initialValues={{
+            accountType: isOrganizer ? "organizer" : "rider",
             name: profile.name,
             username: profile.username,
             city: profile.city ?? "",
@@ -42,6 +53,11 @@ export default async function EditProfilePage() {
             bikeModel: profile.bike_model ?? "",
             experienceLevel: profile.experience_level ?? "",
             yearsRiding: profile.years_riding ?? 0,
+            businessName: organizerDetails?.business_name ?? "",
+            primaryDestination: organizerDetails?.primary_destination ?? "",
+            businessEmail: organizerDetails?.business_email ?? "",
+            businessPhone: organizerDetails?.business_phone ?? "",
+            eventsOrganisedCount: organizerDetails?.events_organised_count ?? 0,
             bio: profile.bio ?? "",
             instagramHandle: profile.instagram_handle ?? "",
           }}

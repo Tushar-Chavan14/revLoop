@@ -46,7 +46,14 @@ const PRICING_OPTIONS = [
   { value: "organized", label: "Organized (Paid)" },
 ] as const;
 
-export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[] }) {
+export function RidesFilters({
+  cityOptions,
+  hidePricingFilter,
+}: {
+  cityOptions: DestinationSummary[];
+  /** Organizer accounts only ever browse Organized Rides — the toggle is a foregone conclusion for them. */
+  hidePricingFilter?: boolean;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -205,29 +212,31 @@ export function RidesFilters({ cityOptions }: { cityOptions: DestinationSummary[
           </div>
 
           <div className="flex flex-col gap-2.5">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-muted-foreground w-20 shrink-0 text-xs">Category</span>
-              <ToggleGroup
-                variant="outline"
-                size="sm"
-                spacing={0}
-                value={[pricing || "any"]}
-                onValueChange={(value) => {
-                  const next = value[value.length - 1];
-                  updateParams({ pricing: !next || next === "any" ? null : next });
-                }}
-                className="flex-wrap"
-              >
-                <ToggleGroupItem value="any" className="text-xs">
-                  All
-                </ToggleGroupItem>
-                {PRICING_OPTIONS.map((option) => (
-                  <ToggleGroupItem key={option.value} value={option.value} className="text-xs">
-                    {option.label}
+            {!hidePricingFilter && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-muted-foreground w-20 shrink-0 text-xs">Category</span>
+                <ToggleGroup
+                  variant="outline"
+                  size="sm"
+                  spacing={0}
+                  value={[pricing || "any"]}
+                  onValueChange={(value) => {
+                    const next = value[value.length - 1];
+                    updateParams({ pricing: !next || next === "any" ? null : next });
+                  }}
+                  className="flex-wrap"
+                >
+                  <ToggleGroupItem value="any" className="text-xs">
+                    All
                   </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            </div>
+                  {PRICING_OPTIONS.map((option) => (
+                    <ToggleGroupItem key={option.value} value={option.value} className="text-xs">
+                      {option.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </div>
+            )}
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-muted-foreground w-20 shrink-0 text-xs">Speed</span>
               <ToggleGroup

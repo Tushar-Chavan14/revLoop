@@ -5,6 +5,7 @@ import { createRide } from "@/features/rides/actions/ride-actions";
 import { RideForm } from "@/features/rides/components/ride-form";
 import { getAuthUser, getProfileByUserId } from "@/services/profiles";
 import { getPayoutDetails, hasPayoutDetails } from "@/services/organizer-payout";
+import { getMyRole } from "@/services/roles";
 import { isProfileComplete } from "@/utils/profile-completeness";
 
 export const metadata = {
@@ -17,11 +18,15 @@ export default async function CreateRidePage() {
     redirect("/login");
   }
 
-  const profile = await getProfileByUserId(user.id);
-  if (!isProfileComplete(profile)) {
+  const [profile, role] = await Promise.all([getProfileByUserId(user.id), getMyRole()]);
+  if (role === "admin") {
+    redirect("/admin/settlements");
+  }
+  if (!isProfileComplete(profile, role)) {
     redirect("/profile/setup");
   }
 
+  const pricingModel = role === "organizer" ? "organized" : "community";
   const payoutDetails = await getPayoutDetails(user.id);
 
   return (
@@ -61,7 +66,7 @@ export default async function CreateRidePage() {
             estimatedDistanceKm: undefined,
             estimatedDurationDays: undefined,
             estimatedDurationHours: undefined,
-            pricingModel: "community",
+            pricingModel,
             rideFee: undefined,
             bookingDeadline: undefined,
             minimumRiders: undefined,

@@ -7,19 +7,22 @@ import { UserMenu } from "@/components/user-menu";
 import { getAuthUser, getProfileByUserId } from "@/services/profiles";
 import { getRecentNotifications, getUnreadNotificationCount } from "@/services/notifications";
 import { getCommunityActivity } from "@/services/rides";
+import { getMyRole } from "@/services/roles";
 import { toTitleCase } from "@/utils/capitalize";
 import { getOAuthAvatarUrl } from "@/utils/oauth-metadata";
 
 export async function SiteHeader() {
   const user = await getAuthUser();
-  const [notifications, unreadCount, communityActivity, profile] = user
+  const [notifications, unreadCount, communityActivity, profile, role] = user
     ? await Promise.all([
         getRecentNotifications(user.id),
         getUnreadNotificationCount(user.id),
         getCommunityActivity(8),
         getProfileByUserId(user.id),
+        getMyRole(),
       ])
-    : [[], 0, [], null];
+    : [[], 0, [], null, "user" as const];
+  const isOrganizer = role === "organizer";
 
   return (
     <header className="border-border/60 bg-background/70 supports-backdrop-filter:bg-background/55 sticky top-0 z-40 border-b backdrop-blur-xl">
@@ -57,7 +60,7 @@ export async function SiteHeader() {
             nativeButton={false}
             render={
               <Link href={user ? "/rides/create" : "/login"}>
-                {user ? "Post a Ride" : "Get Started"}
+                {user ? (isOrganizer ? "Host a Ride" : "Post a Ride") : "Get Started"}
               </Link>
             }
             size="sm"
@@ -72,6 +75,7 @@ export async function SiteHeader() {
               }
               username={profile?.username}
               avatarUrl={profile?.profile_image_url ?? getOAuthAvatarUrl(user.user_metadata)}
+              isOrganizer={isOrganizer}
             />
           ) : (
             <Button

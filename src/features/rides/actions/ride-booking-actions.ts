@@ -5,6 +5,7 @@ import { refresh } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createBookingOrder as createRazorpayOrder } from "@/lib/razorpay/client";
 import { organizerHasPayoutDetails } from "@/services/organizer-payout";
+import { getMyRole } from "@/services/roles";
 
 type ActionResult = { error: string };
 
@@ -27,6 +28,16 @@ export async function createBookingOrder(
   } = await supabase.auth.getUser();
   if (!user) {
     redirect("/login");
+  }
+
+  const role = await getMyRole();
+  if (role !== "user") {
+    return {
+      error:
+        role === "organizer"
+          ? "Organizer accounts can't join rides."
+          : "Admin accounts can't join rides.",
+    };
   }
 
   const { data: ride } = await supabase

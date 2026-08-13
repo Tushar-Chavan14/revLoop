@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SiteHeader } from "@/components/site-header";
 import { rideToTimelineItem } from "@/features/rides/ride-timeline-item";
 import { getAuthUser } from "@/services/profiles";
+import { getMyRole } from "@/services/roles";
 import { getMyRidesGrouped, type MyRides } from "@/services/rides";
 
 export const metadata = {
@@ -78,9 +79,13 @@ export default async function MyRidesPage() {
     redirect("/login");
   }
 
+  const role = await getMyRole();
+  const isOrganizer = role === "organizer";
+
   const { community, hosted, booked } = await getMyRidesGrouped(user.id);
-  const hasAnyRides =
-    ridesGroupCount(community) + ridesGroupCount(hosted) + ridesGroupCount(booked) > 0;
+  const hasAnyRides = isOrganizer
+    ? ridesGroupCount(hosted) > 0
+    : ridesGroupCount(community) + ridesGroupCount(hosted) + ridesGroupCount(booked) > 0;
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -92,33 +97,45 @@ export default async function MyRidesPage() {
             className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-sm"
           >
             <ArrowLeft className="size-4" />
-            Rider Home
+            {isOrganizer ? "Organizer Home" : "Rider Home"}
           </Link>
-          <p className="text-telemetry text-primary text-[11px]">Your Garage</p>
+          <p className="text-telemetry text-primary text-[11px]">
+            {isOrganizer ? "Your Rides" : "Your Garage"}
+          </p>
           <h1 className="font-heading text-3xl font-extrabold tracking-tight">My rides</h1>
           <p className="text-muted-foreground">
-            Every ride you&apos;ve organized, joined, or booked.
+            {isOrganizer
+              ? "Every ride you've hosted."
+              : "Every ride you've organized, joined, or booked."}
           </p>
         </div>
 
         {!hasAnyRides ? (
           <EmptyState
             title="No Rides Planned Yet"
-            description="Start your next adventure — create a ride or find one to join."
+            description={
+              isOrganizer
+                ? "Host your first Organized Ride to get started."
+                : "Start your next adventure — create a ride or find one to join."
+            }
             action={
               <div className="flex gap-2">
                 <Button
                   nativeButton={false}
-                  render={<Link href="/rides/create">Post A Ride</Link>}
+                  render={<Link href="/rides/create">{isOrganizer ? "Host A Ride" : "Post A Ride"}</Link>}
                 />
-                <Button
-                  nativeButton={false}
-                  variant="outline"
-                  render={<Link href="/rides">Discover Rides</Link>}
-                />
+                {!isOrganizer && (
+                  <Button
+                    nativeButton={false}
+                    variant="outline"
+                    render={<Link href="/rides">Discover Rides</Link>}
+                  />
+                )}
               </div>
             }
           />
+        ) : isOrganizer ? (
+          <RidesGroupSections group={hosted} />
         ) : (
           <Tabs defaultValue="community">
             <TabsList>

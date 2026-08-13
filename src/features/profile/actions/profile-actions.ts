@@ -13,16 +13,24 @@ type ProfileActionResult = { error?: string } | void;
 
 function parseProfileFormData(formData: FormData) {
   return {
+    accountType: String(formData.get("accountType") ?? "rider"),
     name: toTitleCase(String(formData.get("name") ?? "").trim()),
     username: String(formData.get("username") ?? "")
       .trim()
       .toLowerCase(),
     city: toTitleCase(String(formData.get("city") ?? "").trim()),
     country: toTitleCase(String(formData.get("country") ?? "").trim()),
-    bikeBrand: toTitleCase(String(formData.get("bikeBrand") ?? "").trim()),
-    bikeModel: toTitleCase(String(formData.get("bikeModel") ?? "").trim()),
-    experienceLevel: String(formData.get("experienceLevel") ?? ""),
-    yearsRiding: Number(formData.get("yearsRiding")),
+    bikeBrand: toTitleCase(String(formData.get("bikeBrand") ?? "").trim()) || undefined,
+    bikeModel: toTitleCase(String(formData.get("bikeModel") ?? "").trim()) || undefined,
+    experienceLevel: (formData.get("experienceLevel") as string) || undefined,
+    yearsRiding: formData.get("yearsRiding") ? Number(formData.get("yearsRiding")) : undefined,
+    businessName: (formData.get("businessName") as string)?.trim() || undefined,
+    primaryDestination: (formData.get("primaryDestination") as string)?.trim() || undefined,
+    businessEmail: (formData.get("businessEmail") as string)?.trim() || undefined,
+    businessPhone: (formData.get("businessPhone") as string)?.trim() || undefined,
+    eventsOrganisedCount: formData.get("eventsOrganisedCount")
+      ? Number(formData.get("eventsOrganisedCount"))
+      : undefined,
     bio: (formData.get("bio") as string)?.trim() || undefined,
     instagramHandle: (formData.get("instagramHandle") as string)?.trim() || undefined,
   };
@@ -90,8 +98,8 @@ export async function createProfile(formData: FormData): Promise<ProfileActionRe
     bike_brand: parsed.bikeBrand,
     bike_model: parsed.bikeModel,
     // Safe: profileSchema.isValid(parsed) above already confirmed this is one
-    // of the enum's literal values.
-    experience_level: parsed.experienceLevel as Enums<"rider_level">,
+    // of the enum's literal values (when accountType is "rider").
+    experience_level: parsed.experienceLevel as Enums<"rider_level"> | undefined,
     years_riding: parsed.yearsRiding,
     bio: parsed.bio,
     instagram_handle: parsed.instagramHandle,
@@ -106,6 +114,32 @@ export async function createProfile(formData: FormData): Promise<ProfileActionRe
     // the real cause (RLS, constraint, trigger failure, etc.) is lost.
     console.error("profiles upsert failed:", error);
     return { error: "Something went wrong, please try again" };
+  }
+
+  if (parsed.accountType === "organizer") {
+    // A trigger already inserted a 'user' role row alongside the profile —
+    // this flips it to 'organizer' (one-directional, RLS-enforced).
+    const { error: roleError } = await supabase
+      .from("user_roles")
+      .update({ role: "organizer" })
+      .eq("user_id", user.id);
+    if (roleError) {
+      console.error("user_roles update failed:", roleError);
+      return { error: "Profile created, but account type couldn't be saved — contact support." };
+    }
+
+    const { error: organizerError } = await supabase.from("organizer_details").insert({
+      user_id: user.id,
+      business_name: parsed.businessName!,
+      primary_destination: parsed.primaryDestination!,
+      business_email: parsed.businessEmail!,
+      business_phone: parsed.businessPhone!,
+      events_organised_count: parsed.eventsOrganisedCount!,
+    });
+    if (organizerError) {
+      console.error("organizer_details insert failed:", organizerError);
+      return { error: "Profile created, but business details couldn't be saved — edit your profile to add them." };
+    }
   }
 
   redirect("/");
@@ -135,6 +169,8 @@ export async function updateProfile(formData: FormData): Promise<ProfileActionRe
     return { error: "Could not upload profile image" };
   }
 
+  // Account type (rider/organizer, stored as a role) is chosen once at
+  // onboarding and is never editable here.
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -145,8 +181,8 @@ export async function updateProfile(formData: FormData): Promise<ProfileActionRe
       bike_brand: parsed.bikeBrand,
       bike_model: parsed.bikeModel,
       // Safe: profileSchema.isValid(parsed) above already confirmed this is one
-      // of the enum's literal values.
-      experience_level: parsed.experienceLevel as Enums<"rider_level">,
+      // of the enum's literal values (when accountType is "rider").
+      experience_level: parsed.experienceLevel as Enums<"rider_level"> | undefined,
       years_riding: parsed.yearsRiding,
       bio: parsed.bio,
       instagram_handle: parsed.instagramHandle,
@@ -162,6 +198,25 @@ export async function updateProfile(formData: FormData): Promise<ProfileActionRe
     // the real cause (RLS, constraint, trigger failure, etc.) is lost.
     console.error("profiles upsert failed:", error);
     return { error: "Something went wrong, please try again" };
+  }
+
+  if (parsed.accountType === "organizer") {
+    const { error: organizerError } = await supabase.from("organizer_details").upsert(
+      {
+        user_id: user.id,
+        business_name: parsed.businessName!,
+        primary_destination: parsed.primaryDestination!,
+        business_email: parsed.businessEmail!,
+        business_phone: parsed.businessPhone!,
+        events_organised_count: parsed.eventsOrganisedCount!,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    );
+    if (organizerError) {
+      console.error("organizer_details upsert failed:", organizerError);
+      return { error: "Profile saved, but business details couldn't be updated — try again." };
+    }
   }
 
   redirect("/profile");

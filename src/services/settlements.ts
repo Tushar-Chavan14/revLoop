@@ -93,3 +93,35 @@ export async function getSettlementGroups(): Promise<OrganizerSettlementGroup[]>
 
   return [...groups.values()];
 }
+
+export interface PendingSettlementSummary {
+  count: number;
+  totalOwed: number;
+}
+
+// Scoped to one organizer's own rides (unlike getSettlementGroups, which is
+// admin-only and covers everyone) — used on the organizer's own dashboard.
+export async function getOrganizerPendingSettlement(
+  organizerId: string,
+): Promise<PendingSettlementSummary> {
+  const supabase = await createClient();
+
+  const { data: rides } = await supabase.from("rides").select("id").eq("organizer_id", organizerId);
+  const rideIds = (rides ?? []).map((ride) => ride.id);
+  if (rideIds.length === 0) {
+    return { count: 0, totalOwed: 0 };
+  }
+
+  const { data: bookings } = await supabase
+    .from("ride_bookings")
+    .select("organizer_amount")
+    .in("ride_id", rideIds)
+    .eq("status", "paid")
+    .is("settled_at", null);
+
+  const list = bookings ?? [];
+  return {
+    count: list.length,
+    totalOwed: list.reduce((sum, booking) => sum + Number(booking.organizer_amount), 0),
+  };
+}

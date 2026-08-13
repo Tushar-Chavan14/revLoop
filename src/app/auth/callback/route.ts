@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isCurrentUserAdmin } from "@/services/roles";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -21,6 +22,8 @@ export async function GET(request: Request) {
 
       if (!profile) {
         next = "/profile/setup";
+      } else if (await isCurrentUserAdmin()) {
+        next = "/admin/settlements";
       }
 
       const forwardedHost = request.headers.get("x-forwarded-host");

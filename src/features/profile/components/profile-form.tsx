@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type ReactNode } from "react";
 import { useFormik } from "formik";
-import { Bike, MapPin, PenLine, UserRound, type LucideIcon } from "lucide-react";
+import { Bike, Building2, MapPin, PenLine, UserRound, type LucideIcon } from "lucide-react";
 import { AvatarUpload } from "@/components/avatar-upload";
 import { LocationAutocomplete } from "@/components/location-autocomplete";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   EXPERIENCE_LEVELS,
   profileSchema,
@@ -64,8 +65,36 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
   const fieldError = (field: keyof ProfileFormValues) =>
     formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : undefined;
 
+  const isOrganizer = formik.values.accountType === "organizer";
+
   return (
     <form onSubmit={formik.handleSubmit} noValidate className="flex flex-col gap-6">
+      {mode === "create" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Account Type</CardTitle>
+            <CardDescription>
+              Riders join and organize free Community Rides. Organizers run paid, hosted rides —
+              you&apos;ll fill in business details instead of bike details.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ToggleGroup
+              variant="outline"
+              spacing={0}
+              value={[formik.values.accountType]}
+              onValueChange={(value) => {
+                const next = value[value.length - 1];
+                if (next) formik.setFieldValue("accountType", next);
+              }}
+            >
+              <ToggleGroupItem value="rider">Rider</ToggleGroupItem>
+              <ToggleGroupItem value="organizer">Organizer (business)</ToggleGroupItem>
+            </ToggleGroup>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <SectionHeader
@@ -108,70 +137,158 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
           </CardContent>
         </Card>
 
-        <Card>
-          <SectionHeader
-            step={2}
-            icon={Bike}
-            title="Riding Details"
-            description="What you ride and how long you've been at it."
-          />
-          <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Bike Brand" htmlFor="bikeBrand" error={fieldError("bikeBrand")}>
-              <Input
-                id="bikeBrand"
-                name="bikeBrand"
-                value={formik.values.bikeBrand}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-            </Field>
-            <Field label="Bike Model" htmlFor="bikeModel" error={fieldError("bikeModel")}>
-              <Input
-                id="bikeModel"
-                name="bikeModel"
-                value={formik.values.bikeModel}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-            </Field>
-            <Field
-              label="Experience Level"
-              htmlFor="experienceLevel"
-              error={fieldError("experienceLevel")}
-            >
-              <Select
-                value={formik.values.experienceLevel}
-                onValueChange={(value) => {
-                  formik.setFieldTouched("experienceLevel", true, false);
-                  formik.setFieldValue("experienceLevel", value);
-                }}
+        {isOrganizer ? (
+          <Card>
+            <SectionHeader
+              step={2}
+              icon={Building2}
+              title="Business Details"
+              description="Shown on your public profile and used to settle your payouts."
+            />
+            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Business Name" htmlFor="businessName" error={fieldError("businessName")}>
+                <Input
+                  id="businessName"
+                  name="businessName"
+                  value={formik.values.businessName ?? ""}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+              </Field>
+              <Field
+                label="Signature Destination"
+                htmlFor="primaryDestination"
+                error={fieldError("primaryDestination")}
+                hint="The one destination you organize most often."
               >
-                <SelectTrigger id="experienceLevel" className="w-full">
-                  <SelectValue placeholder="Select experience" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EXPERIENCE_LEVELS.map((level) => (
-                    <SelectItem key={level.value} value={level.value}>
-                      {level.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-            <Field label="Years Riding" htmlFor="yearsRiding" error={fieldError("yearsRiding")}>
-              <Input
-                id="yearsRiding"
-                name="yearsRiding"
-                type="number"
-                min={0}
-                max={100}
-                value={formik.values.yearsRiding}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-            </Field>
-          </CardContent>
-        </Card>
+                <LocationAutocomplete
+                  id="primaryDestination"
+                  name="primaryDestination"
+                  types="place"
+                  placeholder="e.g. Leh, Ladakh"
+                  value={formik.values.primaryDestination ?? ""}
+                  onChange={(value) => formik.setFieldValue("primaryDestination", value)}
+                  onSelectLocation={(location) => {
+                    const combined = [location.city ?? location.name, location.country]
+                      .filter(Boolean)
+                      .join(", ");
+                    formik.setFieldValue("primaryDestination", combined);
+                  }}
+                  onBlur={() => formik.setFieldTouched("primaryDestination", true)}
+                />
+              </Field>
+              <Field
+                label="Business Email"
+                htmlFor="businessEmail"
+                error={fieldError("businessEmail")}
+              >
+                <Input
+                  id="businessEmail"
+                  name="businessEmail"
+                  type="email"
+                  value={formik.values.businessEmail ?? ""}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+              </Field>
+              <Field
+                label="Business Phone"
+                htmlFor="businessPhone"
+                error={fieldError("businessPhone")}
+              >
+                <Input
+                  id="businessPhone"
+                  name="businessPhone"
+                  type="tel"
+                  value={formik.values.businessPhone ?? ""}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+              </Field>
+              <Field
+                label="Events Organised"
+                htmlFor="eventsOrganisedCount"
+                error={fieldError("eventsOrganisedCount")}
+                hint="Your track record so far — 0 if you're just starting out."
+              >
+                <Input
+                  id="eventsOrganisedCount"
+                  name="eventsOrganisedCount"
+                  type="number"
+                  min={0}
+                  value={formik.values.eventsOrganisedCount ?? 0}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+              </Field>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <SectionHeader
+              step={2}
+              icon={Bike}
+              title="Riding Details"
+              description="What you ride and how long you've been at it."
+            />
+            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Bike Brand" htmlFor="bikeBrand" error={fieldError("bikeBrand")}>
+                <Input
+                  id="bikeBrand"
+                  name="bikeBrand"
+                  value={formik.values.bikeBrand ?? ""}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+              </Field>
+              <Field label="Bike Model" htmlFor="bikeModel" error={fieldError("bikeModel")}>
+                <Input
+                  id="bikeModel"
+                  name="bikeModel"
+                  value={formik.values.bikeModel ?? ""}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+              </Field>
+              <Field
+                label="Experience Level"
+                htmlFor="experienceLevel"
+                error={fieldError("experienceLevel")}
+              >
+                <Select
+                  value={formik.values.experienceLevel}
+                  onValueChange={(value) => {
+                    formik.setFieldTouched("experienceLevel", true, false);
+                    formik.setFieldValue("experienceLevel", value);
+                  }}
+                >
+                  <SelectTrigger id="experienceLevel" className="w-full">
+                    <SelectValue placeholder="Select experience" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EXPERIENCE_LEVELS.map((level) => (
+                      <SelectItem key={level.value} value={level.value}>
+                        {level.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="Years Riding" htmlFor="yearsRiding" error={fieldError("yearsRiding")}>
+                <Input
+                  id="yearsRiding"
+                  name="yearsRiding"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={formik.values.yearsRiding ?? 0}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+              </Field>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <SectionHeader

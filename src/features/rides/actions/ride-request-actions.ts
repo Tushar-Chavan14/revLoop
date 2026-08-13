@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getMyRole } from "@/services/roles";
 
 type ActionResult = { error?: string } | void;
 
@@ -15,6 +16,16 @@ export async function requestToJoinRide(rideId: string, message: string): Promis
   } = await supabase.auth.getUser();
   if (!user) {
     redirect("/login");
+  }
+
+  const role = await getMyRole();
+  if (role !== "user") {
+    return {
+      error:
+        role === "organizer"
+          ? "Organizer accounts can't join rides."
+          : "Admin accounts can't join rides.",
+    };
   }
 
   const trimmedMessage = message.trim() || null;

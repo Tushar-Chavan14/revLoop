@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { rideSchema, type ItineraryDay } from "@/features/rides/schema";
 import { getProfileByUserId } from "@/services/profiles";
 import { getPayoutDetails, hasPayoutDetails } from "@/services/organizer-payout";
+import { getMyRole } from "@/services/roles";
 import { isProfileComplete } from "@/utils/profile-completeness";
 import { toTitleCase } from "@/utils/capitalize";
 import type { Enums, Json } from "@/types/supabase";
@@ -117,8 +118,8 @@ export async function createRide(formData: FormData): Promise<RideActionResult> 
     redirect("/login");
   }
 
-  const profile = await getProfileByUserId(user.id);
-  if (!isProfileComplete(profile)) {
+  const [profile, role] = await Promise.all([getProfileByUserId(user.id), getMyRole()]);
+  if (!isProfileComplete(profile, role)) {
     redirect("/profile/setup");
   }
 
@@ -128,8 +129,25 @@ export async function createRide(formData: FormData): Promise<RideActionResult> 
     return { error: "Please fill in all required fields" };
   }
 
-  if (parsed.pricingModel === "organized" && !hasPayoutDetails(await getPayoutDetails(user.id))) {
-    return { error: "Add your payout details in your profile before creating an Organized Ride." };
+  if (parsed.pricingModel === "organized") {
+    if (role !== "organizer") {
+      return {
+        error:
+          role === "admin"
+            ? "Admin accounts can't create Organized Rides."
+            : "Only organizer accounts can create Organized Rides.",
+      };
+    }
+    if (!hasPayoutDetails(await getPayoutDetails(user.id))) {
+      return { error: "Add your payout details in your profile before creating an Organized Ride." };
+    }
+  } else if (role !== "user") {
+    return {
+      error:
+        role === "organizer"
+          ? "Organizer accounts can only create Organized Rides."
+          : "Admin accounts can't create rides.",
+    };
   }
 
   let coverImageUrl: string | undefined;
@@ -208,6 +226,9 @@ export async function updateRide(rideId: string, formData: FormData): Promise<Ri
     return { error: "Please fill in all required fields" };
   }
 
+  // A ride's pricing model is tied to its organizer's account type and is
+  // never editable via the form — reject if the request doesn't match what
+  // the ride was actually created as.
   const { data: existingRide } = await supabase
     .from("rides")
     .select("pricing_model")
@@ -215,19 +236,7 @@ export async function updateRide(rideId: string, formData: FormData): Promise<Ri
     .maybeSingle();
 
   if (existingRide && existingRide.pricing_model !== parsed.pricingModel) {
-    const [{ count: bookingCount }, { count: requestCount }] = await Promise.all([
-      supabase
-        .from("ride_bookings")
-        .select("id", { count: "exact", head: true })
-        .eq("ride_id", rideId),
-      supabase
-        .from("ride_requests")
-        .select("id", { count: "exact", head: true })
-        .eq("ride_id", rideId),
-    ]);
-    if ((bookingCount ?? 0) > 0 || (requestCount ?? 0) > 0) {
-      return { error: "Can't change ride type once riders have booked or requested to join." };
-    }
+    return { error: "A ride's type can't be changed after it's created." };
   }
 
   if (parsed.pricingModel === "organized" && !hasPayoutDetails(await getPayoutDetails(user.id))) {
