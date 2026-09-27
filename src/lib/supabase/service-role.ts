@@ -6,7 +6,7 @@ import type { Database } from "@/types/supabase";
 // allowed to write, like flipping a ride_booking to "paid".
 export function createServiceRoleClient() {
   return createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_SUPABASE_URL!,
     process.env.SUPABASE_SECRET_KEY!,
   );
 }
