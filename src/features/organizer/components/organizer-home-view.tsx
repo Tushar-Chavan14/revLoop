@@ -17,19 +17,27 @@ import { getRecentMessagesForUser } from "@/services/ride-chat";
 import { getOrganizerPendingSettlement } from "@/services/settlements";
 import type { Profile } from "@/services/profiles";
 import { getMyNextRide, getOrganizedRidesCount, getRidesByOrganizer } from "@/services/rides";
+import { InstallAppCard } from "@/features/app-install/components/install-app-card";
 
 export async function OrganizerHomeView({ profile }: { profile: Profile }) {
   const userId = profile.id;
-  const [organizerDetails, organizedCount, nextRide, { upcoming }, recentMessages, payoutDetails, pendingSettlement] =
-    await Promise.all([
-      getOrganizerDetails(userId),
-      getOrganizedRidesCount(userId),
-      getMyNextRide(userId),
-      getRidesByOrganizer(userId),
-      getRecentMessagesForUser(userId, 5),
-      getPayoutDetails(userId),
-      getOrganizerPendingSettlement(userId),
-    ]);
+  const [
+    organizerDetails,
+    organizedCount,
+    nextRide,
+    { upcoming },
+    recentMessages,
+    payoutDetails,
+    pendingSettlement,
+  ] = await Promise.all([
+    getOrganizerDetails(userId),
+    getOrganizedRidesCount(userId),
+    getMyNextRide(userId),
+    getRidesByOrganizer(userId),
+    getRecentMessagesForUser(userId, 5),
+    getPayoutDetails(userId),
+    getOrganizerPendingSettlement(userId),
+  ]);
 
   const displayName = organizerDetails?.business_name ?? profile.name;
 
@@ -76,6 +84,8 @@ export async function OrganizerHomeView({ profile }: { profile: Profile }) {
         </div>
       </div>
 
+      <InstallAppCard />
+
       {/* Next ride hero */}
       {nextRide ? (
         <section className="bg-secondary text-secondary-foreground relative overflow-hidden rounded-3xl p-8 sm:p-12">
@@ -87,7 +97,11 @@ export async function OrganizerHomeView({ profile }: { profile: Profile }) {
           <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div className="flex flex-col gap-3">
               {nextRide.status === "ongoing" ? (
-                <StatusChip status="live" pulse className="w-fit border-white/20 bg-white/10 text-white">
+                <StatusChip
+                  status="live"
+                  pulse
+                  className="w-fit border-white/20 bg-white/10 text-white"
+                >
                   Ride In Progress
                 </StatusChip>
               ) : (
@@ -229,7 +243,7 @@ export async function OrganizerHomeView({ profile }: { profile: Profile }) {
                 {recentMessages.map((message) => (
                   <Link
                     key={message.id}
-                    href={`/rides/${message.rideId}/chat`}
+                    href={`/chats/${message.rideId}`}
                     className="hover:bg-muted -mx-2 flex items-start gap-2.5 rounded-lg px-2 py-2"
                   >
                     <Avatar size="sm">

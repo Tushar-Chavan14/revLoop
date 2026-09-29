@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { RIDE_MESSAGE_SENDER_SELECT } from "@/constants/ride-chat";
-import type { Tables } from "@/types/supabase";
+import type { Database, Tables } from "@/types/supabase";
 
 export type RideMessage = Tables<"ride_messages">;
 export type RiderProfile = Pick<
@@ -79,4 +79,30 @@ export async function getRecentMessagesForUser(
     }
   }
   return recent;
+}
+
+type RideChatRow = Database["public"]["Functions"]["get_my_ride_chats"]["Returns"][number];
+
+// The generated RPC types mark every column non-null, but a ride with no
+// cover photo or no messages yet comes back with nulls in these.
+export type RideChatSummary = Omit<
+  RideChatRow,
+  | "cover_image_url"
+  | "last_message_body"
+  | "last_message_at"
+  | "last_sender_id"
+  | "last_sender_name"
+> & {
+  cover_image_url: string | null;
+  last_message_body: string | null;
+  last_message_at: string | null;
+  last_sender_id: string | null;
+  last_sender_name: string | null;
+};
+
+/** Every ride chat the signed-in rider belongs to, most recently active first. */
+export async function getMyRideChats(): Promise<RideChatSummary[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("get_my_ride_chats");
+  return (data ?? []) as RideChatSummary[];
 }

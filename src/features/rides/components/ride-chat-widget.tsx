@@ -76,6 +76,7 @@ export function RideChatWidget(props: RideChatWidgetProps) {
         </div>
         <RideChat
           {...props}
+          active={open}
           className="min-h-0 flex-1 rounded-none border-0 sm:h-[min(70vh,32rem)] sm:flex-none sm:rounded-2xl sm:border sm:shadow-2xl"
         />
       </div>

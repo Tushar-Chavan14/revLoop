@@ -38,6 +38,7 @@ import {
 import { getUserTimeZone } from "@/services/timezone";
 import { capitalize } from "@/utils/capitalize";
 import { getHourInTimeZone } from "@/utils/timezone";
+import { InstallAppCard } from "@/features/app-install/components/install-app-card";
 
 function greeting(hour: number) {
   if (hour < 12) return "Good morning";
@@ -151,6 +152,8 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
         </div>
       </div>
 
+      <InstallAppCard />
+
       {/* The weekend-planner moment — your next ride, front and centre */}
       {nextRide ? (
         <section className="bg-secondary text-secondary-foreground relative overflow-hidden rounded-3xl p-8 sm:p-12">
@@ -162,7 +165,11 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
           <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div className="flex flex-col gap-3">
               {nextRide.status === "ongoing" ? (
-                <StatusChip status="live" pulse className="w-fit border-white/20 bg-white/10 text-white">
+                <StatusChip
+                  status="live"
+                  pulse
+                  className="w-fit border-white/20 bg-white/10 text-white"
+                >
                   Ride In Progress
                 </StatusChip>
               ) : (
@@ -331,7 +338,7 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
                 {recentMessages.map((message) => (
                   <Link
                     key={message.id}
-                    href={`/rides/${message.rideId}/chat`}
+                    href={`/chats/${message.rideId}`}
                     className="hover:bg-muted -mx-2 flex items-start gap-2.5 rounded-lg px-2 py-2"
                   >
                     <Avatar size="sm">

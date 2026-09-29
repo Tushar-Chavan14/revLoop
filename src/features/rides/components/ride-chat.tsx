@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { format } from "date-fns";
 import { MapPin, SendHorizontal } from "lucide-react";
 import {
@@ -14,7 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChatBubble } from "@/components/design-system/chat-bubble";
-import { RIDE_MESSAGE_SENDER_SELECT } from "@/constants/ride-chat";
+import { sendRideMessage } from "@/features/chat/actions/chat-actions";
+import { useChatActivity } from "@/features/chat/components/chat-activity-provider";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import type { RideMessageWithSender, RiderProfile } from "@/services/ride-chat";
@@ -33,6 +35,14 @@ interface RideChatProps {
     meetingPoint: string | null;
   };
   participants: RiderProfile[];
+  /**
+   * Whether the chat is actually on screen. The ride page keeps its widget
+   * mounted while closed, so it passes `false` until opened — otherwise just
+   * visiting a ride would mark its chat as read.
+   */
+  active?: boolean;
+  /** Makes the ride title a link back to the ride (used on the Crew Chats screen). */
+  rideHref?: string;
   className?: string;
 }
 
@@ -43,6 +53,8 @@ export function RideChat({
   senderProfiles,
   ride,
   participants,
+  active = true,
+  rideHref,
   className,
 }: RideChatProps) {
   const [messages, setMessages] = useState(initialMessages);
@@ -51,20 +63,26 @@ export function RideChat({
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [supabase] = useState(() => createClient());
+  const { setActiveRideChat, markRideChatRead } = useChatActivity();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  // Mark the chat read as soon as it's opened — RLS lets a member update
-  // only their own ride_members row, so this is safe to fire from the client.
+  // While open, this chat is "seen": clear its unread badge, keep new
+  // messages here from ever counting as unread, and move the read marker
+  // forward whenever someone else's message lands.
+  const lastMessage = messages[messages.length - 1];
+  const lastIncomingId =
+    lastMessage && lastMessage.sender_id !== currentUserId ? lastMessage.id : null;
   useEffect(() => {
-    void supabase
-      .from("ride_members")
-      .update({ last_read_at: new Date().toISOString() })
-      .eq("ride_id", rideId)
-      .eq("user_id", currentUserId);
-  }, [supabase, rideId, currentUserId]);
+    if (!active) {
+      return;
+    }
+    setActiveRideChat(rideId);
+    markRideChatRead(rideId);
+    return () => setActiveRideChat(null);
+  }, [active, rideId, lastIncomingId, setActiveRideChat, markRideChatRead]);
 
   useEffect(() => {
     const channel = supabase
@@ -109,20 +127,17 @@ export function RideChat({
     setIsSending(true);
     setError(null);
 
-    const { data, error: sendError } = await supabase
-      .from("ride_messages")
-      .insert({ ride_id: rideId, sender_id: currentUserId, body: trimmed })
-      .select(RIDE_MESSAGE_SENDER_SELECT)
-      .single();
+    // Sent through the server so the rest of the crew gets their ride alerts.
+    const result = await sendRideMessage(rideId, trimmed);
 
     setIsSending(false);
-    if (sendError || !data) {
-      setError("Couldn't send your message, please try again");
+    if ("error" in result) {
+      setError(result.error);
       return;
     }
 
     setBody("");
-    const message = data as RideMessageWithSender;
+    const { message } = result;
     setMessages((current) =>
       current.some((existing) => existing.id === message.id) ? current : [...current, message],
     );
@@ -145,7 +160,13 @@ export function RideChat({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{ride.title}</p>
+          {rideHref ? (
+            <Link href={rideHref} className="block truncate text-sm font-semibold hover:underline">
+              {ride.title}
+            </Link>
+          ) : (
+            <p className="truncate text-sm font-semibold">{ride.title}</p>
+          )}
           <p className="text-muted-foreground truncate text-xs">{ride.destination}</p>
         </div>
         {participants.length > 0 && (

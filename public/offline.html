@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0d0d0d" />
+    <title>No signal — RoadKin</title>
+    <!--
+      Shown by public/sw.js when a page can't load because the device is
+      offline. Fully self-contained: no app CSS, JS or web fonts are
+      available offline, so everything it needs is inline (colors mirror
+      globals.css) and the only other file is the cached app icon.
+    -->
+    <style>
+      :root {
+        color-scheme: light dark;
+        --background: #f8f8f6;
+        --foreground: #161616;
+        --card: #ffffff;
+        --muted-foreground: #6a6a6a;
+        --border: #e5e5e0;
+        --primary: #e76f24;
+        --primary-hover: #d65f18;
+        --primary-foreground: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: #0d0d0d;
+          --foreground: #ffffff;
+          --card: #202020;
+          --muted-foreground: #b3b3b3;
+          --border: #303030;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100svh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
+        background: var(--background);
+        color: var(--foreground);
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          "Helvetica Neue",
+          Arial,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      main {
+        width: 100%;
+        max-width: 26rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 20px;
+      }
+      .icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+        background: #0d0d0d;
+      }
+      .eyebrow {
+        margin: 0;
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 8px 0 0;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+      }
+      p.lede {
+        margin: 0;
+        color: var(--muted-foreground);
+        font-size: 15px;
+        line-height: 1.55;
+      }
+      .road {
+        width: 100%;
+        height: 2px;
+        background: repeating-linear-gradient(
+          90deg,
+          var(--border) 0 18px,
+          transparent 18px 30px
+        );
+      }
+      button {
+        appearance: none;
+        border: 0;
+        border-radius: 10px;
+        padding: 12px 24px;
+        min-width: 11rem;
+        background: var(--primary);
+        color: var(--primary-foreground);
+        font: inherit;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 150ms ease;
+      }
+      button:hover {
+        background: var(--primary-hover);
+      }
+      button:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 3px;
+      }
+      .status {
+        margin: 0;
+        min-height: 1.4em;
+        color: var(--muted-foreground);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img class="icon" src="/icons/icon-192.png" alt="" width="72" height="72" />
+      <div>
+        <p class="eyebrow">No signal</p>
+        <h1>Looks like you've ridden out of coverage</h1>
+      </div>
+      <p class="lede">
+        RoadKin needs a connection to load your rides and crew chats. Find a bar or two and
+        we'll pick up right where you left off.
+      </p>
+      <div class="road" aria-hidden="true"></div>
+      <button type="button" id="retry">Try Again</button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </main>
+    <script>
+      (function () {
+        var status = document.getElementById("status");
+        // Loop guard: automatic reloads are capped (and spaced further apart
+        // each time) so a server that answers but can't serve pages never
+        // traps the rider in a reload loop. Tapping Try Again always works.
+        var AUTO_KEY = "roadkin:offline-auto-reloads";
+        var MAX_AUTO_RELOADS = 3;
+        var RESET_AFTER_MS = 2 * 60 * 1000;
+
+        function readAttempts() {
+          try {
+            var saved = JSON.parse(sessionStorage.getItem(AUTO_KEY) || "null");
+            if (saved && Date.now() - saved.at < RESET_AFTER_MS) {
+              return saved.count;
+            }
+          } catch (error) {}
+          return 0;
+        }
+        function saveAttempts(count) {
+          try {
+            sessionStorage.setItem(AUTO_KEY, JSON.stringify({ count: count, at: Date.now() }));
+          } catch (error) {}
+        }
+
+        var attempts = readAttempts();
+
+        function reload() {
+          status.textContent = "Checking for signal…";
+          window.location.reload();
+        }
+        function autoReload() {
+          if (attempts >= MAX_AUTO_RELOADS) {
+            status.textContent = "Still having trouble reaching RoadKin. Tap Try Again.";
+            return;
+          }
+          saveAttempts(attempts + 1);
+          reload();
+        }
+
+        document.getElementById("retry").addEventListener("click", function () {
+          saveAttempts(0);
+          reload();
+        });
+
+        if (attempts >= MAX_AUTO_RELOADS) {
+          status.textContent = "Still having trouble reaching RoadKin. Tap Try Again.";
+          return;
+        }
+
+        // Back in range — reload on its own so riders don't have to.
+        window.addEventListener("online", autoReload);
+        // Phones don't reliably fire "online" (or report it on a dead
+        // connection), so also probe the server while this page is on
+        // screen, waiting longer after each automatic reload.
+        var probeEveryMs = 5000 * Math.pow(2, attempts);
+        setInterval(function () {
+          if (document.visibilityState !== "visible") {
+            return;
+          }
+          fetch("/manifest.webmanifest", { cache: "no-store" })
+            .then(function (response) {
+              if (response.ok) {
+                autoReload();
+              }
+            })
+            .catch(function () {});
+        }, probeEveryMs);
+      })();
+    </script>
+  </body>
+</html>

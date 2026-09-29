@@ -4,6 +4,7 @@ import { NotificationBell } from "@/components/notification-bell";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/user-menu";
+import { ChatsNavLink } from "@/features/chat/components/chats-nav-link";
 import { getAuthUser, getProfileByUserId } from "@/services/profiles";
 import { getRecentNotifications, getUnreadNotificationCount } from "@/services/notifications";
 import { getCommunityActivity } from "@/services/rides";
@@ -46,6 +47,7 @@ export async function SiteHeader() {
               My Rides
             </Link>
           )}
+          {user && <ChatsNavLink />}
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
