@@ -1,8 +1,11 @@
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { Database } from "@/types/supabase";
 
-export async function createClient() {
+// cache() hands every service call in one render the same client instead of
+// re-reading cookies and re-parsing the session for each query.
+export const createClient = cache(async () => {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
@@ -26,4 +29,4 @@ export async function createClient() {
       },
     },
   );
-}
+});

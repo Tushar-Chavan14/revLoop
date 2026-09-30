@@ -34,7 +34,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
             src={featured.url}
             alt={featured.alt ?? ""}
             fill
-            unoptimized
+            sizes="(min-width: 1024px) 384px, 50vw"
             className="object-cover"
           />
         </button>
@@ -49,7 +49,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
               src={image.url}
               alt={image.alt ?? ""}
               fill
-              unoptimized
+              sizes="(min-width: 1024px) 192px, 25vw"
               className="object-cover"
             />
             {index === 3 && images.length > 5 && (
@@ -69,7 +69,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
                 src={images[openIndex].url}
                 alt={images[openIndex].alt ?? ""}
                 fill
-                unoptimized
+                sizes="(min-width: 768px) 768px, 100vw"
                 className="object-contain"
               />
               <DialogClose

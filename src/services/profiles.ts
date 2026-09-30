@@ -1,21 +1,42 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/supabase";
 
 export type Profile = Tables<"profiles">;
 
-export async function getAuthUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user;
+/** The subset of the Supabase user that pages actually read — built from the verified JWT claims. */
+export interface AuthUser {
+  id: string;
+  email: string | undefined;
+  user_metadata: Record<string, unknown>;
 }
 
-export async function getProfileByUserId(userId: string): Promise<Profile | null> {
+// cache() dedupes within a single request — the page, SiteHeader, SiteFooter
+// and getMyRole() all ask for the user on the same render.
+//
+// getClaims() verifies the JWT locally against the project's cached ES256
+// JWKS instead of round-tripping to the Auth server like getUser() does.
+// Server Actions that write still call auth.getUser() themselves, and RLS
+// re-checks the same JWT on every query anyway.
+export const getAuthUser = cache(async (): Promise<AuthUser | null> => {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (!claims?.sub) {
+    return null;
+  }
+  return {
+    id: claims.sub,
+    email: claims.email,
+    user_metadata: (claims.user_metadata as Record<string, unknown> | undefined) ?? {},
+  };
+});
+
+export const getProfileByUserId = cache(async (userId: string): Promise<Profile | null> => {
   const supabase = await createClient();
   const { data } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
   return data;
-}
+});
 
 export async function getCurrentProfile(): Promise<Profile | null> {
   const user = await getAuthUser();
@@ -25,7 +46,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
   return getProfileByUserId(user.id);
 }
 
-export async function getProfileByUsername(username: string): Promise<Profile | null> {
+export const getProfileByUsername = cache(async (username: string): Promise<Profile | null> => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
@@ -33,4 +54,4 @@ export async function getProfileByUsername(username: string): Promise<Profile | 
     .eq("username", username)
     .maybeSingle();
   return data;
-}
+});

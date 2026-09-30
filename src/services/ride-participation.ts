@@ -1,4 +1,8 @@
+import { unstable_cache } from "next/cache";
+import { PUBLIC_CACHE_SECONDS, PUBLIC_RIDES_TAG } from "@/constants/cache-tags";
+import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
+import { getMyRideIds } from "@/services/rides";
 import type { Tables } from "@/types/supabase";
 import { getUpcomingWeekendRange } from "@/utils/weekend";
 
@@ -94,18 +98,14 @@ export interface FellowRider {
 // upcoming ride on the calendar — the closest honest reading of "friends
 // riding" without a follows/friends graph in the schema.
 export async function getFellowRiders(userId: string, limit = 6): Promise<FellowRider[]> {
-  const supabase = await createClient();
   const today = new Date().toISOString().slice(0, 10);
 
-  const { data: myRideRows } = await supabase
-    .from("ride_members")
-    .select("ride_id")
-    .eq("user_id", userId);
-  const myRideIds = [...new Set((myRideRows ?? []).map((row) => row.ride_id))];
+  const myRideIds = await getMyRideIds(userId);
   if (myRideIds.length === 0) {
     return [];
   }
 
+  const supabase = await createClient();
   const { data: coMemberRows } = await supabase
     .from("ride_members")
     .select(`user_id, profile:profiles!ride_members_user_id_fkey(${PROFILE_SELECT})`)
@@ -126,8 +126,10 @@ export async function getFellowRiders(userId: string, limit = 6): Promise<Fellow
 
   const { data: upcomingRows } = await supabase
     .from("ride_members")
-    .select("user_id, ride:rides!ride_members_ride_id_fkey(id, title, ride_date, status)")
+    .select("user_id, ride:rides!ride_members_ride_id_fkey!inner(id, title, ride_date, status)")
     .in("user_id", coRiderIds)
+    .eq("ride.status", "upcoming")
+    .gte("ride.ride_date", today)
     .order("user_id", { ascending: true });
 
   const nextRideByUser = new Map<string, { id: string; title: string; date: string | null }>();
@@ -171,8 +173,24 @@ export async function getFellowRiders(userId: string, limit = 6): Promise<Fellow
     .slice(0, limit);
 }
 
+const WEEKEND_PROFILE_COLUMNS =
+  "id, name, username, profile_image_url, city, country, bike_brand, bike_model, experience_level";
+
+export type WeekendRiderProfile = Pick<
+  Tables<"profiles">,
+  | "id"
+  | "name"
+  | "username"
+  | "profile_image_url"
+  | "city"
+  | "country"
+  | "bike_brand"
+  | "bike_model"
+  | "experience_level"
+>;
+
 export interface WeekendRider {
-  profile: Tables<"profiles">;
+  profile: WeekendRiderProfile;
   rideId: string;
   rideTitle: string;
   rideDate: string;
@@ -185,58 +203,53 @@ export interface WeekendActivity {
 }
 
 // Drives the "N riders are riding this weekend" hero stat and the "Who's
-// riding this weekend" roster — there's no dedicated rollup for this, so it
-// pages through ride_members joined to rides + profiles and filters/dedupes
-// in application code, same pattern as popular-destination grouping.
-export async function getWeekendActivity(rosterLimit = 8): Promise<WeekendActivity> {
-  const supabase = await createClient();
-  const { start, end } = getUpcomingWeekendRange();
+// riding this weekend" roster. The weekend filter runs in Postgres via an
+// inner join on rides, so only this weekend's members come back (with just
+// the profile fields the roster card renders); dedupe stays in app code.
+// Public data, so it's shared across visitors via the data cache.
+export const getWeekendActivity = unstable_cache(
+  async (rosterLimit = 8): Promise<WeekendActivity> => {
+    const supabase = createPublicClient();
+    const { start, end } = getUpcomingWeekendRange();
 
-  const { data } = await supabase
-    .from("ride_members")
-    .select(
-      "joined_at, user_id, profile:profiles!ride_members_user_id_fkey(*), ride:rides!ride_members_ride_id_fkey(id, title, ride_date, status)",
-    )
-    .order("joined_at", { ascending: false })
-    .limit(400);
+    const { data } = await supabase
+      .from("ride_members")
+      .select(
+        `joined_at, user_id, profile:profiles!ride_members_user_id_fkey(${WEEKEND_PROFILE_COLUMNS}), ride:rides!ride_members_ride_id_fkey!inner(id, title, ride_date, status)`,
+      )
+      .eq("ride.status", "upcoming")
+      .gte("ride.ride_date", start)
+      .lte("ride.ride_date", end)
+      .order("joined_at", { ascending: false })
+      .limit(1000);
 
-  const weekendRows = (data ?? []).filter((row) => {
-    const ride = row.ride as { ride_date: string | null; status: string } | null;
-    return (
-      ride &&
-      ride.status === "upcoming" &&
-      ride.ride_date &&
-      ride.ride_date >= start &&
-      ride.ride_date <= end
-    );
-  });
+    const weekendRows = data ?? [];
+    const riderIds = new Set(weekendRows.map((row) => row.user_id));
+    const rideIds = new Set(weekendRows.map((row) => row.ride.id));
 
-  const riderIds = new Set(weekendRows.map((row) => row.user_id));
-  const rideIds = new Set(
-    weekendRows.map((row) => (row.ride as { id: string }).id).filter(Boolean),
-  );
-
-  const seenRiders = new Set<string>();
-  const roster: WeekendRider[] = [];
-  for (const row of weekendRows) {
-    if (!row.profile || seenRiders.has(row.user_id)) {
-      continue;
+    const seenRiders = new Set<string>();
+    const roster: WeekendRider[] = [];
+    for (const row of weekendRows) {
+      if (!row.profile || seenRiders.has(row.user_id)) {
+        continue;
+      }
+      seenRiders.add(row.user_id);
+      roster.push({
+        profile: row.profile,
+        rideId: row.ride.id,
+        rideTitle: row.ride.title ?? "a ride",
+        rideDate: row.ride.ride_date,
+      });
+      if (roster.length >= rosterLimit) {
+        break;
+      }
     }
-    const ride = row.ride as { id: string; title: string | null; ride_date: string };
-    seenRiders.add(row.user_id);
-    roster.push({
-      profile: row.profile as Tables<"profiles">,
-      rideId: ride.id,
-      rideTitle: ride.title ?? "a ride",
-      rideDate: ride.ride_date,
-    });
-    if (roster.length >= rosterLimit) {
-      break;
-    }
-  }
 
-  return { ridersCount: riderIds.size, rideCount: rideIds.size, roster };
-}
+    return { ridersCount: riderIds.size, rideCount: rideIds.size, roster };
+  },
+  ["weekend-activity"],
+  { tags: [PUBLIC_RIDES_TAG], revalidate: PUBLIC_CACHE_SECONDS },
+);
 
 export interface AttendanceStats {
   attended: number;

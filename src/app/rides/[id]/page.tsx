@@ -38,7 +38,7 @@ import { BookRideCard } from "@/features/rides/components/book-ride-card";
 import { JoinRequestCard } from "@/features/rides/components/join-request-card";
 import { ParticipantsList } from "@/features/rides/components/participants-list";
 import { RideChatWidget } from "@/features/rides/components/ride-chat-widget";
-import { RideMap } from "@/features/rides/components/ride-map";
+import { LazyRideMap } from "@/features/rides/components/lazy-ride-map";
 import { ShareRideButton } from "@/features/rides/components/share-ride-button";
 import { DEFAULT_RIDE_TYPE_ICON, RIDE_TYPE_ICONS, RIDE_TYPES } from "@/constants/ride-type";
 import { SPEED_LEVELS } from "@/constants/speed-level";
@@ -88,12 +88,11 @@ function optionLabel(options: readonly { value: string; label: string }[], value
 export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const { id } = await params;
 
-  const ride = await getRideById(id);
+  const [ride, user] = await Promise.all([getRideById(id), getAuthUser()]);
   if (!ride) {
     notFound();
   }
 
-  const user = await getAuthUser();
   const isOrganizer = user?.id === ride.organizer_id;
 
   const isOrganizedRide = ride.pricing_model === "organized";
@@ -107,7 +106,12 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   ]);
   const isOrganizerViewer = viewerRole === "organizer";
   const isMember = user ? members.some((member) => member.user_id === user.id) : false;
-  const chatMessages = isMember ? await getRideMessages(id) : [];
+  // Each of these only depends on membership, so they go out together.
+  const [chatMessages, myRequest, myBooking] = await Promise.all([
+    isMember ? getRideMessages(id) : [],
+    user && !isOrganizedRide && !isOrganizer && !isMember ? getMyRideRequest(id, user.id) : null,
+    user && isOrganizedRide && !isOrganizer && !isMember ? getMyRideBooking(id, user.id) : null,
+  ]);
   const chatSenderProfiles = isMember
     ? Object.fromEntries(
         members
@@ -115,14 +119,6 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           .map((member) => [member.user_id, member.profile!]),
       )
     : {};
-  const myRequest =
-    user && !isOrganizedRide && !isOrganizer && !isMember
-      ? await getMyRideRequest(id, user.id)
-      : null;
-  const myBooking =
-    user && isOrganizedRide && !isOrganizer && !isMember
-      ? await getMyRideBooking(id, user.id)
-      : null;
   const isRideFull = ride.seats_available !== null && ride.seats_available <= 0;
   const lowSeats =
     !isRideFull &&
@@ -259,8 +255,8 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             src={ride.cover_image_url}
             alt={ride.title ?? "Ride cover"}
             fill
-            priority
-            unoptimized
+            preload
+            sizes="100vw"
             className="object-cover"
           />
         ) : (
@@ -287,7 +283,11 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
                 {isOrganizedRide ? "Organized Ride" : "Community Ride"}
               </Badge>
               {badges.map((badge) => (
-                <Badge key={badge} variant="secondary" className="bg-white/15 text-white backdrop-blur-sm">
+                <Badge
+                  key={badge}
+                  variant="secondary"
+                  className="bg-white/15 text-white backdrop-blur-sm"
+                >
                   {badge}
                 </Badge>
               ))}
@@ -351,7 +351,8 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             </div>
             {isOrganizer && (
               <Link href="/profile" className="text-muted-foreground text-xs hover:underline">
-                Manage join requests from your {isOrganizerViewer ? "Organizer Home" : "Rider Home"} →
+                Manage join requests from your {isOrganizerViewer ? "Organizer Home" : "Rider Home"}{" "}
+                →
               </Link>
             )}
           </div>
@@ -367,7 +368,9 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
               <CardContent className="flex flex-col gap-4">
                 <div className="flex items-center gap-2">
                   <Building2 className="text-muted-foreground size-4" />
-                  <h2 className="font-heading text-lg font-bold">{organizerDetails.business_name}</h2>
+                  <h2 className="font-heading text-lg font-bold">
+                    {organizerDetails.business_name}
+                  </h2>
                 </div>
                 <div className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-2 text-sm">
                   <span>{organizerDetails.events_organised_count} events organised</span>
@@ -428,7 +431,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
                   </a>
                 )}
                 <MapContainer>
-                  <RideMap
+                  <LazyRideMap
                     meeting={canSeeMeetingPoint ? meeting : null}
                     destination={destination}
                     interactive={false}
@@ -563,7 +566,9 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
                 <TripRow
                   icon={Bike}
                   label="Distance"
-                  value={ride.estimated_distance_km ? `${ride.estimated_distance_km} km` : undefined}
+                  value={
+                    ride.estimated_distance_km ? `${ride.estimated_distance_km} km` : undefined
+                  }
                 />
                 <TripRow
                   icon={Hourglass}

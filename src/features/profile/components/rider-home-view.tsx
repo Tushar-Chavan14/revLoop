@@ -48,9 +48,8 @@ function greeting(hour: number) {
 
 export async function RiderHomeView({ profile }: { profile: Profile }) {
   const userId = profile.id;
-  const { upcoming } = await getRidesByOrganizer(userId);
   const [
-    requests,
+    { upcoming, requests },
     attendance,
     organizedCount,
     nextRide,
@@ -59,7 +58,14 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
     recentMessages,
     timeZone,
   ] = await Promise.all([
-    getRequestsForRides(upcoming.map((ride) => ride.id).filter((id) => id !== null)),
+    // Only this lookup depends on the organized-rides list — chain it here
+    // rather than making every other query below wait for it.
+    getRidesByOrganizer(userId).then(async ({ upcoming }) => ({
+      upcoming,
+      requests: await getRequestsForRides(
+        upcoming.map((ride) => ride.id).filter((id) => id !== null),
+      ),
+    })),
     getAttendanceStats(userId),
     getOrganizedRidesCount(userId),
     getMyNextRide(userId),
@@ -119,7 +125,6 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
                 alt={profile.name}
                 width={64}
                 height={64}
-                unoptimized
                 className="h-full w-full object-cover"
               />
             )}

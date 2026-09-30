@@ -1,4 +1,7 @@
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
+import { PUBLIC_CACHE_SECONDS, PUBLIC_RIDES_TAG } from "@/constants/cache-tags";
+import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import type { Enums, Tables } from "@/types/supabase";
 import { haversineKm } from "@/utils/geo";
@@ -15,8 +18,63 @@ export type RideOrganizer = Pick<
 >;
 export type RideWithOrganizer = RideWithStats & { organizer: RideOrganizer | null };
 
-const RIDE_WITH_ORGANIZER_SELECT =
-  "*, organizer:profiles!rides_organizer_id_fkey(id, name, username, profile_image_url)";
+const ORGANIZER_EMBED =
+  "organizer:profiles!rides_organizer_id_fkey(id, name, username, profile_image_url)";
+
+// Full row — only for the ride detail page, which decides itself what a
+// non-member may see (e.g. the meeting point).
+const RIDE_WITH_ORGANIZER_SELECT = `*, ${ORGANIZER_EMBED}`;
+
+// Just what a ride card / timeline row renders. Lists ship every row to the
+// browser in the RSC payload, so `*` would send descriptions, itineraries and
+// — worse — every ride's private meeting point to anyone browsing.
+const RIDE_CARD_COLUMNS =
+  "id, organizer_id, title, ride_date, departure_time, destination, city, ride_type, speed, difficulty, estimated_distance_km, estimated_duration_minutes, cover_image_url, status, created_at, pricing_model, max_riders, member_count, seats_available";
+const RIDE_CARD_SELECT = `${RIDE_CARD_COLUMNS}, ${ORGANIZER_EMBED}`;
+
+export type RideCardData = Pick<
+  RideWithStats,
+  | "id"
+  | "organizer_id"
+  | "title"
+  | "ride_date"
+  | "departure_time"
+  | "destination"
+  | "city"
+  | "ride_type"
+  | "speed"
+  | "difficulty"
+  | "estimated_distance_km"
+  | "estimated_duration_minutes"
+  | "cover_image_url"
+  | "status"
+  | "created_at"
+  | "pricing_model"
+  | "max_riders"
+  | "member_count"
+  | "seats_available"
+> & { organizer: RideOrganizer | null };
+
+export type FeaturedRide = RideCardData & Pick<RideWithStats, "description">;
+
+// Shared across every visitor and revalidated by tag when the app writes;
+// the time-based expiry only catches changes made outside the app.
+function publicCache<Args extends unknown[], Result>(
+  fn: (...args: Args) => Promise<Result>,
+  keyParts: string[],
+) {
+  return unstable_cache(fn, keyParts, {
+    tags: [PUBLIC_RIDES_TAG],
+    revalidate: PUBLIC_CACHE_SECONDS,
+  });
+}
+
+/** Ride ids this rider organized or joined — deduped per request, since the home views ask several times. */
+export const getMyRideIds = cache(async (userId: string): Promise<string[]> => {
+  const supabase = await createClient();
+  const { data } = await supabase.from("ride_members").select("ride_id").eq("user_id", userId);
+  return [...new Set((data ?? []).map((row) => row.ride_id))];
+});
 
 export type RideSort = "soonest" | "newest" | "seats";
 
@@ -42,7 +100,7 @@ export interface RideFilters {
 }
 
 export interface RideListResult {
-  rides: RideWithOrganizer[];
+  rides: RideCardData[];
   total: number;
   page: number;
   pageSize: number;
@@ -54,15 +112,23 @@ function sanitizeForOrFilter(value: string) {
   return value.replace(/[,()]/g, " ").trim();
 }
 
-export async function listRides(filters: RideFilters = {}): Promise<RideListResult> {
-  const supabase = await createClient();
+export const listRides = publicCache(listRidesUncached, ["list-rides"]);
+
+async function listRidesUncached(filters: RideFilters = {}): Promise<RideListResult> {
+  const supabase = createPublicClient();
   const page = Math.max(1, filters.page ?? 1);
   const pageSize = filters.pageSize ?? 9;
   const today = new Date().toISOString().slice(0, 10);
 
+  const hasCityCenter = filters.cityLat !== undefined && filters.cityLng !== undefined;
+
+  // Radius search needs the meeting coordinates server-side; they're
+  // stripped again before anything is returned.
   let query = supabase
     .from("rides_with_stats")
-    .select(RIDE_WITH_ORGANIZER_SELECT, { count: "exact" })
+    .select(hasCityCenter ? `${RIDE_CARD_SELECT}, meeting_lat, meeting_lng` : RIDE_CARD_SELECT, {
+      count: hasCityCenter ? undefined : "exact",
+    })
     .eq("status", "upcoming")
     .gte("ride_date", filters.dateFrom || today);
 
@@ -110,13 +176,11 @@ export async function listRides(filters: RideFilters = {}): Promise<RideListResu
     });
   }
 
-  const hasCityCenter = filters.cityLat !== undefined && filters.cityLng !== undefined;
-
   if (!hasCityCenter) {
     const from = (page - 1) * pageSize;
     const { data, count } = await query.range(from, from + pageSize - 1);
     return {
-      rides: (data ?? []) as RideWithOrganizer[],
+      rides: (data ?? []) as unknown as RideCardData[],
       total: count ?? 0,
       page,
       pageSize,
@@ -130,7 +194,8 @@ export async function listRides(filters: RideFilters = {}): Promise<RideListResu
   const cityLat = filters.cityLat!;
   const cityLng = filters.cityLng!;
 
-  const nearby = ((data ?? []) as RideWithOrganizer[]).filter(
+  type RideWithMeeting = RideCardData & Pick<RideWithStats, "meeting_lat" | "meeting_lng">;
+  const nearby = ((data ?? []) as unknown as RideWithMeeting[]).filter(
     (ride) =>
       ride.meeting_lat !== null &&
       ride.meeting_lng !== null &&
@@ -139,7 +204,8 @@ export async function listRides(filters: RideFilters = {}): Promise<RideListResu
 
   const from = (page - 1) * pageSize;
   return {
-    rides: nearby.slice(from, from + pageSize),
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    rides: nearby.slice(from, from + pageSize).map(({ meeting_lat, meeting_lng, ...ride }) => ride),
     total: nearby.length,
     page,
     pageSize,
@@ -152,8 +218,10 @@ export interface CommunityStats {
   citiesCount: number;
 }
 
-export async function getCommunityStats(): Promise<CommunityStats> {
-  const supabase = await createClient();
+export const getCommunityStats = publicCache(getCommunityStatsUncached, ["community-stats"]);
+
+async function getCommunityStatsUncached(): Promise<CommunityStats> {
+  const supabase = createPublicClient();
   const today = new Date().toISOString().slice(0, 10);
 
   const [{ count: ridersCount }, { count: upcomingRidesCount }, { data: cityRows }] =
@@ -164,7 +232,7 @@ export async function getCommunityStats(): Promise<CommunityStats> {
         .select("id", { count: "exact", head: true })
         .eq("status", "upcoming")
         .gte("ride_date", today),
-      supabase.from("rides").select("city").eq("status", "upcoming"),
+      supabase.from("rides").select("city").eq("status", "upcoming").gte("ride_date", today),
     ]);
 
   const citiesCount = new Set((cityRows ?? []).map((row) => row.city).filter(Boolean)).size;
@@ -176,29 +244,37 @@ export async function getCommunityStats(): Promise<CommunityStats> {
   };
 }
 
-// cache() dedupes within a single request — the ride detail page calls this
-// from both generateMetadata and the page component.
-export const getRideById = cache(async (id: string): Promise<RideWithOrganizer | null> => {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("rides_with_stats")
-    .select(RIDE_WITH_ORGANIZER_SELECT)
-    .eq("id", id)
-    .maybeSingle();
-  return data as RideWithOrganizer | null;
-});
+// rides_with_stats is anon-readable, so the row itself is shared across
+// visitors (invalidated by any ride edit or membership change); cache()
+// on top dedupes generateMetadata + the page within one request.
+export const getRideById = cache((id: string): Promise<RideWithOrganizer | null> =>
+  unstable_cache(
+    async () => {
+      const { data } = await createPublicClient()
+        .from("rides_with_stats")
+        .select(RIDE_WITH_ORGANIZER_SELECT)
+        .eq("id", id)
+        .maybeSingle();
+      return data as RideWithOrganizer | null;
+    },
+    ["ride-by-id", id],
+    { tags: [PUBLIC_RIDES_TAG], revalidate: PUBLIC_CACHE_SECONDS },
+  )(),
+);
 
-export async function getUpcomingRides(limit = 6): Promise<RideWithOrganizer[]> {
-  const supabase = await createClient();
+export const getUpcomingRides = publicCache(getUpcomingRidesUncached, ["upcoming-rides"]);
+
+async function getUpcomingRidesUncached(limit = 6): Promise<RideCardData[]> {
+  const supabase = createPublicClient();
   const today = new Date().toISOString().slice(0, 10);
   const { data } = await supabase
     .from("rides_with_stats")
-    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .select(RIDE_CARD_SELECT)
     .eq("status", "upcoming")
     .gte("ride_date", today)
     .order("ride_date", { ascending: true })
     .limit(limit);
-  return (data ?? []) as RideWithOrganizer[];
+  return (data ?? []) as unknown as RideCardData[];
 }
 
 // The next ride on this rider's own calendar, whether they organized it or
@@ -206,21 +282,16 @@ export async function getUpcomingRides(limit = 6): Promise<RideWithOrganizer[]> 
 // rides already show up here without a separate lookup. Can be upcoming
 // *or* ongoing — a cron sweep + an attendance-marking trigger keep
 // `rides.status` itself accurate, so it's trusted directly here.
-export async function getMyNextRide(userId: string): Promise<RideWithOrganizer | null> {
-  const supabase = await createClient();
-
-  const { data: memberRows } = await supabase
-    .from("ride_members")
-    .select("ride_id")
-    .eq("user_id", userId);
-  const rideIds = [...new Set((memberRows ?? []).map((row) => row.ride_id))];
+export async function getMyNextRide(userId: string): Promise<RideCardData | null> {
+  const rideIds = await getMyRideIds(userId);
   if (rideIds.length === 0) {
     return null;
   }
 
+  const supabase = await createClient();
   const { data } = await supabase
     .from("rides_with_stats")
-    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .select(RIDE_CARD_SELECT)
     .in("id", rideIds)
     .in("status", ["upcoming", "ongoing"])
     .order("ride_date", { ascending: true })
@@ -228,38 +299,33 @@ export async function getMyNextRide(userId: string): Promise<RideWithOrganizer |
     .limit(1)
     .maybeSingle();
 
-  return data as RideWithOrganizer | null;
+  return data as unknown as RideCardData | null;
 }
 
 export interface MyRides {
-  upcoming: RideWithOrganizer[];
-  ongoing: RideWithOrganizer[];
-  completed: RideWithOrganizer[];
-  cancelled: RideWithOrganizer[];
+  upcoming: RideCardData[];
+  ongoing: RideCardData[];
+  completed: RideCardData[];
+  cancelled: RideCardData[];
 }
 
 // Every ride this rider has organized or joined, grouped for the "My Rides"
 // timeline by its DB `status` — kept accurate by a cron sweep (time-elapsed)
 // and an attendance-marking trigger (instant), so it's trusted directly.
 export async function getMyRides(userId: string): Promise<MyRides> {
-  const supabase = await createClient();
-
-  const { data: memberRows } = await supabase
-    .from("ride_members")
-    .select("ride_id")
-    .eq("user_id", userId);
-  const rideIds = [...new Set((memberRows ?? []).map((row) => row.ride_id))];
+  const rideIds = await getMyRideIds(userId);
   if (rideIds.length === 0) {
     return { upcoming: [], ongoing: [], completed: [], cancelled: [] };
   }
 
+  const supabase = await createClient();
   const { data } = await supabase
     .from("rides_with_stats")
-    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .select(RIDE_CARD_SELECT)
     .in("id", rideIds)
     .order("ride_date", { ascending: false });
 
-  const rides = (data ?? []) as RideWithOrganizer[];
+  const rides = (data ?? []) as unknown as RideCardData[];
   const grouped: MyRides = { upcoming: [], ongoing: [], completed: [], cancelled: [] };
   for (const ride of rides) {
     grouped[ride.status ?? "upcoming"].push(ride);
@@ -284,13 +350,7 @@ function emptyMyRides(): MyRides {
 // paths insert into ride_members), just split three ways by the viewer's
 // relationship to each ride's pricing_model before bucketing by status.
 export async function getMyRidesGrouped(userId: string): Promise<MyRidesGrouped> {
-  const supabase = await createClient();
-
-  const { data: memberRows } = await supabase
-    .from("ride_members")
-    .select("ride_id")
-    .eq("user_id", userId);
-  const rideIds = [...new Set((memberRows ?? []).map((row) => row.ride_id))];
+  const rideIds = await getMyRideIds(userId);
 
   const result: MyRidesGrouped = {
     community: emptyMyRides(),
@@ -301,13 +361,14 @@ export async function getMyRidesGrouped(userId: string): Promise<MyRidesGrouped>
     return result;
   }
 
+  const supabase = await createClient();
   const { data } = await supabase
     .from("rides_with_stats")
-    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .select(RIDE_CARD_SELECT)
     .in("id", rideIds)
     .order("ride_date", { ascending: false });
 
-  const rides = (data ?? []) as RideWithOrganizer[];
+  const rides = (data ?? []) as unknown as RideCardData[];
   for (const ride of rides) {
     const group =
       ride.pricing_model === "organized"
@@ -325,28 +386,28 @@ export async function getMyRidesGrouped(userId: string): Promise<MyRidesGrouped>
 }
 
 export interface OrganizerRides {
-  upcoming: RideWithOrganizer[];
-  past: RideWithOrganizer[];
+  upcoming: RideCardData[];
+  past: RideCardData[];
 }
 
-export async function getRidesByOrganizer(organizerId: string): Promise<OrganizerRides> {
+export const getRidesByOrganizer = cache(async (organizerId: string): Promise<OrganizerRides> => {
   const supabase = await createClient();
   const today = new Date().toISOString().slice(0, 10);
   const { data } = await supabase
     .from("rides_with_stats")
-    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .select(RIDE_CARD_SELECT)
     .eq("organizer_id", organizerId)
     .order("ride_date", { ascending: true });
 
-  const rides = (data ?? []) as RideWithOrganizer[];
-  const isUpcoming = (ride: RideWithOrganizer) =>
+  const rides = (data ?? []) as unknown as RideCardData[];
+  const isUpcoming = (ride: RideCardData) =>
     ride.status === "upcoming" && (ride.ride_date ?? "") >= today;
 
   return {
     upcoming: rides.filter(isUpcoming),
     past: rides.filter((ride) => !isUpcoming(ride)).reverse(),
   };
-}
+});
 
 export async function getOrganizedRidesCount(organizerId: string): Promise<number> {
   const supabase = await createClient();
@@ -357,14 +418,14 @@ export async function getOrganizedRidesCount(organizerId: string): Promise<numbe
   return count ?? 0;
 }
 
-export async function getRecentRides(limit = 6): Promise<RideWithOrganizer[]> {
-  const supabase = await createClient();
+export async function getRecentRides(limit = 6): Promise<RideCardData[]> {
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("rides_with_stats")
-    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .select(RIDE_CARD_SELECT)
     .order("created_at", { ascending: false })
     .limit(limit);
-  return (data ?? []) as RideWithOrganizer[];
+  return (data ?? []) as unknown as RideCardData[];
 }
 
 export interface DestinationSummary {
@@ -376,14 +437,17 @@ export interface DestinationSummary {
 
 // The single ride the hero banner leads with — favors what's happening soon
 // and already has momentum (riders joined) over a ride nobody's noticed yet.
-export async function getFeaturedRide(
+export const getFeaturedRide = publicCache(getFeaturedRideUncached, ["featured-ride"]);
+
+async function getFeaturedRideUncached(
   pricingModel?: Enums<"pricing_model">,
-): Promise<RideWithOrganizer | null> {
-  const supabase = await createClient();
+): Promise<FeaturedRide | null> {
+  const supabase = createPublicClient();
   const today = new Date().toISOString().slice(0, 10);
+  const select = `${RIDE_CARD_SELECT}, description`;
   let query = supabase
     .from("rides_with_stats")
-    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .select(select)
     .eq("status", "upcoming")
     .gte("ride_date", today)
     .gt("member_count", 1);
@@ -397,14 +461,14 @@ export async function getFeaturedRide(
     .maybeSingle();
 
   if (data) {
-    return data as RideWithOrganizer;
+    return data as unknown as FeaturedRide;
   }
 
   // No ride has other riders yet (new/quiet community) — fall back to
   // whatever's soonest so the section always has something to show.
   let fallback = supabase
     .from("rides_with_stats")
-    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .select(select)
     .eq("status", "upcoming")
     .gte("ride_date", today);
   if (pricingModel) {
@@ -414,19 +478,19 @@ export async function getFeaturedRide(
     .order("ride_date", { ascending: true })
     .limit(1)
     .maybeSingle();
-  return soonest as RideWithOrganizer | null;
+  return soonest as unknown as FeaturedRide | null;
 }
 
 export async function getRidesInCity(
   city: string,
   excludeRideIds: string[] = [],
   limit = 4,
-): Promise<RideWithOrganizer[]> {
-  const supabase = await createClient();
+): Promise<RideCardData[]> {
+  const supabase = createPublicClient();
   const today = new Date().toISOString().slice(0, 10);
   let query = supabase
     .from("rides_with_stats")
-    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .select(RIDE_CARD_SELECT)
     .eq("status", "upcoming")
     .eq("city", city)
     .gte("ride_date", today)
@@ -438,34 +502,35 @@ export async function getRidesInCity(
   }
 
   const { data } = await query;
-  return (data ?? []) as RideWithOrganizer[];
+  return (data ?? []) as unknown as RideCardData[];
 }
 
 export type RideImage = Tables<"ride_images">;
 
-export async function getRideImages(rideId: string): Promise<RideImage[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("ride_images")
-    .select("*")
-    .eq("ride_id", rideId)
-    .order("created_at", { ascending: false });
-  return data ?? [];
+export function getRideImages(rideId: string): Promise<RideImage[]> {
+  return unstable_cache(
+    async () => {
+      const { data } = await createPublicClient()
+        .from("ride_images")
+        .select("*")
+        .eq("ride_id", rideId)
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+    ["ride-images", rideId],
+    { tags: [PUBLIC_RIDES_TAG], revalidate: PUBLIC_CACHE_SECONDS },
+  )();
 }
 
 // A rider's photo wall — every image posted to a ride they organized or
 // joined, newest first. Empty until the (not-yet-built) upload flow ships.
 export async function getRiderGalleryImages(userId: string, limit = 12): Promise<RideImage[]> {
-  const supabase = await createClient();
-  const { data: memberRows } = await supabase
-    .from("ride_members")
-    .select("ride_id")
-    .eq("user_id", userId);
-  const rideIds = [...new Set((memberRows ?? []).map((row) => row.ride_id))];
+  const rideIds = await getMyRideIds(userId);
   if (rideIds.length === 0) {
     return [];
   }
 
+  const supabase = await createClient();
   const { data } = await supabase
     .from("ride_images")
     .select("*")
@@ -487,16 +552,22 @@ export interface CommunityActivityItem {
 
 // A lightweight public feed — recently created rides — built from
 // existing tables rather than a dedicated activity log.
-export async function getCommunityActivity(limit = 8): Promise<CommunityActivityItem[]> {
-  const supabase = await createClient();
+export const getCommunityActivity = publicCache(getCommunityActivityUncached, [
+  "community-activity",
+]);
 
+async function getCommunityActivityUncached(limit = 8): Promise<CommunityActivityItem[]> {
+  const supabase = createPublicClient();
+
+  // Straight off `rides` — the member-count aggregation in rides_with_stats
+  // isn't needed for a feed of titles.
   const { data: created } = await supabase
-    .from("rides_with_stats")
-    .select(RIDE_WITH_ORGANIZER_SELECT)
+    .from("rides")
+    .select(`id, title, created_at, ${ORGANIZER_EMBED}`)
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  return (created as RideWithOrganizer[])
+  return (created ?? [])
     .filter((ride) => ride.id && ride.created_at)
     .map((ride) => ({
       id: `created-${ride.id}`,
@@ -509,8 +580,12 @@ export async function getCommunityActivity(limit = 8): Promise<CommunityActivity
     }));
 }
 
-export async function getPopularDestinations(limit = 6): Promise<DestinationSummary[]> {
-  const supabase = await createClient();
+export const getPopularDestinations = publicCache(getPopularDestinationsUncached, [
+  "popular-destinations",
+]);
+
+async function getPopularDestinationsUncached(limit = 6): Promise<DestinationSummary[]> {
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("rides")
     .select("city, meeting_lat, meeting_lng")
@@ -549,8 +624,12 @@ export interface TripDestinationSummary {
 // Where rides are actually headed — distinct from getPopularDestinations,
 // which groups by the ride's meeting city (used for "search rides near me").
 // This is what the landing page's "Popular destinations" rail should show.
-export async function getPopularTripDestinations(limit = 6): Promise<TripDestinationSummary[]> {
-  const supabase = await createClient();
+export const getPopularTripDestinations = publicCache(getPopularTripDestinationsUncached, [
+  "popular-trip-destinations",
+]);
+
+async function getPopularTripDestinationsUncached(limit = 6): Promise<TripDestinationSummary[]> {
+  const supabase = createPublicClient();
   const today = new Date().toISOString().slice(0, 10);
   const { data } = await supabase
     .from("rides")

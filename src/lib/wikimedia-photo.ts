@@ -26,10 +26,13 @@ const USER_AGENT = "RoadKin/1.0 (https://roadkin.in; motorcycle riding community
 // further than this away instead of risking an unrelated photo.
 const MAX_MATCH_DISTANCE_KM = 60;
 const CACHE_OPTIONS = { next: { revalidate: 60 * 60 * 24 * 30 } }; // real-world geography doesn't change
+// Destination cards render ~300px wide (600px on a 2x screen) — no need for
+// Commons to hand over anything bigger.
+const THUMB_WIDTH = 640;
 
 // Wikimedia's static thumb URLs only serve a fixed whitelist of widths — this
 // re-resolves a File: page through the API instead, which can render any width.
-async function resolveCommonsThumb(imageUrl: string, width = 1200): Promise<string | null> {
+async function resolveCommonsThumb(imageUrl: string, width = THUMB_WIDTH): Promise<string | null> {
   const filename = decodeURIComponent(imageUrl.split("/").pop() ?? "");
   if (!filename) {
     return null;
@@ -96,7 +99,8 @@ export async function getWikipediaPlacePhoto(
     if (!imageUrl) {
       return null;
     }
-    return (await resolveCommonsThumb(imageUrl)) ?? imageUrl;
+    // Prefer the small summary thumbnail over the (often multi-MB) original.
+    return (await resolveCommonsThumb(imageUrl)) ?? data.thumbnail?.source ?? imageUrl;
   } catch {
     return null;
   }
@@ -122,7 +126,7 @@ export async function getNearbyCommonsPhoto(
     ggslimit: "1",
     prop: "imageinfo",
     iiprop: "url",
-    iiurlwidth: "1200",
+    iiurlwidth: String(THUMB_WIDTH),
     format: "json",
   });
 

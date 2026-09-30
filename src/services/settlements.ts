@@ -106,16 +106,11 @@ export async function getOrganizerPendingSettlement(
 ): Promise<PendingSettlementSummary> {
   const supabase = await createClient();
 
-  const { data: rides } = await supabase.from("rides").select("id").eq("organizer_id", organizerId);
-  const rideIds = (rides ?? []).map((ride) => ride.id);
-  if (rideIds.length === 0) {
-    return { count: 0, totalOwed: 0 };
-  }
-
+  // One round trip: filter bookings by their ride's organizer via an inner join.
   const { data: bookings } = await supabase
     .from("ride_bookings")
-    .select("organizer_amount")
-    .in("ride_id", rideIds)
+    .select("organizer_amount, ride:rides!inner(organizer_id)")
+    .eq("ride.organizer_id", organizerId)
     .eq("status", "paid")
     .is("settled_at", null);
 

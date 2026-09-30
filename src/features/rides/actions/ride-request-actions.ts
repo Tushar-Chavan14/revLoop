@@ -2,6 +2,7 @@
 
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
+import { expirePublicRideCache } from "@/lib/public-cache";
 import { createClient } from "@/lib/supabase/server";
 import { getMyRole } from "@/services/roles";
 
@@ -103,6 +104,7 @@ export async function respondToJoinRequest(
     return { error: error.message };
   }
 
+  expirePublicRideCache();
   refresh();
 }
 
@@ -138,6 +140,7 @@ export async function removeRideMember(rideId: string, userId: string): Promise<
     .eq("requester_id", userId)
     .eq("status", "accepted");
 
+  expirePublicRideCache();
   refresh();
 }
 
@@ -160,5 +163,6 @@ export async function setAttendance(
     return { error: "Couldn't update attendance, please try again" };
   }
 
+  expirePublicRideCache();
   refresh();
 }

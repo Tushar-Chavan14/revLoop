@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { expirePublicRideCache } from "@/lib/public-cache";
 import { createClient } from "@/lib/supabase/server";
 import { profileSchema } from "@/features/profile/schema";
 import type { Enums } from "@/types/supabase";
@@ -47,15 +48,28 @@ async function uploadAvatarIfPresent(
   }
 
   const extension = file.name.split(".").pop() || "jpg";
-  const path = `${userId}/avatar.${extension}`;
+  // A fresh filename per upload (rather than overwriting avatar.jpg) means
+  // the URL changes with the photo, so browsers, the Storage CDN and the
+  // image optimizer can all cache it for a year without serving a stale face.
+  const fileName = `avatar-${Date.now()}.${extension}`;
+  const path = `${userId}/${fileName}`;
 
   const { error } = await supabase.storage.from(AVATAR_BUCKET).upload(path, file, {
-    upsert: true,
     contentType: file.type,
+    cacheControl: "31536000",
   });
 
   if (error) {
     throw new Error("Could not upload profile image");
+  }
+
+  // Best-effort cleanup of the rider's previous avatar(s).
+  const { data: existing } = await supabase.storage.from(AVATAR_BUCKET).list(userId);
+  const stale = (existing ?? [])
+    .map((object) => object.name)
+    .filter((name) => name !== fileName && name.startsWith("avatar"));
+  if (stale.length > 0) {
+    await supabase.storage.from(AVATAR_BUCKET).remove(stale.map((name) => `${userId}/${name}`));
   }
 
   const { data } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path);
@@ -138,10 +152,14 @@ export async function createProfile(formData: FormData): Promise<ProfileActionRe
     });
     if (organizerError) {
       console.error("organizer_details insert failed:", organizerError);
-      return { error: "Profile created, but business details couldn't be saved — edit your profile to add them." };
+      return {
+        error:
+          "Profile created, but business details couldn't be saved — edit your profile to add them.",
+      };
     }
   }
 
+  expirePublicRideCache();
   redirect("/");
 }
 
@@ -219,5 +237,6 @@ export async function updateProfile(formData: FormData): Promise<ProfileActionRe
     }
   }
 
+  expirePublicRideCache();
   redirect("/profile");
 }

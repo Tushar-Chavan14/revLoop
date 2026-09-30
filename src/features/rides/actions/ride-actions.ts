@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { expirePublicRideCache } from "@/lib/public-cache";
 import { createClient } from "@/lib/supabase/server";
 import { rideSchema, type ItineraryDay } from "@/features/rides/schema";
 import { getProfileByUserId } from "@/services/profiles";
@@ -95,8 +96,10 @@ async function uploadCoverIfPresent(
   const extension = file.name.split(".").pop() || "jpg";
   const path = `${userId}/${crypto.randomUUID()}.${extension}`;
 
+  // Unique path per upload, so the object never changes — cache it for a year.
   const { error } = await supabase.storage.from(COVER_BUCKET).upload(path, file, {
     contentType: file.type,
+    cacheControl: "31536000",
   });
 
   if (error) {
@@ -139,7 +142,9 @@ export async function createRide(formData: FormData): Promise<RideActionResult> 
       };
     }
     if (!hasPayoutDetails(await getPayoutDetails(user.id))) {
-      return { error: "Add your payout details in your profile before creating an Organized Ride." };
+      return {
+        error: "Add your payout details in your profile before creating an Organized Ride.",
+      };
     }
   } else if (role !== "user") {
     return {
@@ -206,6 +211,7 @@ export async function createRide(formData: FormData): Promise<RideActionResult> 
     return { error: "Something went wrong, please try again" };
   }
 
+  expirePublicRideCache();
   redirect(`/rides/${ride.id}`);
 }
 
@@ -302,5 +308,6 @@ export async function updateRide(rideId: string, formData: FormData): Promise<Ri
     return { error: "You don't have permission to edit this ride" };
   }
 
+  expirePublicRideCache();
   redirect(`/rides/${rideId}`);
 }

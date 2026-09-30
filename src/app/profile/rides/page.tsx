@@ -122,7 +122,9 @@ export default async function MyRidesPage() {
               <div className="flex gap-2">
                 <Button
                   nativeButton={false}
-                  render={<Link href="/rides/create">{isOrganizer ? "Host A Ride" : "Post A Ride"}</Link>}
+                  render={
+                    <Link href="/rides/create">{isOrganizer ? "Host A Ride" : "Post A Ride"}</Link>
+                  }
                 />
                 {!isOrganizer && (
                   <Button

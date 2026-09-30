@@ -44,7 +44,9 @@ export default function RootLayout({
             </ChatActivityProvider>
           </AppInstallProvider>
         </ThemeProvider>
-        <SpeedInsights />
+        {/* Vercel-only: on Netlify it would just ship a script that beacons to
+            a /_vercel endpoint that doesn't exist there. */}
+        {process.env.VERCEL && <SpeedInsights />}
       </body>
     </html>
   );

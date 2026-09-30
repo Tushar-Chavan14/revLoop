@@ -20,6 +20,7 @@ import { EmptyState } from "@/components/design-system/state-panel";
 import { ProfileCard } from "@/components/design-system/profile-card";
 import { StatCard } from "@/components/design-system/stat-card";
 import { Reveal } from "@/components/reveal";
+import { UnsplashImage } from "@/components/unsplash-image";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/utils";
@@ -33,16 +34,15 @@ import {
   getFeaturedRide,
   getPopularTripDestinations,
   getUpcomingRides,
-  type RideWithOrganizer,
+  type FeaturedRide,
 } from "@/services/rides";
 import { capitalize } from "@/utils/capitalize";
 import { getUpcomingWeekendRange } from "@/utils/weekend";
 
 // Curated cinematic motorcycle photography carries the emotion — golden-hour
-// open roads and real machines. Hotlinked from Unsplash's CDN (keyless,
-// unoptimized), hand-picked frames rather than random keyword matches.
-const unsplash = (id: string, w = 2000) =>
-  `https://images.unsplash.com/photo-${id}?w=${w}&q=80&auto=format&fit=crop`;
+// open roads and real machines. Hand-picked Unsplash frames rather than
+// random keyword matches; <UnsplashImage> sizes them on Unsplash's own CDN.
+const unsplash = (id: string) => `https://images.unsplash.com/photo-${id}`;
 const IMG = {
   hero: unsplash("1558981806-ec527fa84c39"), // rider cruising into golden hour
   featuredCommunity: unsplash("1600298881974-6be191ceeda1"), // rugged peaks
@@ -131,7 +131,7 @@ export default async function HomePage() {
 
       {/* Hero — the home of weekend riders. Golden-hour photography carries it. */}
       <section className="bg-secondary text-secondary-foreground relative flex min-h-svh items-end overflow-hidden">
-        <Image src={IMG.hero} alt="" fill priority unoptimized className="object-cover" />
+        <UnsplashImage src={IMG.hero} alt="" fill preload sizes="100vw" className="object-cover" />
         {/* Cinematic scrim — deep at the base for legibility, warm amber glow at
             the horizon so the whole frame reads golden hour. */}
         <div
@@ -274,7 +274,8 @@ export default async function HomePage() {
                   city={destination.destination}
                   rideCount={destination.rideCount}
                   imageUrl={
-                    destinationPhotos[index] ?? themedPhoto("motorcycle,mountain,road", 200 + index)
+                    destinationPhotos[index] ??
+                    themedPhoto("motorcycle,mountain,road", 200 + index, 600, 800)
                   }
                 />
               ))}
@@ -379,7 +380,14 @@ export default async function HomePage() {
 
       {/* Join the road family CTA — full-bleed cinematic close. */}
       <section className="bg-secondary text-secondary-foreground relative flex min-h-[70svh] items-center overflow-hidden px-6 py-28">
-        <Image src="/footer-mountains.jpg" alt="" fill unoptimized className="object-cover" />
+        <Image
+          src="/footer-mountains.jpg"
+          alt=""
+          fill
+          sizes="100vw"
+          quality={60}
+          className="object-cover"
+        />
         <div className="absolute inset-0 bg-linear-to-t from-black via-black/60 to-black/70" />
         <div
           aria-hidden
@@ -445,7 +453,7 @@ function FeaturedRideSpotlight({
   accent,
   fallbackPhoto,
 }: {
-  ride: RideWithOrganizer;
+  ride: FeaturedRide;
   accent: keyof typeof SPOTLIGHT_ACCENT;
   fallbackPhoto: string;
 }) {
@@ -453,13 +461,23 @@ function FeaturedRideSpotlight({
   return (
     <div className="bg-card ring-foreground/10 grid grid-cols-1 overflow-hidden rounded-3xl ring-1 lg:grid-cols-2">
       <div className="from-secondary via-secondary/60 to-secondary/30 relative aspect-video w-full bg-linear-to-br lg:aspect-auto">
-        <Image
-          src={ride.cover_image_url ?? fallbackPhoto}
-          alt={ride.title ?? "Featured ride"}
-          fill
-          unoptimized
-          className="object-cover"
-        />
+        {ride.cover_image_url ? (
+          <Image
+            src={ride.cover_image_url}
+            alt={ride.title ?? "Featured ride"}
+            fill
+            sizes="(min-width: 1024px) 576px, 100vw"
+            className="object-cover"
+          />
+        ) : (
+          <UnsplashImage
+            src={fallbackPhoto}
+            alt={ride.title ?? "Featured ride"}
+            fill
+            sizes="(min-width: 1024px) 576px, 100vw"
+            className="object-cover"
+          />
+        )}
       </div>
       <div className="flex flex-col justify-center gap-4 p-8 sm:p-10">
         <Badge className={cn("w-fit border-0", theme.badge)}>Ride Of The Week</Badge>

@@ -15,10 +15,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { respondToJoinRequest } from "@/features/rides/actions/ride-request-actions";
 import type { RideRequestWithRequester } from "@/services/ride-participation";
-import type { RideWithOrganizer } from "@/services/rides";
+import type { RideCardData } from "@/services/rides";
 
 interface RideRequestsAccordionProps {
-  rides: RideWithOrganizer[];
+  rides: RideCardData[];
   requests: RideRequestWithRequester[];
 }
 

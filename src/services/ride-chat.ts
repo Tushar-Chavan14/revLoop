@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { RIDE_MESSAGE_SENDER_SELECT } from "@/constants/ride-chat";
+import { getMyRideIds } from "@/services/rides";
 import type { Database, Tables } from "@/types/supabase";
 
 export type RideMessage = Tables<"ride_messages">;
@@ -39,16 +40,12 @@ export async function getRecentMessagesForUser(
   userId: string,
   limit = 5,
 ): Promise<RecentMessage[]> {
-  const supabase = await createClient();
-  const { data: memberRows } = await supabase
-    .from("ride_members")
-    .select("ride_id")
-    .eq("user_id", userId);
-  const rideIds = [...new Set((memberRows ?? []).map((row) => row.ride_id))];
+  const rideIds = await getMyRideIds(userId);
   if (rideIds.length === 0) {
     return [];
   }
 
+  const supabase = await createClient();
   const { data } = await supabase
     .from("ride_messages")
     .select(

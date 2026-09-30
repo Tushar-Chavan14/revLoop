@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
+import { expirePublicRideCache } from "@/lib/public-cache";
 import { createClient } from "@/lib/supabase/server";
 import { createBookingOrder as createRazorpayOrder } from "@/lib/razorpay/client";
 import { organizerHasPayoutDetails } from "@/services/organizer-payout";
@@ -149,6 +150,7 @@ export async function getBookingStatus(bookingId: string) {
   // participants list, seats_available) catches up too, not just this
   // card's own local status.
   if (status === "paid") {
+    expirePublicRideCache();
     refresh();
   }
 

@@ -156,7 +156,7 @@ export function RideChat({
       <div className="border-border/60 flex items-center gap-3 border-b p-3">
         <div className="bg-secondary relative size-11 shrink-0 overflow-hidden rounded-xl">
           {ride.coverImageUrl && (
-            <Image src={ride.coverImageUrl} alt="" fill unoptimized className="object-cover" />
+            <Image src={ride.coverImageUrl} alt="" fill sizes="44px" className="object-cover" />
           )}
         </div>
         <div className="min-w-0 flex-1">

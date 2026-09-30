@@ -5,12 +5,11 @@ import { EmptyState } from "@/components/design-system/state-panel";
 import { RideCardSkeleton } from "@/components/design-system/skeletons";
 import { loadMoreRides } from "@/features/rides/actions/explore-actions";
 import { RideCard } from "@/features/rides/components/ride-card";
-import type { RideFilters, RideListResult, RideWithOrganizer } from "@/services/rides";
+import type { RideFilters, RideListResult, RideCardData } from "@/services/rides";
 
 interface RidesExplorerProps {
   initialResult: RideListResult;
   filters: RideFilters;
-  currentUserId?: string | null;
   initialJoinedRideIds?: string[];
 }
 
@@ -18,15 +17,12 @@ interface RidesExplorerProps {
 export function RidesExplorer({
   initialResult,
   filters,
-  currentUserId = null,
   initialJoinedRideIds = [],
 }: RidesExplorerProps) {
-  const [rides, setRides] = useState<RideWithOrganizer[]>(initialResult.rides);
+  const [rides, setRides] = useState<RideCardData[]>(initialResult.rides);
   const [page, setPage] = useState(initialResult.page);
   const [total, setTotal] = useState(initialResult.total);
-  const [joinedRideIds, setJoinedRideIds] = useState<Set<string>>(
-    new Set(initialJoinedRideIds),
-  );
+  const [joinedRideIds, setJoinedRideIds] = useState<Set<string>>(new Set(initialJoinedRideIds));
   const [isPending, startTransition] = useTransition();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -44,7 +40,7 @@ export function RidesExplorer({
       (entries) => {
         if (entries[0]?.isIntersecting && !isPending) {
           startTransition(async () => {
-            const next = await loadMoreRides(filters, page + 1, currentUserId);
+            const next = await loadMoreRides(filters, page + 1);
             setRides((current) => [...current, ...next.rides]);
             setPage(next.page);
             setTotal(next.total);

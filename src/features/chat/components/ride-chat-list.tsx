@@ -120,7 +120,7 @@ export function RideChatList({ initialChats, currentUserId }: RideChatListProps)
                     src={chat.cover_image_url}
                     alt=""
                     fill
-                    unoptimized
+                    sizes="48px"
                     className="object-cover"
                   />
                 ) : (

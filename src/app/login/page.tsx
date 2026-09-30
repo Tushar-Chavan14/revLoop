@@ -28,7 +28,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <div className="flex min-h-svh flex-col lg:flex-row">
       {/* Immersive photography panel — the emotional half. */}
       <div className="bg-secondary relative hidden overflow-hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-between lg:p-12 xl:p-16">
-        <Image src={LOGIN_IMAGE} alt="" fill priority unoptimized className="object-cover" />
+        {/* No preload: this panel is desktop-only, and a preloaded image is
+            fetched even while display:none — lazy lets phones skip it. */}
+        <Image src={LOGIN_IMAGE} alt="" fill unoptimized sizes="50vw" className="object-cover" />
         <div className="absolute inset-0 bg-linear-to-t from-black via-black/45 to-black/40" />
         <div
           aria-hidden

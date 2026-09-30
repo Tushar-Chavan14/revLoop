@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar";
+import { getImageProps } from "next/image";
 
 import { cn } from "@/lib/utils";
 
@@ -25,12 +26,28 @@ function Avatar({
   );
 }
 
-function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
+const STORAGE_PATH = ".supabase.co/storage/v1/object/public/";
+
+// Avatars render at 24–40px, but an uploaded profile photo can be a full-size
+// camera image — route Storage URLs through the image optimizer (64px, 2x
+// srcset) instead of shipping the original to every avatar on the page.
+function optimizedAvatarSrc(src: AvatarPrimitive.Image.Props["src"]) {
+  if (typeof src !== "string" || !src.includes(STORAGE_PATH)) {
+    return { src };
+  }
+  const { props } = getImageProps({ src, alt: "", width: 64, height: 64 });
+  return { src: props.src, srcSet: props.srcSet };
+}
+
+function AvatarImage({ className, src, ...props }: AvatarPrimitive.Image.Props) {
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
       className={cn("aspect-square size-full rounded-full object-cover", className)}
+      loading="lazy"
+      decoding="async"
       {...props}
+      {...optimizedAvatarSrc(src)}
     />
   );
 }

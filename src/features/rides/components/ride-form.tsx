@@ -45,7 +45,8 @@ import { SPEED_LEVELS } from "@/constants/speed-level";
 import { RIDER_LEVELS } from "@/constants/rider-level";
 import { RIDE_INCLUSIONS } from "@/constants/ride-inclusions";
 import { CoverImageUpload } from "@/features/rides/components/cover-image-upload";
-import { RideMap, type ActiveMarker } from "@/features/rides/components/ride-map";
+import { LazyRideMap } from "@/features/rides/components/lazy-ride-map";
+import type { ActiveMarker } from "@/features/rides/components/ride-map";
 import { rideSchema, type RideFormValues } from "@/features/rides/schema";
 import { reverseGeocode } from "@/utils/reverse-geocode";
 import { fadeInUp } from "@/lib/motion";
@@ -457,7 +458,7 @@ export function RideForm({
                 Click or drag on the map to fine-tune whichever pin is selected above — the field
                 and city above update to match.
               </p>
-              <RideMap
+              <LazyRideMap
                 meeting={meetingLocation}
                 destination={destinationLocation}
                 activeMarker={activeMarker}

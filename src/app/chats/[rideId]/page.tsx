@@ -25,18 +25,22 @@ export default async function RideChatScreen({ params }: RideChatScreenProps) {
     redirect("/login");
   }
 
-  const ride = await getRideById(rideId);
+  // RLS already hides messages from non-members, so all three can go out at
+  // once; the membership check below still decides what gets rendered.
+  const [ride, members, messages] = await Promise.all([
+    getRideById(rideId),
+    getRideMembers(rideId),
+    getRideMessages(rideId),
+  ]);
   if (!ride?.id) {
     notFound();
   }
 
-  const members = await getRideMembers(rideId);
   // Only the crew can read the chat — anyone else lands on the ride itself.
   if (!members.some((member) => member.user_id === user.id)) {
     redirect(`/rides/${rideId}`);
   }
 
-  const messages = await getRideMessages(rideId);
   const profiles = members.filter((member) => member.profile).map((member) => member.profile!);
 
   return (

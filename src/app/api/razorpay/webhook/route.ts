@@ -1,4 +1,6 @@
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
+import { PUBLIC_RIDES_TAG } from "@/constants/cache-tags";
 import { verifyWebhookSignature } from "@/lib/razorpay/client";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
@@ -58,6 +60,9 @@ export async function POST(request: Request) {
     // needs a manual refund — mark the booking failed rather than leaving it
     // stuck at "created".
     await supabase.from("ride_bookings").update({ status: "failed" }).eq("id", booking.id);
+  } else {
+    // A paid booking adds a ride member, changing seat counts visitors see.
+    revalidateTag(PUBLIC_RIDES_TAG, { expire: 0 });
   }
 
   return NextResponse.json({ received: true });

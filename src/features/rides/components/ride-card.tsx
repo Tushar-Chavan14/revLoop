@@ -14,7 +14,7 @@ import { RIDER_LEVELS } from "@/constants/rider-level";
 import { SPEED_LEVELS } from "@/constants/speed-level";
 import { hoverLift } from "@/lib/motion";
 import { cn } from "@/lib/utils";
-import type { RideWithOrganizer } from "@/services/rides";
+import type { RideCardData } from "@/services/rides";
 import { formatRideDuration } from "@/utils/ride-duration";
 
 function rideTypeLabel(value: string | null) {
@@ -37,13 +37,7 @@ const DIFFICULTY_COLOR: Record<string, string> = {
   experienced: "border-level-experienced/30 text-level-experienced bg-level-experienced/10",
 };
 
-export function RideCard({
-  ride,
-  isJoined = false,
-}: {
-  ride: RideWithOrganizer;
-  isJoined?: boolean;
-}) {
+export function RideCard({ ride, isJoined = false }: { ride: RideCardData; isJoined?: boolean }) {
   const isFull = ride.seats_available !== null && ride.seats_available <= 0;
   const lowSeats =
     !isFull &&
@@ -76,7 +70,7 @@ export function RideCard({
               src={ride.cover_image_url}
               alt={ride.title ?? "Ride cover"}
               fill
-              unoptimized
+              sizes="(min-width: 1024px) 368px, (min-width: 640px) 50vw, 100vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (

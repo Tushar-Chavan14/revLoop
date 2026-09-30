@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { UnsplashImage } from "@/components/unsplash-image";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -14,8 +14,7 @@ export const metadata = {
 
 // A wide mountain valley — the open road ahead of a new rider. Curated,
 // reliable Unsplash frame (keyless), unlike a random keyword match.
-const SETUP_IMAGE =
-  "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=2000&q=80&auto=format&fit=crop";
+const SETUP_IMAGE = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b";
 
 const STEPS = ["Basics", "Riding Details", "Location", "About You"];
 
@@ -33,7 +32,14 @@ export default async function ProfileSetupPage() {
   return (
     <div className="flex min-h-svh flex-col">
       <section className="bg-secondary text-secondary-foreground relative overflow-hidden">
-        <Image src={SETUP_IMAGE} alt="" fill priority unoptimized className="object-cover" />
+        <UnsplashImage
+          src={SETUP_IMAGE}
+          alt=""
+          fill
+          preload
+          sizes="100vw"
+          className="object-cover"
+        />
         <div
           aria-hidden
           className="absolute inset-0 bg-linear-to-t from-black via-black/70 to-black/50"

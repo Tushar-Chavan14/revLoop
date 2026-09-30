@@ -3,6 +3,7 @@
 import { useRef, type ChangeEvent } from "react";
 import Image from "next/image";
 import { Camera, ImageIcon } from "lucide-react";
+import { compressImage } from "@/utils/compress-image";
 
 const MAX_COVER_BYTES = 5 * 1024 * 1024;
 
@@ -21,16 +22,19 @@ export function CoverImageUpload({
 }: CoverImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
+  const handleChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const picked = event.target.files?.[0];
+    if (!picked) {
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
+    if (!picked.type.startsWith("image/")) {
       onError("Please choose an image file");
       return;
     }
+    // Resized + re-encoded before upload, so the size limit applies to what
+    // actually gets sent — a big phone photo usually shrinks well under it.
+    const file = await compressImage(picked, { maxDimension: 1920 });
     if (file.size > MAX_COVER_BYTES) {
       onError("Image must be under 5MB");
       return;

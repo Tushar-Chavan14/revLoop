@@ -116,7 +116,9 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
         {
           icon: AtSign,
           label: "Instagram",
-          value: organizerDetails?.instagram_handle ? `@${organizerDetails.instagram_handle}` : undefined,
+          value: organizerDetails?.instagram_handle
+            ? `@${organizerDetails.instagram_handle}`
+            : undefined,
         },
       ].filter((stat) => stat.value)
     : [
@@ -184,7 +186,6 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
                 alt={profile.name}
                 width={128}
                 height={128}
-                unoptimized
                 className="h-full w-full object-cover"
               />
             ) : null}

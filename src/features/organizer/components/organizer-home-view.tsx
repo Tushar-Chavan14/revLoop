@@ -53,7 +53,6 @@ export async function OrganizerHomeView({ profile }: { profile: Profile }) {
                 alt={displayName}
                 width={64}
                 height={64}
-                unoptimized
                 className="h-full w-full object-cover"
               />
             )}

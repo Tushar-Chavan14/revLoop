@@ -85,6 +85,8 @@ function parseFilters(params: Record<string, string | string[] | undefined>): Ri
 }
 
 export default async function RidesPage({ searchParams }: RidesPageProps) {
+  // Doesn't depend on the viewer — start it before the auth/role lookups.
+  const cityOptionsPromise = getPopularDestinations(50);
   const params = await searchParams;
   const cityLabel = first(params.cityLabel);
   const user = await getAuthUser();
@@ -97,7 +99,7 @@ export default async function RidesPage({ searchParams }: RidesPageProps) {
     ? { ...parseFilters(params), pricingModel: "organized" as const, excludeOrganizerId: user!.id }
     : parseFilters(params);
 
-  const [result, cityOptions] = await Promise.all([listRides(filters), getPopularDestinations(50)]);
+  const [result, cityOptions] = await Promise.all([listRides(filters), cityOptionsPromise]);
   const joinedRideIds = user
     ? await getJoinedRideIds(
         user.id,
@@ -132,7 +134,6 @@ export default async function RidesPage({ searchParams }: RidesPageProps) {
             key={JSON.stringify(filters)}
             initialResult={result}
             filters={filters}
-            currentUserId={user?.id ?? null}
             initialJoinedRideIds={joinedRideIds}
           />
         </div>
