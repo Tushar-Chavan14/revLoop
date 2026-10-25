@@ -27,7 +27,7 @@ export function JoinRequestCard({ rideId, myRequest, isRideFull }: JoinRequestCa
       <Card>
         <CardContent className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-medium">Your Request Is Pending</p>
+            <p className="text-sm font-medium">Your request is pending</p>
             <p className="text-muted-foreground text-xs">
               The organizer hasn&apos;t responded yet.
             </p>
@@ -47,7 +47,7 @@ export function JoinRequestCard({ rideId, myRequest, isRideFull }: JoinRequestCa
               });
             }}
           >
-            {isPending ? "Cancelling..." : "Cancel Request"}
+            {isPending ? "Cancelling..." : "Cancel request"}
           </Button>
           {error && <p className="text-destructive text-sm">{error}</p>}
         </CardContent>
@@ -67,7 +67,7 @@ export function JoinRequestCard({ rideId, myRequest, isRideFull }: JoinRequestCa
       <CardHeader>
         <div className="flex items-center gap-2">
           <UserPlus className="text-muted-foreground size-4" />
-          <CardTitle>Want To Ride Along?</CardTitle>
+          <CardTitle>Want to ride along?</CardTitle>
         </div>
         <CardDescription>
           {previousOutcome ?? "Send a request and the organizer will review it."}
@@ -102,7 +102,7 @@ export function JoinRequestCard({ rideId, myRequest, isRideFull }: JoinRequestCa
                 });
               }}
             >
-              {isPending ? "Sending..." : "Request To Join"}
+              {isPending ? "Sending..." : "Request to join"}
             </Button>
             {error && <p className="text-destructive text-sm">{error}</p>}
           </>

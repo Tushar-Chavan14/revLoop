@@ -31,7 +31,6 @@ export default async function EditProfilePage() {
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-12">
         <PageHeading
-          eyebrow="Your Profile"
           title="Edit profile"
           description={
             isOrganizer

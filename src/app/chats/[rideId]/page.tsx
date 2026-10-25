@@ -50,7 +50,7 @@ export default async function RideChatScreen({ params }: RideChatScreenProps) {
         className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-sm lg:hidden"
       >
         <ArrowLeft className="size-4" aria-hidden />
-        All Crew Chats
+        All crew chats
       </Link>
       <RideChat
         key={rideId}

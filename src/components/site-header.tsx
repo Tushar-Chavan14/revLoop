@@ -15,21 +15,21 @@ import { toTitleCase } from "@/utils/capitalize";
 import { getOAuthAvatarUrl } from "@/utils/oauth-metadata";
 
 const NAV_LINK_CLASS =
-  "text-muted-foreground hover:text-foreground text-telemetry text-[11px] transition-colors";
+  "text-foreground/75 hover:text-foreground text-[15px] font-semibold transition-colors";
 
 // The shell (logo, public nav, theme toggle) renders immediately; everything
 // that depends on who's signed in streams in behind its own Suspense
 // boundary, so a page's content never waits on the header's queries.
 export function SiteHeader() {
   return (
-    <header className="border-border/60 bg-background/70 supports-backdrop-filter:bg-background/55 sticky top-0 z-40 border-b backdrop-blur-xl">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
+    <header className="bg-background sticky top-0 z-40">
+      <div className="mx-auto flex h-16 w-full max-w-[90rem] items-center justify-between gap-6 px-4 sm:px-8">
         <Link href="/" className="transition-opacity hover:opacity-80">
           <Logo />
         </Link>
-        <nav className="hidden items-center gap-8 sm:flex">
+        <nav className="mr-auto ml-6 hidden items-center gap-7 sm:flex">
           <Link href="/rides" className={NAV_LINK_CLASS}>
-            Discover Rides
+            Discover rides
           </Link>
           <Suspense fallback={null}>
             <SignedInNavLinks />
@@ -54,7 +54,7 @@ async function SignedInNavLinks() {
   return (
     <>
       <Link href="/profile/rides" className={NAV_LINK_CLASS}>
-        My Rides
+        My rides
       </Link>
       <ChatsNavLink />
     </>
@@ -64,7 +64,7 @@ async function SignedInNavLinks() {
 function HeaderActionsSkeleton() {
   return (
     <div className="flex items-center gap-2" aria-hidden>
-      <Skeleton className="h-8 w-24 rounded-lg" />
+      <Skeleton className="h-10 w-28 rounded-md" />
       <Skeleton className="size-8 rounded-full" />
     </div>
   );
@@ -99,10 +99,9 @@ async function HeaderActions() {
           nativeButton={false}
           render={
             <Link href={user ? "/rides/create" : "/login"}>
-              {user ? (isOrganizer ? "Host a Ride" : "Post a Ride") : "Get Started"}
+              {user ? (isOrganizer ? "Host a ride" : "Post a ride") : "Get started"}
             </Link>
           }
-          size="sm"
         />
       )}
       {user ? (
@@ -120,9 +119,8 @@ async function HeaderActions() {
       ) : (
         <Button
           nativeButton={false}
-          render={<Link href="/login">Sign In</Link>}
+          render={<Link href="/login">Sign in</Link>}
           variant="ghost"
-          size="sm"
         />
       )}
     </>

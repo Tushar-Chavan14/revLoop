@@ -13,7 +13,7 @@ const EFFECTIVE_DATE = "August 14, 2026";
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="font-heading text-xl font-bold tracking-tight">{title}</h2>
+      <h2 className="text-foreground text-lg font-bold">{title}</h2>
       <div className="text-muted-foreground flex flex-col gap-3 leading-relaxed">{children}</div>
     </section>
   );
@@ -23,22 +23,17 @@ export default function PrivacyPolicyPage() {
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
-      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
-        <PageHeading
-          eyebrow="Legal"
-          title="Privacy Policy"
-          description={`Last updated ${EFFECTIVE_DATE}`}
-        />
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-12 sm:px-6">
+        <PageHeading title="Privacy Policy" description={`Last updated ${EFFECTIVE_DATE}`} />
 
         <div className="flex flex-col gap-10">
           <p className="text-muted-foreground leading-relaxed">
             {APP_NAME} connects riders for breakfast runs, weekend loops, and hosted tours. This
-            policy explains what information we collect when you use the app, how we use it, and
-            the choices you have. By creating an account, you agree to the practices described
-            here.
+            policy explains what information we collect when you use the app, how we use it, and the
+            choices you have. By creating an account, you agree to the practices described here.
           </p>
 
-          <Section title="1. Information We Collect">
+          <Section title="1. Information we collect">
             <p>
               <strong className="text-foreground">Account information.</strong> When you sign up
               with a magic link or a social provider, we receive your email address and, where
@@ -57,13 +52,13 @@ export default function PrivacyPolicyPage() {
             </p>
             <p>
               <strong className="text-foreground">Location data.</strong> Meeting points,
-              destinations, and city searches you enter to create or find rides. We don't track
-              your location in the background.
+              destinations, and city searches you enter to create or find rides. We don't track your
+              location in the background.
             </p>
             <p>
-              <strong className="text-foreground">Payment information.</strong> For Organized
-              Rides, payments are processed by Razorpay. We store the transaction, amount, and
-              status of a booking — we never see or store your card, UPI, or bank details.
+              <strong className="text-foreground">Payment information.</strong> For Organized Rides,
+              payments are processed by Razorpay. We store the transaction, amount, and status of a
+              booking — we never see or store your card, UPI, or bank details.
             </p>
             <p>
               <strong className="text-foreground">Usage data.</strong> Basic technical data (like
@@ -71,30 +66,39 @@ export default function PrivacyPolicyPage() {
             </p>
           </Section>
 
-          <Section title="2. How We Use Your Information">
+          <Section title="2. How we use your information">
             <p>We use your information to:</p>
             <ul className="list-disc pl-5">
-              <li>Create and maintain your account, and show your public rider or organizer profile.</li>
+              <li>
+                Create and maintain your account, and show your public rider or organizer profile.
+              </li>
               <li>Let you create, discover, join, and book rides.</li>
-              <li>Facilitate ride chat and notify you about join requests, bookings, and ride updates.</li>
+              <li>
+                Facilitate ride chat and notify you about join requests, bookings, and ride updates.
+              </li>
               <li>Process payments and payouts for Organized Rides.</li>
               <li>Keep the platform safe — detecting abuse, fraud, and violations of our Terms.</li>
-              <li>Send you transactional emails (magic links, booking confirmations, notifications).</li>
+              <li>
+                Send you transactional emails (magic links, booking confirmations, notifications).
+              </li>
             </ul>
-            <p>We don't sell your personal information, and we don't use it for third-party advertising.</p>
+            <p>
+              We don't sell your personal information, and we don't use it for third-party
+              advertising.
+            </p>
           </Section>
 
-          <Section title="3. Who We Share It With">
+          <Section title="3. Who we share it with">
             <p>We share information only where it's needed to run the platform:</p>
             <ul className="list-disc pl-5">
               <li>
-                <strong className="text-foreground">Other riders.</strong> Your public profile,
-                and — once you join a ride — your name and contact details are visible to that
-                ride's organizer and fellow members.
+                <strong className="text-foreground">Other riders.</strong> Your public profile, and
+                — once you join a ride — your name and contact details are visible to that ride's
+                organizer and fellow members.
               </li>
               <li>
-                <strong className="text-foreground">Razorpay.</strong> Payment details necessary
-                to process an Organized Ride booking or an organizer payout.
+                <strong className="text-foreground">Razorpay.</strong> Payment details necessary to
+                process an Organized Ride booking or an organizer payout.
               </li>
               <li>
                 <strong className="text-foreground">Supabase.</strong> Our database and
@@ -105,15 +109,18 @@ export default function PrivacyPolicyPage() {
                 deliver magic links and notification emails.
               </li>
             </ul>
-            <p>We may also disclose information if required by law or to protect the rights and safety of our riders.</p>
+            <p>
+              We may also disclose information if required by law or to protect the rights and
+              safety of our riders.
+            </p>
           </Section>
 
-          <Section title="4. Data Retention & Deletion">
+          <Section title="4. Data retention & deletion">
             <p>
               We keep your information for as long as your account is active. You can request
               deletion of your account and associated data at any time by contacting us — we'll
-              remove it within a reasonable time, except where we're required to retain records
-              (for example, completed payment transactions) for legal or accounting purposes.
+              remove it within a reasonable time, except where we're required to retain records (for
+              example, completed payment transactions) for legal or accounting purposes.
             </p>
           </Section>
 
@@ -126,15 +133,15 @@ export default function PrivacyPolicyPage() {
             </p>
           </Section>
 
-          <Section title="6. Children's Privacy">
+          <Section title="6. Children's privacy">
             <p>
-              {APP_NAME} is not intended for anyone under 18. We don't knowingly collect
-              information from minors. If you believe a minor has created an account, contact us
-              and we'll remove it.
+              {APP_NAME} is not intended for anyone under 18. We don't knowingly collect information
+              from minors. If you believe a minor has created an account, contact us and we'll
+              remove it.
             </p>
           </Section>
 
-          <Section title="7. Your Rights">
+          <Section title="7. Your rights">
             <p>
               You can access, update, or correct most of your profile information directly in the
               app. You may also request a copy of your data, or ask us to delete your account, by
@@ -142,17 +149,20 @@ export default function PrivacyPolicyPage() {
             </p>
           </Section>
 
-          <Section title="8. Changes To This Policy">
+          <Section title="8. Changes to this policy">
             <p>
               We may update this policy as the app evolves. If we make material changes, we'll
               update the date at the top of this page.
             </p>
           </Section>
 
-          <Section title="9. Contact Us">
+          <Section title="9. Contact us">
             <p>
               Questions about this policy or your data? Reach us at{" "}
-              <a href="mailto:support@roadkin.in" className="text-primary underline">
+              <a
+                href="mailto:support@roadkin.in"
+                className="text-primary-ink font-semibold underline underline-offset-4"
+              >
                 support@roadkin.in
               </a>
               .

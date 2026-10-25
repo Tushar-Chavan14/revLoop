@@ -22,13 +22,13 @@ export default async function ChatsLayout({ children }: { children: React.ReactN
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
       {chats.length === 0 ? (
-        <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
-          <PageHeading eyebrow="Crew Chats" title="Your ride crews" />
+        <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-12 sm:px-6">
+          <PageHeading title="Your ride crews" />
           <EmptyState
-            title="No Crew Chats Yet"
+            title="No crew chats yet"
             description="Claim your seat on a ride and its crew chat lands here — plan the meetup, share the route, sort the fuel stops."
             action={
-              <Button nativeButton={false} render={<Link href="/rides">Discover Rides</Link>} />
+              <Button nativeButton={false} render={<Link href="/rides">Discover rides</Link>} />
             }
           />
         </div>
@@ -36,7 +36,6 @@ export default async function ChatsLayout({ children }: { children: React.ReactN
         <ChatsShell
           heading={
             <PageHeading
-              eyebrow="Crew Chats"
               title="Your ride crews"
               description="Every ride you're part of has its own chat."
             />

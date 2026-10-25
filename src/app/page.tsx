@@ -1,31 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
-import { format } from "date-fns";
-import {
-  ArrowRight,
-  Bike,
-  Calendar,
-  Flag,
-  MapPin,
-  MessageSquareX,
-  Quote,
-  Users,
-  UserX,
-} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DestinationCard } from "@/components/design-system/destination-card";
-import { EmptyState } from "@/components/design-system/state-panel";
-import { ProfileCard } from "@/components/design-system/profile-card";
-import { StatCard } from "@/components/design-system/stat-card";
+import { CountUp } from "@/components/design-system/count-up";
+import { Milestone } from "@/components/design-system/milestone";
 import { Reveal } from "@/components/reveal";
-import { UnsplashImage } from "@/components/unsplash-image";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/utils";
-import { RideCard } from "@/features/rides/components/ride-card";
-import { themedPhoto } from "@/lib/placeholder-image";
+import { LandingHero } from "@/features/landing/components/landing-hero";
+import { WeekendRidesTable } from "@/features/landing/components/weekend-rides-table";
 import { getDestinationPhoto } from "@/lib/wikimedia-photo";
 import { getAuthUser } from "@/services/profiles";
 import { getWeekendActivity } from "@/services/ride-participation";
@@ -36,508 +20,388 @@ import {
   getUpcomingRides,
   type FeaturedRide,
 } from "@/services/rides";
-import { capitalize } from "@/utils/capitalize";
 import { getUpcomingWeekendRange } from "@/utils/weekend";
 
-// Curated cinematic motorcycle photography carries the emotion — golden-hour
-// open roads and real machines. Hand-picked Unsplash frames rather than
-// random keyword matches; <UnsplashImage> sizes them on Unsplash's own CDN.
-const unsplash = (id: string) => `https://images.unsplash.com/photo-${id}`;
-const IMG = {
-  hero: unsplash("1558981806-ec527fa84c39"), // rider cruising into golden hour
-  featuredCommunity: unsplash("1600298881974-6be191ceeda1"), // rugged peaks
-  featuredOrganized: unsplash("1454496522488-7a8e488e8606"), // snow summit
-};
+// Hand-picked Unsplash frame: a rider cruising into golden hour.
+const HERO_IMAGE = "https://images.unsplash.com/photo-1558981806-ec527fa84c39";
 
-const PAIN_POINTS = [
+const PHOTO_CREDITS = [
+  "“The world's highest motorable claim – Khardung La Pass” by Ashishyadav.photographs, CC BY-SA 4.0",
+  "destination photographs from Wikipedia and Wikimedia Commons",
+];
+
+// The sequence is written, not counted: each stage of a ride is one line.
+const STAGES = [
   {
-    icon: MessageSquareX,
-    pain: "Buried In Group Chats",
-    fix: "Ride plans die under 400 unread messages. On RoadKin, every ride is its own page — date, route, pace, and rules in one place.",
+    line: "First, post the ride.",
+    detail: "Date, route, pace and seats on one page, not under 400 unread messages.",
   },
   {
-    icon: UserX,
-    pain: "No Idea Who's Coming",
-    fix: "Seat counts and join requests mean you know exactly who's riding — and the organizer waves in the crew.",
+    line: "Then drop the meeting pin.",
+    detail: "An exact point on the map. Nobody circles the highway exit asking where you are.",
   },
   {
-    icon: MapPin,
-    pain: "“Meet near the flyover”",
-    fix: "Every ride pins an exact meeting point on the map. No more circling the highway exit calling everyone.",
+    line: "Riders claim their seats.",
+    detail: "Join requests and a seat count, so you know who is riding before Saturday.",
+  },
+  {
+    line: "Saturday, you roll out.",
+    detail: "Crew chat and ride alerts keep everyone together, chai stop to summit.",
   },
 ] as const;
 
-const TESTIMONIALS = [
-  {
-    name: "Priya R.",
-    city: "Pune",
-    quote:
-      "Found my crew for the Sunday breakfast runs. Haven't missed one since I joined — the group chat used to kill every plan before it happened.",
-  },
-  {
-    name: "Arjun K.",
-    city: "Bengaluru",
-    quote:
-      "RoadKin turned “someone should organize a ride” into an actual Saturday plan with a pin on the map and eleven other riders confirmed.",
-  },
-  {
-    name: "Meera S.",
-    city: "Mumbai",
-    quote:
-      "A meeting point on a map beats fifteen “where are you guys” texts every single time. This is how weekend rides should work.",
-  },
-] as const;
+const STAGE_INDENT = ["", "lg:pl-[12%]", "lg:pl-[24%]", "lg:pl-[36%]"];
+const STAGE_INDENT_PHONE = ["pl-0", "pl-[6vw]", "pl-[12vw]", "pl-[18vw]"];
+
+const PRINT_TILT = ["-rotate-[6deg] mt-6", "rotate-[5deg] relative z-[1]", "-rotate-[2deg] mt-10"];
 
 export default async function HomePage() {
-  const [
-    user,
-    upcomingRides,
-    popularDestinations,
-    stats,
-    weekend,
-    featuredCommunityRide,
-    featuredOrganizedRide,
-  ] = await Promise.all([
-    getAuthUser(),
-    getUpcomingRides(9),
-    getPopularTripDestinations(4),
-    getCommunityStats(),
-    getWeekendActivity(8),
-    getFeaturedRide("community"),
-    getFeaturedRide("organized"),
-  ]);
+  const [user, upcomingRides, popularDestinations, stats, weekend, featuredCommunity, featuredOrganized] =
+    await Promise.all([
+      getAuthUser(),
+      getUpcomingRides(12),
+      getPopularTripDestinations(3),
+      getCommunityStats(),
+      getWeekendActivity(8),
+      getFeaturedRide("community"),
+      getFeaturedRide("organized"),
+    ]);
 
   const primaryCtaHref = user ? "/rides/create" : "/login";
-  const primaryCtaLabel = user ? "Post A Ride" : "Find Your Crew";
+  const primaryCtaLabel = user ? "Post a ride" : "Find your crew";
 
-  // The destination's own Wikipedia lead photo where one genuinely matches,
-  // else a real photo geotagged nearby, else a themed stock photo.
   const destinationPhotos = await Promise.all(
     popularDestinations.map((destination) =>
       getDestinationPhoto(destination.destination, destination.lat, destination.lng),
     ),
   );
+  const prints = popularDestinations
+    .map((destination, index) => ({ ...destination, photo: destinationPhotos[index] }))
+    .filter((destination): destination is typeof destination & { photo: string } =>
+      Boolean(destination.photo),
+    );
 
   const { start, end } = getUpcomingWeekendRange();
   const weekendRides = upcomingRides.filter(
     (ride) => ride.ride_date && ride.ride_date >= start && ride.ride_date <= end,
   );
-  const displayedUpcoming = (weekendRides.length > 0 ? weekendRides : upcomingRides).slice(0, 6);
   const isWeekend = weekendRides.length > 0;
+  const listedRides = (isWeekend ? weekendRides : upcomingRides).slice(0, 8);
+  const featured = featuredOrganized ?? featuredCommunity;
 
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
 
-      {/* Hero — the home of weekend riders. Golden-hour photography carries it. */}
-      <section className="bg-secondary text-secondary-foreground relative flex min-h-svh items-end overflow-hidden">
-        <UnsplashImage src={IMG.hero} alt="" fill preload sizes="100vw" className="object-cover" />
-        {/* Cinematic scrim — deep at the base for legibility, warm amber glow at
-            the horizon so the whole frame reads golden hour. */}
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-linear-to-t from-black via-black/55 to-black/20"
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-linear-to-r from-black/85 via-black/20 to-transparent"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_85%_15%,rgba(231,111,36,0.28),transparent_55%)]"
+      <main className="flex flex-1 flex-col">
+        <LandingHero
+          image={HERO_IMAGE}
+          imageAlt="A rider on a motorcycle leaning into an open highway at golden hour"
+          ctaHref={primaryCtaHref}
+          ctaLabel={primaryCtaLabel}
+          weekendRideCount={weekend.rideCount}
         />
 
-        <div className="relative mx-auto w-full max-w-6xl px-6 pt-44 pb-24">
-          <div className="text-telemetry flex items-center gap-2.5 text-[11px] text-white/85">
-            <span className="relative flex size-2">
-              <span className="bg-primary absolute inline-flex size-full animate-ping rounded-full opacity-75" />
-              <span className="bg-primary relative inline-flex size-2 rounded-full" />
-            </span>
-            {weekend.ridersCount > 0
-              ? `${weekend.ridersCount} rider${weekend.ridersCount === 1 ? "" : "s"} out this weekend`
-              : "The home of weekend riders"}
-          </div>
-
-          <h1 className="font-display mt-8 max-w-5xl text-7xl leading-[0.85] text-white uppercase sm:text-8xl lg:text-[10rem]">
-            Never ride
-            <br />
-            alone again
-          </h1>
-
-          <p className="mt-8 max-w-xl text-lg text-pretty text-white/80 sm:text-xl">
-            Open RoadKin on Friday. Find your people. Ride together on Saturday.
-          </p>
-
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <Button
-              nativeButton={false}
-              render={<Link href={primaryCtaHref}>{primaryCtaLabel}</Link>}
-              size="lg"
-              className="bg-sunrise h-12 border-0 px-6 text-base text-white shadow-xl transition-opacity hover:opacity-90"
-            />
-            <Button
-              nativeButton={false}
-              render={<Link href="/rides">Discover Rides</Link>}
-              size="lg"
-              variant="outline"
-              className="h-12 border-white/30 bg-white/5 px-6 text-base text-white backdrop-blur-sm hover:bg-white/10 hover:text-white"
-            />
-          </div>
-        </div>
-
-        <div
-          aria-hidden
-          className="bg-road-dashes absolute inset-x-0 bottom-0 h-px text-white/25"
-        />
-      </section>
-
-      <main className="flex flex-1 flex-col gap-24 px-6 py-20">
-        {/* Upcoming weekend rides */}
-        <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-          <SectionHeading
-            eyebrow={isWeekend ? "This Weekend" : "Coming Up"}
-            title="Where are we riding?"
-            description="Open RoadKin on Friday. Roll out on Saturday."
-            action={
-              <Button
-                nativeButton={false}
-                render={<Link href="/rides">See All</Link>}
-                variant="ghost"
-                size="sm"
-                className="hidden sm:inline-flex"
-              />
-            }
-          />
-          {displayedUpcoming.length > 0 ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {displayedUpcoming.map((ride) => (
-                <RideCard key={ride.id} ride={ride} />
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              title="No Rides Planned Yet"
-              description="Be the first to post a ride and pull your road family together this weekend."
-              action={
-                <Button
-                  nativeButton={false}
-                  render={<Link href={primaryCtaHref}>{primaryCtaLabel}</Link>}
-                />
-              }
-            />
-          )}
-        </section>
-
-        {/* Who's riding this weekend */}
-        {weekend.roster.length > 0 && (
-          <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-            <SectionHeading
-              eyebrow="Your Road Family"
-              title="Who's riding this weekend"
-              description="Riders already locked in and ready to roll."
-            />
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {weekend.roster.map((rider) => (
-                <ProfileCard
-                  key={rider.profile.id}
-                  name={rider.profile.name}
-                  username={rider.profile.username}
-                  imageUrl={rider.profile.profile_image_url}
-                  location={[rider.profile.city, rider.profile.country].filter(Boolean).join(", ")}
-                  bike={[rider.profile.bike_brand, rider.profile.bike_model]
-                    .filter(Boolean)
-                    .join(" ")}
-                  riderLevel={
-                    rider.profile.experience_level
-                      ? capitalize(rider.profile.experience_level)
-                      : undefined
-                  }
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Popular destinations */}
-        {popularDestinations.length > 0 && (
-          <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-            <SectionHeading
-              eyebrow="On The Map"
-              title="Where the road keeps pulling us back"
-              description="The destinations your road family rides again and again."
-            />
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              {popularDestinations.map((destination, index) => (
-                <DestinationCard
-                  key={destination.destination}
-                  href={`/rides?q=${encodeURIComponent(destination.destination)}`}
-                  city={destination.destination}
-                  rideCount={destination.rideCount}
-                  imageUrl={
-                    destinationPhotos[index] ??
-                    themedPhoto("motorcycle,mountain,road", 200 + index, 600, 800)
-                  }
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Featured Community Ride */}
-        {featuredCommunityRide && (
-          <Reveal>
-            <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-              <SectionHeading
-                eyebrow="Community Ride"
-                eyebrowClassName="text-ride-community"
-                title="This week's community ride"
-              />
-              <FeaturedRideSpotlight
-                ride={featuredCommunityRide}
-                accent="community"
-                fallbackPhoto={IMG.featuredCommunity}
-              />
-            </section>
-          </Reveal>
-        )}
-
-        {/* Featured Organized Ride */}
-        {featuredOrganizedRide && (
-          <Reveal>
-            <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-              <SectionHeading eyebrow="Organized Ride" title="This week's organized tour" />
-              <FeaturedRideSpotlight
-                ride={featuredOrganizedRide}
-                accent="organized"
-                fallbackPhoto={IMG.featuredOrganized}
-              />
-            </section>
-          </Reveal>
-        )}
-
-        {/* Community statistics */}
-        <Reveal>
-          <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-            <SectionHeading eyebrow="By The Numbers" title="One growing road family" />
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <StatCard icon={Users} label="Riders" value={stats.ridersCount} suffix="+" />
-              <StatCard icon={Calendar} label="Rides Planned" value={stats.upcomingRidesCount} />
-              <StatCard icon={MapPin} label="Cities" value={stats.citiesCount} />
-              <StatCard icon={Flag} label="Rides This Weekend" value={weekend.rideCount} />
-            </div>
-          </section>
-        </Reveal>
-
-        {/* Testimonials */}
-        <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-          <SectionHeading eyebrow="From The Saddle" title="Riders on RoadKin" />
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-            {TESTIMONIALS.map((testimonial, index) => (
-              <Reveal key={testimonial.name} delay={index * 120}>
-                <div className="bg-card ring-foreground/10 flex h-full flex-col gap-4 rounded-2xl p-6 ring-1">
-                  <Quote className="text-muted-foreground/40 size-6" />
-                  <p className="leading-relaxed text-pretty">{testimonial.quote}</p>
-                  <p className="text-muted-foreground text-telemetry mt-auto text-[11px]">
-                    {testimonial.name} · {testimonial.city}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
-        {/* Why RoadKin */}
+        {/* The weekend's departures: a statement, the timetable pushed right. */}
         <section
-          aria-labelledby="why-roadkin"
-          className="mx-auto flex w-full max-w-6xl flex-col gap-8"
+          aria-labelledby="rides-title"
+          className="mx-auto w-full max-w-[90rem] px-4 pt-32 sm:px-8 lg:pt-44"
         >
-          <Reveal className="max-w-2xl">
-            <p className="text-telemetry text-primary text-[11px]">Why RoadKin</p>
+          <Reveal>
             <h2
-              id="why-roadkin"
-              className="font-heading mt-3 text-3xl font-extrabold tracking-tight text-balance sm:text-4xl"
+              id="rides-title"
+              className="font-display text-[clamp(48px,6.4vw,104px)] leading-[0.9] lg:pl-[3vw]"
             >
-              Weekend plans shouldn&apos;t die in the group chat
+              {isWeekend ? "Where we're riding this weekend" : "Where we're riding next"}
             </h2>
-            <p className="text-muted-foreground mt-3">
-              Every riding crew knows the drill: someone says &ldquo;Sunday?&rdquo;, forty messages
-              later nobody knows the plan. RoadKin fixes the three ways group rides fall apart.
-            </p>
           </Reveal>
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-            {PAIN_POINTS.map((point, index) => (
-              <Reveal key={point.pain} delay={index * 120}>
-                <div className="border-border hover:border-foreground/30 group flex h-full flex-col gap-3 rounded-2xl border p-6 transition-colors">
-                  <point.icon className="text-foreground size-6 transition-transform duration-300 group-hover:scale-110" />
-                  <h3 className="font-heading text-lg font-bold">{point.pain}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{point.fix}</p>
+
+          <div className="mt-14 grid grid-cols-1 gap-12 lg:mt-24 lg:grid-cols-12 lg:gap-8">
+            <div className="flex flex-col gap-4 lg:col-span-5 lg:self-end">
+              {featured ? (
+                <FeaturedPhoto ride={featured} />
+              ) : (
+                <Reveal delay={120}>
+                  <figure className="flex flex-col gap-3">
+                    <div className="relative aspect-4/5 w-full overflow-hidden rounded-md">
+                      <Image
+                        src="/road/the-world-s-highest-motorable-claim-khardung.jpg"
+                        alt="Riders with their motorcycles under the Khardung La summit sign, prayer flags behind"
+                        fill
+                        sizes="(min-width: 1024px) 40vw, 100vw"
+                        className="object-cover"
+                      />
+                    </div>
+                    <figcaption className="text-muted-foreground text-[15px]">
+                      Khardung La, Ladakh, 18,380 ft.
+                    </figcaption>
+                  </figure>
+                </Reveal>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-6 lg:col-span-6 lg:col-start-7">
+              {weekend.roster.length > 0 && (
+                <Reveal className="flex items-center gap-3">
+                  <div className="flex -space-x-2">
+                    {weekend.roster.slice(0, 6).map((rider) => (
+                      <Avatar key={rider.profile.id} className="ring-background ring-2">
+                        <AvatarImage
+                          src={rider.profile.profile_image_url ?? undefined}
+                          alt={rider.profile.name}
+                        />
+                        <AvatarFallback>{rider.profile.name?.[0]?.toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                    ))}
+                  </div>
+                  <p className="text-[15px] font-semibold">
+                    {weekend.ridersCount} rider{weekend.ridersCount === 1 ? "" : "s"} locked in
+                    for this weekend
+                  </p>
+                </Reveal>
+              )}
+              {listedRides.length > 0 ? (
+                <Reveal delay={90}>
+                  <WeekendRidesTable rides={listedRides} />
+                  <Link
+                    href="/rides"
+                    className="mt-6 inline-block text-[15px] font-bold underline decoration-2 underline-offset-4"
+                  >
+                    See every upcoming ride
+                  </Link>
+                </Reveal>
+              ) : (
+                <Reveal className="flex flex-col items-start gap-5">
+                  <p className="text-lg">
+                    Nothing on the calendar yet. Post the first ride and pull your road family
+                    together.
+                  </p>
+                  <Button nativeButton={false} render={<Link href={primaryCtaHref}>Post a ride</Link>} />
+                </Reveal>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* How a ride comes together: four lines stepping down to Saturday. */}
+        <section
+          aria-labelledby="stage-0"
+          className="mx-auto w-full max-w-[90rem] px-4 pt-36 sm:px-8 lg:pt-52"
+        >
+          <ol className="flex flex-col gap-10 lg:gap-14">
+            {STAGES.map((stage, index) => (
+              <li key={stage.line} className={cn(STAGE_INDENT_PHONE[index], STAGE_INDENT[index])}>
+                <Reveal delay={index * 80}>
+                  {index === 0 ? (
+                    <h2
+                      id="stage-0"
+                      className="font-display text-[8.4vw] leading-none sm:text-[clamp(36px,4.6vw,76px)]"
+                    >
+                      {stage.line}
+                    </h2>
+                  ) : (
+                    <p
+                      className={cn(
+                        "font-display text-[8.4vw] leading-none sm:text-[clamp(36px,4.6vw,76px)]",
+                        index === STAGES.length - 1 && "text-primary-ink",
+                      )}
+                    >
+                      {stage.line}
+                    </p>
+                  )}
+                  <p className="mt-3 max-w-[34ch] text-[17px] leading-snug">
+                    {stage.detail}
+                  </p>
+                </Reveal>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        {/* Where the crews keep riding: the headline, then the prints dropped
+            in a fanned pile under it — each one a destination, on its milestone. */}
+        {prints.length >= 2 && (
+          <section
+            aria-labelledby="roads-title"
+            className="bg-secondary text-secondary-foreground mt-36 overflow-hidden px-4 pt-20 pb-16 sm:px-8 lg:mt-52 lg:pt-28 lg:pb-20"
+          >
+            <div className="mx-auto w-full max-w-[90rem]">
+              <Reveal>
+                <h2
+                  id="roads-title"
+                  className="font-display text-center text-[19vw] leading-[0.85] sm:text-[clamp(120px,13vw,200px)]"
+                >
+                  Roads we
+                  <br />
+                  keep riding
+                </h2>
+              </Reveal>
+              <ul className="mt-12 flex items-start justify-center sm:mt-16">
+                {prints.slice(0, 3).map((destination, index) => (
+                  <li
+                    key={destination.destination}
+                    className={cn(
+                      "w-[46vw] sm:w-[24vw] sm:max-w-[22rem]",
+                      index > 0 && "-ml-[8vw] sm:-ml-[3vw]",
+                      index === 2 && "hidden sm:block",
+                      PRINT_TILT[index],
+                    )}
+                  >
+                    <Reveal delay={index * 90}>
+                      <Link
+                        href={`/rides?q=${encodeURIComponent(destination.destination)}`}
+                        className="relative block bg-white p-2 pb-3 transition-transform duration-200 ease-out hover:z-10 hover:scale-[1.03] hover:rotate-0 focus-visible:rotate-0"
+                      >
+                        <span className="relative block aspect-3/4 w-full overflow-hidden">
+                          <Image
+                            src={destination.photo}
+                            alt={`${destination.destination}, where RoadKin rides are headed`}
+                            fill
+                            unoptimized
+                            className="object-cover"
+                          />
+                        </span>
+                        <span className="flex flex-col gap-1 pt-2 text-[#111]">
+                          <span className="font-display text-2xl leading-none sm:text-3xl">
+                            {destination.destination}
+                          </span>
+                          <span className="text-[13px] font-semibold tabular-nums">
+                            {destination.rideCount} ride{destination.rideCount === 1 ? "" : "s"}{" "}
+                            planned
+                          </span>
+                        </span>
+                      </Link>
+                    </Reveal>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-12 max-w-md text-[17px] text-white/80">
+                {prints.map((p) => p.destination).join(", ")}: the places our crews keep riding
+                back to. Tap one for its rides.
+              </p>
+            </div>
+          </section>
+        )}
+
+        {/* The road family, as a ledger of real counts. */}
+        <section
+          aria-labelledby="family-title"
+          className="mx-auto grid w-full max-w-[90rem] grid-cols-1 gap-10 px-4 pt-36 sm:px-8 lg:grid-cols-12 lg:pt-52"
+        >
+          <Reveal className="lg:col-span-5 lg:self-center">
+            <h2
+              id="family-title"
+              className="text-[28px] leading-tight font-extrabold sm:text-[clamp(32px,3.2vw,52px)]"
+            >
+              <span className="text-muted-foreground">One road family,</span>
+              <br />
+              still growing.
+            </h2>
+          </Reveal>
+          <dl className="flex flex-col gap-7 lg:col-span-6 lg:col-start-7">
+            {[
+              { value: stats.ridersCount, label: "riders have joined RoadKin" },
+              { value: stats.upcomingRidesCount, label: "rides planned and open to join" },
+              { value: stats.citiesCount, label: "cities with a ride leaving soon" },
+              ...(weekend.ridersCount > 0
+                ? [{ value: weekend.ridersCount, label: "riders out this weekend" }]
+                : []),
+            ].map((row, index) => (
+              <Reveal key={row.label} delay={index * 80}>
+                <div className="grid grid-cols-[52%_1fr] items-baseline gap-x-6">
+                  <dd className="font-display text-right text-[15vw] leading-none tabular-nums sm:text-[clamp(64px,7vw,112px)]">
+                    <CountUp value={row.value} />
+                  </dd>
+                  <dt className="text-[15px] font-medium sm:text-base">{row.label}</dt>
                 </div>
               </Reveal>
             ))}
+          </dl>
+        </section>
+
+        {/* The close: the idea again, inverted. */}
+        <section
+          aria-labelledby="close-title"
+          className="bg-secondary text-secondary-foreground mt-36 flex min-h-[80svh] flex-col justify-between px-4 py-14 sm:px-8 lg:mt-52 lg:min-h-[90svh] lg:py-20"
+        >
+          <div className="mx-auto w-full max-w-[90rem]">
+            <Reveal>
+              <h2
+                id="close-title"
+                className="font-display text-[15vw] leading-[0.9] sm:text-[clamp(72px,10vw,168px)]"
+              >
+                Find your
+                <br />
+                road family
+              </h2>
+            </Reveal>
           </div>
+          <div className="mx-auto mt-16 flex w-full max-w-[90rem] flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <p className="max-w-md text-[17px] text-white/80 sm:text-xl">
+              Claim a seat on this weekend&apos;s ride and roll out with people who ride like you
+              do.
+            </p>
+            <Button
+              nativeButton={false}
+              size="lg"
+              className="h-14 w-full px-8 text-lg sm:w-auto"
+              render={<Link href={primaryCtaHref}>{primaryCtaLabel}</Link>}
+            />
+          </div>
+          <details className="mx-auto mt-12 w-full max-w-[90rem] text-white/75">
+            <summary className="w-fit cursor-pointer text-[15px] font-semibold underline-offset-4 hover:underline">
+              Photo and film credits
+            </summary>
+            <ul className="mt-3 flex max-w-[75ch] flex-col gap-1 text-base leading-relaxed">
+              {PHOTO_CREDITS.map((credit) => (
+                <li key={credit}>{credit}</li>
+              ))}
+              <li>
+                Photographs via Wikimedia Commons; opening photograph via Unsplash.
+              </li>
+            </ul>
+          </details>
         </section>
       </main>
-
-      {/* Join the road family CTA — full-bleed cinematic close. */}
-      <section className="bg-secondary text-secondary-foreground relative flex min-h-[70svh] items-center overflow-hidden px-6 py-28">
-        <Image
-          src="/footer-mountains.jpg"
-          alt=""
-          fill
-          sizes="100vw"
-          quality={60}
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-linear-to-t from-black via-black/60 to-black/70" />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_70%_at_50%_100%,rgba(231,111,36,0.25),transparent_60%)]"
-        />
-        <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-7 text-center">
-          <p className="text-telemetry text-primary text-[11px]">Never Ride Alone Again</p>
-          <h2 className="font-display text-6xl text-white uppercase sm:text-7xl lg:text-8xl">
-            Find your road family
-          </h2>
-          <p className="max-w-md text-lg text-pretty text-white/75">
-            Open RoadKin, claim your seat on this weekend&apos;s ride, and roll out with people who
-            ride like you do.
-          </p>
-          <Button
-            nativeButton={false}
-            render={<Link href={primaryCtaHref}>{primaryCtaLabel}</Link>}
-            size="lg"
-            className="bg-sunrise h-12 border-0 px-6 text-base text-white shadow-xl transition-opacity hover:opacity-90"
-          />
-        </div>
-      </section>
 
       <SiteFooter />
     </div>
   );
 }
 
-function SectionHeading({
-  eyebrow,
-  title,
-  description,
-  action,
-  eyebrowClassName,
-}: {
-  eyebrow: string;
-  title: string;
-  description?: string;
-  action?: React.ReactNode;
-  eyebrowClassName?: string;
-}) {
+function FeaturedPhoto({ ride }: { ride: FeaturedRide }) {
+  const isOrganized = ride.pricing_model === "organized";
   return (
-    <div className="flex items-end justify-between gap-4">
-      <div className="max-w-2xl">
-        <p className={cn("text-telemetry text-primary text-[11px]", eyebrowClassName)}>{eyebrow}</p>
-        <h2 className="font-heading mt-3 text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">
-          {title}
-        </h2>
-        {description && <p className="text-muted-foreground mt-3">{description}</p>}
-      </div>
-      {action}
-    </div>
-  );
-}
-
-const SPOTLIGHT_ACCENT = {
-  community: { badge: "bg-ride-community text-white", icon: "text-ride-community" },
-  organized: { badge: "bg-primary text-primary-foreground", icon: "text-primary" },
-} as const;
-
-function FeaturedRideSpotlight({
-  ride,
-  accent,
-  fallbackPhoto,
-}: {
-  ride: FeaturedRide;
-  accent: keyof typeof SPOTLIGHT_ACCENT;
-  fallbackPhoto: string;
-}) {
-  const theme = SPOTLIGHT_ACCENT[accent];
-  return (
-    <div className="bg-card ring-foreground/10 grid grid-cols-1 overflow-hidden rounded-3xl ring-1 lg:grid-cols-2">
-      <div className="from-secondary via-secondary/60 to-secondary/30 relative aspect-video w-full bg-linear-to-br lg:aspect-auto">
-        {ride.cover_image_url ? (
+    <Reveal delay={120}>
+      <Link href={`/rides/${ride.id}`} className="group flex flex-col gap-3">
+        <span className="bg-surface relative block aspect-4/5 w-full overflow-hidden rounded-md">
           <Image
-            src={ride.cover_image_url}
-            alt={ride.title ?? "Featured ride"}
+            src={ride.cover_image_url ?? "/road/the-world-s-highest-motorable-claim-khardung.jpg"}
+            alt={ride.cover_image_url ? (ride.title ?? "Ride of the week") : "Riders under the Khardung La summit sign"}
             fill
-            sizes="(min-width: 1024px) 576px, 100vw"
-            className="object-cover"
+            sizes="(min-width: 1024px) 40vw, 100vw"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
           />
-        ) : (
-          <UnsplashImage
-            src={fallbackPhoto}
-            alt={ride.title ?? "Featured ride"}
-            fill
-            sizes="(min-width: 1024px) 576px, 100vw"
-            className="object-cover"
-          />
-        )}
-      </div>
-      <div className="flex flex-col justify-center gap-4 p-8 sm:p-10">
-        <Badge className={cn("w-fit border-0", theme.badge)}>Ride Of The Week</Badge>
-        <h3 className="font-heading text-3xl font-extrabold tracking-tight text-balance">
-          {ride.title}
-        </h3>
-        {ride.city && ride.destination && (
-          <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
-            {ride.city}
-            <ArrowRight className={cn("size-4", theme.icon)} />
-            {ride.destination}
-          </p>
-        )}
-        {ride.description && (
-          <p className="text-muted-foreground line-clamp-2">{ride.description}</p>
-        )}
-        <div className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-          <span className="flex items-center gap-1.5">
-            <Calendar className={cn("size-4", theme.icon)} />
-            {ride.ride_date && format(new Date(ride.ride_date), "EEE, MMM d")}
+          {ride.destination && (
+            <Milestone
+              place={ride.destination}
+              km={ride.estimated_distance_km}
+              size="md"
+              className="absolute bottom-4 left-4 max-w-[80%]"
+            />
+          )}
+        </span>
+        <span className="flex flex-col gap-0.5">
+          <span className="text-lg font-bold group-hover:underline">
+            {isOrganized ? "Tour of the week" : "Ride of the week"}: {ride.title}
           </span>
-          {ride.estimated_distance_km && (
-            <span className="flex items-center gap-1.5">
-              <Bike className={cn("size-4", theme.icon)} />
-              {ride.estimated_distance_km} km
-            </span>
-          )}
-          {ride.member_count !== null && ride.member_count > 0 && (
-            <span className="flex items-center gap-1.5">
-              <Users className={cn("size-4", theme.icon)} />
-              {ride.member_count} riders in
-            </span>
-          )}
-        </div>
-        {ride.organizer && (
-          <div className="mt-2 flex items-center gap-2">
-            <Avatar size="sm">
-              <AvatarImage
-                src={ride.organizer.profile_image_url ?? undefined}
-                alt={ride.organizer.name}
-              />
-              <AvatarFallback>{ride.organizer.name?.[0]?.toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <span className="text-muted-foreground text-telemetry text-[10px]">
-              {accent === "organized" ? "Captain" : "Led by"} {ride.organizer.name}
-            </span>
-          </div>
-        )}
-        <div className="flex flex-wrap gap-3 pt-2">
-          <Button
-            nativeButton={false}
-            render={<Link href={`/rides/${ride.id}#join`}>Claim Your Seat</Link>}
-          />
-          <Button
-            nativeButton={false}
-            variant="outline"
-            render={<Link href={`/rides/${ride.id}`}>View Ride</Link>}
-          />
-        </div>
-      </div>
-    </div>
+          <span className="text-muted-foreground text-[15px]">
+            {[ride.city && `From ${ride.city}`, ride.organizer && `${isOrganized ? "Captain" : "Led by"} ${ride.organizer.name}`]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+        </span>
+      </Link>
+    </Reveal>
   );
 }

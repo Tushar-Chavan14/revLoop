@@ -32,7 +32,7 @@ function ToastList() {
         key={toastItem.id}
         toast={toastItem}
         className={cn(
-          "bg-card text-card-foreground ring-foreground/10 flex w-full items-start gap-3 rounded-2xl p-4 shadow-xl ring-1 select-none",
+          "bg-card text-card-foreground border-border flex w-full items-start gap-3 rounded-md border p-4 shadow-lg select-none",
           "data-starting-style:translate-y-2 data-starting-style:opacity-0",
           "data-ending-style:translate-y-1 data-ending-style:opacity-0",
           "data-swiping:transition-none",
@@ -41,7 +41,7 @@ function ToastList() {
       >
         <Icon className={cn("mt-0.5 size-5 shrink-0", TOAST_ICON_STYLES[type])} aria-hidden />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <ToastPrimitive.Title className="text-sm font-semibold" />
+          <ToastPrimitive.Title className="text-sm font-bold" />
           <ToastPrimitive.Description className="text-muted-foreground text-sm" />
         </div>
         <ToastPrimitive.Close

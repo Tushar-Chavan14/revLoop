@@ -6,7 +6,7 @@ import {
   Compass,
   Home,
   MessagesSquare,
-  PlusCircle,
+  Plus,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
@@ -26,7 +26,7 @@ interface BottomNavItem {
 const ITEMS: BottomNavItem[] = [
   { href: "/", label: "Home", icon: Home, public: true },
   { href: "/rides", label: "Discover", icon: Compass, public: true },
-  { href: "/rides/create", label: "Create", icon: PlusCircle },
+  { href: "/rides/create", label: "Post", icon: Plus },
   { href: "/chats", label: "Chats", icon: MessagesSquare },
   { href: "/profile", label: "Profile", icon: UserRound },
 ];
@@ -46,7 +46,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Primary"
-      className="border-border/60 bg-background/85 fixed inset-x-0 bottom-0 z-50 border-t backdrop-blur-md sm:hidden"
+      className="bg-card fixed inset-x-0 bottom-0 z-50 sm:hidden"
     >
       <div className="flex items-stretch justify-around px-2 pt-1 pb-[max(0.25rem,env(safe-area-inset-bottom))]">
         {items.map((item) => {
@@ -61,17 +61,27 @@ export function BottomNav() {
               aria-current={active ? "page" : undefined}
               aria-label={badge > 0 ? `${item.label}, ${badge} with new messages` : undefined}
               className={cn(
-                "relative flex flex-1 flex-col items-center gap-0.5 rounded-lg py-2 text-[11px] font-medium transition-colors",
-                active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+                "relative flex flex-1 flex-col items-center gap-1 pt-2.5 pb-2 text-xs font-semibold transition-colors",
+                active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <item.icon
-                className={cn(isCreate ? "text-primary size-7" : "size-5")}
-                fill={isCreate ? "currentColor" : "none"}
+              {/* Active tab: an orange bar on the top edge, like a lane marker. */}
+              <span
                 aria-hidden
+                className={cn(
+                  "bg-primary absolute inset-x-5 top-0 h-[3px] transition-opacity",
+                  active ? "opacity-100" : "opacity-0",
+                )}
               />
+              {isCreate ? (
+                <span className="bg-primary flex size-6 items-center justify-center rounded-sm text-[#111]">
+                  <item.icon className="size-4" aria-hidden />
+                </span>
+              ) : (
+                <item.icon className="size-5" strokeWidth={active ? 2.25 : 1.75} aria-hidden />
+              )}
               {badge > 0 && (
-                <span className="bg-primary text-primary-foreground absolute top-1 left-1/2 ml-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums">
+                <span className="bg-primary text-primary-foreground absolute top-1 left-1/2 ml-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[11px] font-bold tabular-nums">
                   {unreadChatsLabel(badge)}
                 </span>
               )}

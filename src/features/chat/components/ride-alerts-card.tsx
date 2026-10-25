@@ -130,11 +130,11 @@ export function RideAlertsCard() {
 
   if (state === "on") {
     return (
-      <div className="border-border bg-card flex items-center gap-3 rounded-2xl border px-4 py-3">
+      <div className="bg-card flex items-center gap-3 rounded-md px-4 py-3">
         <BellRing className="text-muted-foreground size-4 shrink-0" aria-hidden />
         <p className="flex-1 text-sm">Ride alerts are on for this device.</p>
         <Button type="button" variant="ghost" size="sm" onClick={turnOff} disabled={busy}>
-          Turn Off
+          Turn off
         </Button>
       </div>
     );
@@ -142,7 +142,7 @@ export function RideAlertsCard() {
 
   if (state === "blocked") {
     return (
-      <div className="border-border bg-card flex items-start gap-3 rounded-2xl border px-4 py-3">
+      <div className="bg-card flex items-start gap-3 rounded-md px-4 py-3">
         <BellOff className="text-muted-foreground mt-0.5 size-4 shrink-0" aria-hidden />
         <p className="text-muted-foreground text-sm">
           Ride alerts are blocked on this device. Allow notifications for RoadKin in your browser
@@ -154,7 +154,7 @@ export function RideAlertsCard() {
 
   if (state === "install-first") {
     return (
-      <div className="border-border bg-card flex items-start gap-3 rounded-2xl border px-4 py-3">
+      <div className="bg-card flex items-start gap-3 rounded-md px-4 py-3">
         <Share className="text-muted-foreground mt-0.5 size-4 shrink-0" aria-hidden />
         <p className="text-muted-foreground text-sm">
           Want a ping when your crew talks? Tap{" "}
@@ -166,20 +166,18 @@ export function RideAlertsCard() {
   }
 
   return (
-    <div className="border-border bg-card flex flex-col gap-3 rounded-2xl border p-4">
+    <div className="bg-card flex flex-col gap-3 rounded-md p-4">
       <div className="flex items-start gap-3">
-        <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-full">
-          <BellRing className="size-4" aria-hidden />
-        </span>
+        <BellRing className="text-muted-foreground mt-0.5 size-4 shrink-0" aria-hidden />
         <div className="min-w-0">
-          <p className="font-heading text-sm font-semibold">Never miss a word from your crew</p>
+          <p className="text-sm font-bold">Never miss a word from your crew</p>
           <p className="text-muted-foreground mt-0.5 text-sm">
             Get a ping on this device the moment someone in your ride chats speaks up.
           </p>
         </div>
       </div>
       <Button type="button" onClick={turnOn} disabled={busy} className="w-full">
-        Turn On Ride Alerts
+        Turn on ride alerts
       </Button>
     </div>
   );

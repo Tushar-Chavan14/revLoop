@@ -93,7 +93,7 @@ export function RideChatList({ initialChats, currentUserId }: RideChatListProps)
   }, [subscribeToMessages, chats, unreadRideIds, selectedRideId, currentUserId, supabase, router]);
 
   return (
-    <ul className="border-border bg-card divide-border/60 flex flex-col divide-y overflow-hidden rounded-2xl border">
+    <ul className="bg-card divide-border flex flex-col divide-y overflow-hidden rounded-md">
       {chats.map((chat) => {
         // The provider is the source of truth for "seen" — once it clears a
         // chat (opened here, on the ride page, or on another tab) the count goes.
@@ -114,7 +114,7 @@ export function RideChatList({ initialChats, currentUserId }: RideChatListProps)
                 isSelected && "bg-muted",
               )}
             >
-              <div className="bg-secondary relative size-12 shrink-0 overflow-hidden rounded-xl">
+              <div className="bg-secondary relative size-12 shrink-0 overflow-hidden rounded-sm">
                 {chat.cover_image_url ? (
                   <Image
                     src={chat.cover_image_url}
@@ -124,22 +124,19 @@ export function RideChatList({ initialChats, currentUserId }: RideChatListProps)
                     className="object-cover"
                   />
                 ) : (
-                  <Bike
-                    className="text-muted-foreground absolute inset-0 m-auto size-5"
-                    aria-hidden
-                  />
+                  <Bike className="absolute inset-0 m-auto size-5 text-white/40" aria-hidden />
                 )}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
-                  <p className={cn("truncate text-sm", unread ? "font-bold" : "font-semibold")}>
+                  <p className={cn("truncate text-[15px]", unread ? "font-bold" : "font-semibold")}>
                     {chat.title}
                   </p>
                   {chat.last_message_at && (
                     <span
                       className={cn(
-                        "shrink-0 text-[11px] tabular-nums",
-                        unread ? "text-primary font-semibold" : "text-muted-foreground",
+                        "shrink-0 text-xs tabular-nums",
+                        unread ? "text-primary-ink font-semibold" : "text-muted-foreground",
                       )}
                     >
                       {activityLabel(chat.last_message_at)}
@@ -149,19 +146,19 @@ export function RideChatList({ initialChats, currentUserId }: RideChatListProps)
                 <div className="mt-0.5 flex items-center justify-between gap-2">
                   <p
                     className={cn(
-                      "truncate text-xs",
+                      "truncate text-sm",
                       unread ? "text-foreground" : "text-muted-foreground",
                     )}
                   >
                     {preview}
                   </p>
                   {unread > 0 && (
-                    <span className="bg-primary text-primary-foreground flex h-4.5 min-w-4.5 shrink-0 items-center justify-center rounded-full px-1.5 text-[10px] font-semibold tabular-nums">
+                    <span className="bg-primary text-primary-foreground flex h-4.5 min-w-4.5 shrink-0 items-center justify-center rounded-full px-1.5 text-xs font-bold tabular-nums">
                       {unread > 99 ? "99+" : unread}
                     </span>
                   )}
                 </div>
-                <p className="text-muted-foreground mt-1 truncate text-[11px]">
+                <p className="text-muted-foreground mt-1 truncate text-xs tabular-nums">
                   {format(new Date(`${chat.ride_date}T00:00:00`), "EEE, d MMM")} ·{" "}
                   {chat.destination} · {chat.member_count}{" "}
                   {chat.member_count === 1 ? "rider" : "riders"}

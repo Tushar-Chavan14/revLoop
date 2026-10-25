@@ -32,7 +32,7 @@ export function ParticipantsList({
       <CardHeader>
         <div className="flex items-center gap-2">
           <Users className="text-muted-foreground size-4" />
-          <CardTitle>Riders ({members.length})</CardTitle>
+          <CardTitle className="tabular-nums">Riders ({members.length})</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -115,7 +115,7 @@ function ParticipantRow({
           <Badge variant="secondary">Attended</Badge>
         )}
         {!canMarkAttendance && attendance === "no_show" && (
-          <Badge variant="destructive">No-Show</Badge>
+          <Badge variant="destructive">No-show</Badge>
         )}
         {error && <p className="text-destructive text-xs">{error}</p>}
       </div>
@@ -142,7 +142,7 @@ function ParticipantRow({
               aria-pressed={attendance === "no_show"}
             >
               <X className="size-3.5" />
-              No-Show
+              No-show
             </Button>
           </>
         )}

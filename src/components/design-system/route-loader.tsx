@@ -26,7 +26,7 @@ export function RouteLoader({ message = "Warming up the engine…", className }:
         fetchPriority="high"
         className="aspect-video w-80 max-w-full"
       />
-      <p className="text-telemetry text-muted-foreground text-[11px]">{message}</p>
+      <p className="text-muted-foreground text-sm font-medium">{message}</p>
     </div>
   );
 }

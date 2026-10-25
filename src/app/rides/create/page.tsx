@@ -9,7 +9,7 @@ import { getMyRole } from "@/services/roles";
 import { isProfileComplete } from "@/utils/profile-completeness";
 
 export const metadata = {
-  title: "Create A Ride",
+  title: "Create a ride",
 };
 
 export default async function CreateRidePage() {
@@ -34,7 +34,6 @@ export default async function CreateRidePage() {
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
         <PageHeading
-          eyebrow="Post A Ride"
           title="Plan your next adventure"
           description="A few steps and your ride is live for your whole road family to join."
         />

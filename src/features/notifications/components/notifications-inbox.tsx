@@ -20,13 +20,13 @@ function notificationHref(notification: Notification) {
   return notification.ride_id ? `/rides/${notification.ride_id}` : "/profile";
 }
 
-const GROUP_ORDER = ["Today", "Yesterday", "This Week", "Earlier"] as const;
+const GROUP_ORDER = ["Today", "Yesterday", "This week", "Earlier"] as const;
 
 function groupLabel(createdAt: string): (typeof GROUP_ORDER)[number] {
   const date = new Date(createdAt);
   if (isToday(date)) return "Today";
   if (isYesterday(date)) return "Yesterday";
-  if (isThisWeek(date)) return "This Week";
+  if (isThisWeek(date)) return "This week";
   return "Earlier";
 }
 
@@ -71,7 +71,7 @@ export function NotificationsInbox({
     return (
       <EmptyState
         icon={Bell}
-        title="You're All Caught Up"
+        title="You're all caught up"
         description="Join requests, ride updates, and reminders will show up here."
       />
     );
@@ -81,21 +81,22 @@ export function NotificationsInbox({
     <div className="flex flex-col gap-8">
       {unreadCount > 0 && (
         <div className="flex items-center justify-between">
-          <p className="text-muted-foreground text-sm">{unreadCount} unread</p>
+          <p className="text-muted-foreground text-sm tabular-nums">{unreadCount} unread</p>
           <Button variant="ghost" size="sm" onClick={handleMarkAllRead}>
-            Mark All Read
+            Mark all read
           </Button>
         </div>
       )}
       {groups.map((group) => (
         <section key={group.label} className="flex flex-col gap-2">
-          <h2 className="text-telemetry text-muted-foreground text-[11px]">{group.label}</h2>
+          <h2 className="text-base font-bold">{group.label}</h2>
           <div className="flex flex-col gap-2">
             {group.items.map((notification) => (
               <Link
                 key={notification.id}
                 href={notificationHref(notification)}
                 onClick={() => handleOpen(notification)}
+                className="focus-visible:ring-ring rounded-md outline-none focus-visible:ring-2"
               >
                 <NotificationCard
                   type={notification.type}

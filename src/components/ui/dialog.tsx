@@ -23,7 +23,7 @@ function DialogBackdrop({ className, ...props }: DialogPrimitive.Backdrop.Props)
     <DialogPrimitive.Backdrop
       data-slot="dialog-backdrop"
       className={cn(
-        "data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 z-50 bg-black/60 backdrop-blur-sm",
+        "data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 z-50 bg-black/50",
         className,
       )}
       {...props}
@@ -44,7 +44,7 @@ function DialogContent({
         <DialogPrimitive.Popup
           data-slot="dialog-content"
           className={cn(
-            "bg-card text-card-foreground ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 relative flex max-h-[85vh] w-full max-w-md flex-col gap-5 overflow-y-auto rounded-3xl p-6 shadow-2xl ring-1 duration-150 outline-none",
+            "bg-card text-card-foreground border-border data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 relative flex max-h-[85vh] w-full max-w-md flex-col gap-5 overflow-y-auto rounded-md border p-6 shadow-lg duration-150 outline-none",
             className,
           )}
           {...props}
@@ -79,7 +79,7 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("font-heading text-xl font-semibold tracking-tight", className)}
+      className={cn("text-lg font-bold", className)}
       {...props}
     />
   );

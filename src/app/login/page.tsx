@@ -1,10 +1,9 @@
 import Image from "next/image";
 import { Logo } from "@/components/logo";
 import { LoginForm } from "@/features/auth/components/login-form";
-import { themedPhoto } from "@/lib/placeholder-image";
 
 export const metadata = {
-  title: "Sign In",
+  title: "Sign in",
 };
 
 type LoginPageProps = {
@@ -13,7 +12,9 @@ type LoginPageProps = {
 
 // The cruising-community group shot — belonging, the feeling a rider signs in
 // for. Keyless LoremFlickr, the frame the brand already reads well with.
-const LOGIN_IMAGE = themedPhoto("motorcycle,group,riders", 401, 1200, 1600);
+// A real Royal Enfield on a Himalayan road ("Royalenfield Himalaya" by Gopal
+// Vijayaraghavan, CC BY 3.0, via Wikimedia Commons — credited on the panel).
+const LOGIN_IMAGE = "/road/royalenfield-himalaya.jpg";
 
 const HIGHLIGHTS = [
   "Find your weekend crew",
@@ -30,30 +31,36 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <div className="bg-secondary relative hidden overflow-hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-between lg:p-12 xl:p-16">
         {/* No preload: this panel is desktop-only, and a preloaded image is
             fetched even while display:none — lazy lets phones skip it. */}
-        <Image src={LOGIN_IMAGE} alt="" fill unoptimized sizes="50vw" className="object-cover" />
-        <div className="absolute inset-0 bg-linear-to-t from-black via-black/45 to-black/40" />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(110%_80%_at_80%_10%,rgba(231,111,36,0.28),transparent_55%)]"
+        <Image
+          src={LOGIN_IMAGE}
+          alt="A Royal Enfield parked beside a mountain road in the Himalaya"
+          fill
+          sizes="50vw"
+          className="object-cover"
         />
+        {/* Neutral black scrim so the white type reads on the photograph. */}
+        <div className="absolute inset-0 bg-linear-to-t from-black via-black/45 to-black/40" />
 
         <Logo className="relative text-white" />
 
         <div className="relative flex flex-col gap-6">
-          <p className="text-telemetry text-[11px] text-white/70">The Home Of Weekend Riders</p>
-          <h1 className="font-display text-6xl leading-[0.9] text-white uppercase xl:text-7xl">
+          <p className="font-display text-6xl leading-[0.9] text-white xl:text-7xl">
             Your road family
             <br />
             is waiting
-          </h1>
-          <ul className="flex flex-col gap-2.5 text-white/75">
+          </p>
+          <ul className="flex flex-col gap-2.5 text-base text-white/75">
             {HIGHLIGHTS.map((highlight) => (
               <li key={highlight} className="flex items-center gap-2.5">
-                <span className="bg-primary size-1.5 rounded-full" />
+                <span className="size-1.5 rounded-full bg-white/60" />
                 {highlight}
               </li>
             ))}
           </ul>
+          <p className="text-[13px] text-white/60">
+            Photo: “Royalenfield Himalaya” by Gopal Vijayaraghavan, CC BY 3.0, via Wikimedia
+            Commons
+          </p>
         </div>
       </div>
 
@@ -63,10 +70,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <Logo className="lg:hidden" />
 
           <div className="flex flex-col gap-2">
-            <p className="text-telemetry text-primary text-[11px]">Welcome Back</p>
-            <h2 className="font-heading text-3xl font-extrabold tracking-tight">
-              Roll on in, rider
-            </h2>
+            <h1 className="font-display text-5xl">Roll on in, rider</h1>
             <p className="text-muted-foreground">
               Sign in and find your crew for this weekend&apos;s ride.
             </p>

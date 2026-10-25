@@ -111,7 +111,7 @@ export function CityPicker({ cityOptions, value, onChange }: CityPickerProps) {
       >
         <span className="flex min-w-0 items-center gap-1.5">
           <MapPin className="text-muted-foreground size-4 shrink-0" />
-          <span className="truncate">{value ? value.label : "All Cities"}</span>
+          <span className="truncate">{value ? value.label : "All cities"}</span>
         </span>
         <ChevronDown className="text-muted-foreground size-4 shrink-0" />
       </PopoverTrigger>
@@ -128,10 +128,10 @@ export function CityPicker({ cityOptions, value, onChange }: CityPickerProps) {
             type="button"
             onClick={handleDetectLocation}
             disabled={locating}
-            className="text-primary hover:bg-muted flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium disabled:opacity-60"
+            className="text-primary-ink hover:bg-muted flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm font-medium disabled:opacity-60"
           >
             <LocateFixed className="size-4" />
-            {locating ? "Detecting..." : "Use My Location"}
+            {locating ? "Detecting..." : "Use my location"}
           </button>
           {locateError && <p className="text-destructive text-xs">{locateError}</p>}
         </div>
@@ -141,13 +141,13 @@ export function CityPicker({ cityOptions, value, onChange }: CityPickerProps) {
             onClick={() => selectCity(null)}
             className="hover:bg-muted flex w-full items-center px-3 py-2 text-left text-sm"
           >
-            All Cities
+            All cities
           </button>
 
           {matchedCities.length > 0 && (
             <div className="flex flex-col">
-              <p className="text-muted-foreground px-3 pt-2 text-xs font-medium tracking-wide uppercase">
-                Cities With Rides
+              <p className="text-muted-foreground px-3 pt-2 text-xs font-semibold">
+                Cities with rides
               </p>
               {matchedCities.map((option) => (
                 <button
@@ -159,7 +159,7 @@ export function CityPicker({ cityOptions, value, onChange }: CityPickerProps) {
                   className="hover:bg-muted flex w-full items-center justify-between px-3 py-2 text-left text-sm"
                 >
                   <span>{option.city}</span>
-                  <span className="text-muted-foreground text-xs">
+                  <span className="text-muted-foreground text-xs tabular-nums">
                     {option.rideCount} ride{option.rideCount === 1 ? "" : "s"}
                   </span>
                 </button>
@@ -169,9 +169,7 @@ export function CityPicker({ cityOptions, value, onChange }: CityPickerProps) {
 
           {query.trim().length >= 2 && (
             <div className="flex flex-col">
-              <p className="text-muted-foreground px-3 pt-2 text-xs font-medium tracking-wide uppercase">
-                Other Cities
-              </p>
+              <p className="text-muted-foreground px-3 pt-2 text-xs font-semibold">Other cities</p>
               {searching && <p className="text-muted-foreground px-3 py-2 text-sm">Searching...</p>}
               {!searching &&
                 otherResults.map((result) => (
@@ -194,7 +192,7 @@ export function CityPicker({ cityOptions, value, onChange }: CityPickerProps) {
                   </button>
                 ))}
               {!searching && otherResults.length === 0 && (
-                <p className="text-muted-foreground px-3 py-2 text-sm">No Matches</p>
+                <p className="text-muted-foreground px-3 py-2 text-sm">No matches</p>
               )}
             </div>
           )}

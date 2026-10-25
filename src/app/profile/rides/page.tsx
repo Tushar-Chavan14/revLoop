@@ -32,7 +32,7 @@ function RidesGroupSections({ group }: { group: MyRides }) {
     <div className="flex flex-col gap-8">
       {ongoing.length > 0 && (
         <section className="flex flex-col gap-4">
-          <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
+          <h2 className="flex items-center gap-2 text-lg font-bold">
             <Radio className="text-muted-foreground size-4" />
             Ongoing
           </h2>
@@ -42,7 +42,7 @@ function RidesGroupSections({ group }: { group: MyRides }) {
 
       {upcoming.length > 0 && (
         <section className="flex flex-col gap-4">
-          <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
+          <h2 className="flex items-center gap-2 text-lg font-bold">
             <Compass className="text-muted-foreground size-4" />
             Upcoming
           </h2>
@@ -52,9 +52,9 @@ function RidesGroupSections({ group }: { group: MyRides }) {
 
       {completed.length > 0 && (
         <section className="flex flex-col gap-4">
-          <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
+          <h2 className="flex items-center gap-2 text-lg font-bold">
             <CalendarCheck className="text-muted-foreground size-4" />
-            Completed — Ride Memories
+            Completed — ride memories
           </h2>
           <Timeline items={completed.map((ride) => rideToTimelineItem(ride, false, "completed"))} />
         </section>
@@ -62,7 +62,7 @@ function RidesGroupSections({ group }: { group: MyRides }) {
 
       {cancelled.length > 0 && (
         <section className="flex flex-col gap-4">
-          <h2 className="font-heading flex items-center gap-2 text-lg font-bold tracking-tight">
+          <h2 className="flex items-center gap-2 text-lg font-bold">
             <Ban className="text-muted-foreground size-4" />
             Cancelled
           </h2>
@@ -99,10 +99,7 @@ export default async function MyRidesPage() {
             <ArrowLeft className="size-4" />
             {isOrganizer ? "Organizer Home" : "Rider Home"}
           </Link>
-          <p className="text-telemetry text-primary text-[11px]">
-            {isOrganizer ? "Your Rides" : "Your Garage"}
-          </p>
-          <h1 className="font-heading text-3xl font-extrabold tracking-tight">My rides</h1>
+          <h1 className="font-display text-[2.5rem] text-balance sm:text-5xl">My rides</h1>
           <p className="text-muted-foreground">
             {isOrganizer
               ? "Every ride you've hosted."
@@ -112,10 +109,10 @@ export default async function MyRidesPage() {
 
         {!hasAnyRides ? (
           <EmptyState
-            title="No Rides Planned Yet"
+            title="No rides planned yet"
             description={
               isOrganizer
-                ? "Host your first Organized Ride to get started."
+                ? "Host your first organized ride to get started."
                 : "Start your next adventure — create a ride or find one to join."
             }
             action={
@@ -123,14 +120,14 @@ export default async function MyRidesPage() {
                 <Button
                   nativeButton={false}
                   render={
-                    <Link href="/rides/create">{isOrganizer ? "Host A Ride" : "Post A Ride"}</Link>
+                    <Link href="/rides/create">{isOrganizer ? "Host a ride" : "Post a ride"}</Link>
                   }
                 />
                 {!isOrganizer && (
                   <Button
                     nativeButton={false}
                     variant="outline"
-                    render={<Link href="/rides">Discover Rides</Link>}
+                    render={<Link href="/rides">Discover rides</Link>}
                   />
                 )}
               </div>
@@ -141,9 +138,9 @@ export default async function MyRidesPage() {
         ) : (
           <Tabs defaultValue="community">
             <TabsList>
-              <TabsTrigger value="community">Community Rides</TabsTrigger>
-              <TabsTrigger value="hosted">Hosted Rides</TabsTrigger>
-              <TabsTrigger value="booked">Booked Rides</TabsTrigger>
+              <TabsTrigger value="community">Community rides</TabsTrigger>
+              <TabsTrigger value="hosted">Hosted rides</TabsTrigger>
+              <TabsTrigger value="booked">Booked rides</TabsTrigger>
             </TabsList>
             <TabsContent value="community">
               <RidesGroupSections group={community} />

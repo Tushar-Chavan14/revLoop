@@ -20,15 +20,13 @@ export function ChatsNavLink() {
     <Link
       href="/chats"
       aria-label={count > 0 ? `Chats, ${count} with new messages` : "Chats"}
-      // Plain string, not cn(): tailwind-merge reads the custom `text-telemetry`
-      // utility as a text color and drops it next to text-primary/muted.
-      className={`text-telemetry relative text-[11px] transition-colors ${
-        active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+      className={`relative text-[15px] font-semibold transition-colors ${
+        active ? "text-primary-ink" : "text-foreground/75 hover:text-foreground"
       }`}
     >
       Chats
       {count > 0 && (
-        <span className="bg-primary text-primary-foreground absolute -top-2.5 -right-4 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold tracking-normal tabular-nums">
+        <span className="bg-primary text-primary-foreground absolute -top-2.5 -right-4 flex h-4.5 min-w-4.5 items-center justify-center rounded-full px-1 text-xs font-bold tabular-nums">
           {unreadChatsLabel(count)}
         </span>
       )}

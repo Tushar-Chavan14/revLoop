@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { Coffee } from "lucide-react";
-import { Logo } from "@/components/logo";
 import { APP_DESCRIPTION } from "@/constants/site";
 import { getAuthUser } from "@/services/profiles";
 import { getMyRole } from "@/services/roles";
@@ -9,40 +8,42 @@ import { getMyRole } from "@/services/roles";
 const SUPPORT_URL = "https://buymeachai.ezee.li/daredevil14";
 
 const FOOTER_LINK_CLASS =
-  "text-secondary-foreground/70 hover:text-secondary-foreground text-telemetry text-[11px] transition-colors";
+  "text-[15px] font-semibold underline-offset-4 decoration-2 hover:underline";
 
-// Only the role-dependent links wait on the session, behind Suspense — the
-// footer is below the fold and must never hold up the page's own content.
+// The close of every page is a hi-vis field — the colour of a highway board —
+// with the name across its full width. Only the role-dependent links wait on
+// the session, behind Suspense, so the footer never holds up the page.
 export function SiteFooter() {
   return (
-    <footer className="bg-secondary text-secondary-foreground border-t border-white/10">
-      {/* Top-aligned two columns: brand on the left; links + the chai stop
-          stacked on the right, so the nav lines up with the logo row. */}
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-2">
-          <Logo />
-          <p className="text-secondary-foreground/60 max-w-sm text-sm">{APP_DESCRIPTION}</p>
-        </div>
-        <div className="flex flex-col gap-6 sm:items-end sm:pt-1.5">
+    <footer className="bg-primary overflow-hidden text-[#111]">
+      <div className="mx-auto flex w-full max-w-[90rem] flex-col gap-8 px-4 pt-12 sm:flex-row sm:items-start sm:justify-between sm:px-8">
+        <p className="max-w-sm text-[15px] leading-relaxed font-medium">{APP_DESCRIPTION}</p>
+        <div className="flex flex-col gap-6 sm:items-end">
           <Suspense fallback={<FooterNav role={null} />}>
             <RoleAwareFooterNav />
           </Suspense>
           <SupportLink />
         </div>
       </div>
-      <div className="border-secondary-foreground/10 mx-auto flex w-full max-w-6xl flex-wrap gap-x-6 gap-y-2 border-t px-6 py-5">
+      <div className="mx-auto w-full max-w-[90rem] px-4 sm:px-8">
         <Link
-          href="/privacy"
-          className="text-secondary-foreground/50 hover:text-secondary-foreground/80 text-xs transition-colors"
+          href="/"
+          aria-label="RoadKin home"
+          className="font-display block pt-10 text-[33vw] leading-[0.78] select-none 2xl:text-[31rem]"
         >
-          Privacy Policy
+          RoadKin
         </Link>
-        <Link
-          href="/terms"
-          className="text-secondary-foreground/50 hover:text-secondary-foreground/80 text-xs transition-colors"
-        >
-          Terms & Conditions
-        </Link>
+      </div>
+      <div className="mx-auto flex w-full max-w-[90rem] flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 pt-6 pb-8 text-sm font-medium sm:px-8">
+        <div className="flex gap-6">
+          <Link href="/privacy" className="underline-offset-4 hover:underline">
+            Privacy policy
+          </Link>
+          <Link href="/terms" className="underline-offset-4 hover:underline">
+            Terms &amp; conditions
+          </Link>
+        </div>
+        <p>Never ride alone again. Built for India&apos;s weekend riders.</p>
       </div>
     </footer>
   );
@@ -59,17 +60,17 @@ function FooterNav({ role }: { role: string | null }) {
   const isAdmin = role === "admin";
 
   return (
-    <nav className="flex flex-wrap gap-x-7 gap-y-2 sm:justify-end">
+    <nav aria-label="Footer" className="flex flex-wrap gap-x-7 gap-y-2 sm:justify-end">
       <Link href="/rides" className={FOOTER_LINK_CLASS}>
-        Discover Rides
+        Discover rides
       </Link>
       {!isAdmin && (
         <Link href="/rides/create" className={FOOTER_LINK_CLASS}>
-          {isOrganizer ? "Host a Ride" : "Post a Ride"}
+          {isOrganizer ? "Host a ride" : "Post a ride"}
         </Link>
       )}
       <Link href="/profile" className={FOOTER_LINK_CLASS}>
-        {isOrganizer ? "Organizer Home" : "Rider Home"}
+        {isOrganizer ? "Organizer home" : "Ride home"}
       </Link>
       <Link href="/notifications" className={FOOTER_LINK_CLASS}>
         Notifications
@@ -87,14 +88,12 @@ function SupportLink() {
       href={SUPPORT_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="group border-secondary-foreground/15 hover:border-secondary-foreground/40 flex w-fit items-center gap-3 rounded-full border py-2 pr-4 pl-2.5 transition-colors"
+      className="group flex w-fit items-center gap-3 rounded-md bg-[#111] py-2 pr-4 pl-3 text-white transition-transform active:translate-y-px"
     >
-      <span className="bg-secondary-foreground/10 flex size-8 items-center justify-center rounded-full">
-        <Coffee className="size-4 transition-transform group-hover:-rotate-12" aria-hidden />
-      </span>
+      <Coffee className="size-4 transition-transform group-hover:-rotate-12" aria-hidden />
       <span className="flex flex-col">
-        <span className="text-telemetry text-[11px]">Sponsor A Chai Stop</span>
-        <span className="text-secondary-foreground/60 text-xs">Keep RoadKin rolling</span>
+        <span className="text-sm font-bold">Sponsor a chai stop</span>
+        <span className="text-xs text-white/75">Keep RoadKin rolling</span>
       </span>
     </a>
   );

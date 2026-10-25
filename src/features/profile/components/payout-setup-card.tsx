@@ -38,7 +38,7 @@ export function PayoutSetupCard({ payoutDetails }: PayoutSetupCardProps) {
       <CardHeader>
         <div className="flex items-center gap-2">
           <Landmark className="text-muted-foreground size-4" />
-          <CardTitle>Payouts For Organized Rides</CardTitle>
+          <CardTitle>Payouts for organized rides</CardTitle>
         </div>
         <CardDescription>
           Required before you can create a paid, hosted ride. Riders pay through Razorpay; the
@@ -69,7 +69,7 @@ export function PayoutSetupCard({ payoutDetails }: PayoutSetupCardProps) {
         {editing && (
           <form action={handleSave} className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-              <Label>Payout Method</Label>
+              <Label>Payout method</Label>
               <ToggleGroup
                 variant="outline"
                 spacing={0}
@@ -80,7 +80,7 @@ export function PayoutSetupCard({ payoutDetails }: PayoutSetupCardProps) {
                 }}
               >
                 <ToggleGroupItem value="upi">UPI</ToggleGroupItem>
-                <ToggleGroupItem value="bank">Bank Account</ToggleGroupItem>
+                <ToggleGroupItem value="bank">Bank account</ToggleGroupItem>
               </ToggleGroup>
             </div>
 
@@ -98,7 +98,7 @@ export function PayoutSetupCard({ payoutDetails }: PayoutSetupCardProps) {
             ) : (
               <>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="bankAccountName">Account Holder Name</Label>
+                  <Label htmlFor="bankAccountName">Account holder name</Label>
                   <Input
                     id="bankAccountName"
                     name="bankAccountName"
@@ -107,7 +107,7 @@ export function PayoutSetupCard({ payoutDetails }: PayoutSetupCardProps) {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="bankAccountNumber">Account Number</Label>
+                  <Label htmlFor="bankAccountNumber">Account number</Label>
                   <Input
                     id="bankAccountNumber"
                     name="bankAccountNumber"
@@ -116,7 +116,7 @@ export function PayoutSetupCard({ payoutDetails }: PayoutSetupCardProps) {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="bankIfsc">IFSC Code</Label>
+                  <Label htmlFor="bankIfsc">IFSC code</Label>
                   <Input
                     id="bankIfsc"
                     name="bankIfsc"

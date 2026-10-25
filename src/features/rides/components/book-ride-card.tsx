@@ -102,7 +102,7 @@ export function BookRideCard({
         <CardHeader>
           <div className="flex items-center gap-2">
             <IndianRupee className="text-muted-foreground size-4" />
-            <CardTitle>Reserve Your Spot</CardTitle>
+            <CardTitle>Reserve your spot</CardTitle>
           </div>
           <CardDescription>
             {status === "paid"
@@ -137,10 +137,10 @@ export function BookRideCard({
                   : isPending
                     ? "Starting payment..."
                     : status === "failed"
-                      ? "Try Again"
+                      ? "Try again"
                       : status === "created"
-                        ? "Resume Payment"
-                        : `Reserve Spot — ${currency === "INR" ? "₹" : `${currency} `}${rideFee}`}
+                        ? "Resume payment"
+                        : `Reserve spot — ${currency === "INR" ? "₹" : `${currency} `}${rideFee}`}
               </Button>
             </>
           )}

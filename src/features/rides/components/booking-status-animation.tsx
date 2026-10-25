@@ -42,7 +42,7 @@ export function BookingSuccessAnimation() {
           />
         </svg>
         <motion.div
-          className="text-primary absolute"
+          className="text-primary-ink absolute"
           style={{ marginLeft: -14, marginTop: -14 }}
           initial={{ left: `${ROAD_POINTS[0].x}%`, top: `${ROAD_POINTS[0].y}%`, rotate: 0 }}
           animate={{

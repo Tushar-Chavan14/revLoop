@@ -4,31 +4,25 @@ import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import {
   AtSign,
-  Bike,
   Building2,
-  Calendar,
   Check,
-  Clock,
   Coffee,
   ExternalLink,
   Flag,
   Fuel,
-  Hourglass,
-  IndianRupee,
   Lock,
   Mail,
   MapPin,
   Phone,
   ShieldCheck,
   UserRound,
-  Users,
   X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { StatusChip } from "@/components/ui/status-chip";
+import { Milestone } from "@/components/design-system/milestone";
 import { ImageGallery } from "@/components/design-system/image-gallery";
 import { MapContainer } from "@/components/design-system/map-container";
 import { Timeline, type TimelineItemData } from "@/components/design-system/timeline";
@@ -189,6 +183,32 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
     },
   ];
 
+  const specs: { label: string; value: string; tone?: "low" | "full" }[] = [
+    ride.ride_date && { label: "Date", value: format(new Date(ride.ride_date), "EEE d MMM yyyy") },
+    ride.departure_time && { label: "Departs", value: ride.departure_time.slice(0, 5) },
+    ride.estimated_distance_km && {
+      label: "Distance",
+      value: `${ride.estimated_distance_km.toLocaleString("en-IN")} km`,
+    },
+    formatRideDuration(ride.estimated_duration_minutes) && {
+      label: "Duration",
+      value: formatRideDuration(ride.estimated_duration_minutes)!,
+    },
+    ride.seats_available !== null &&
+      ride.max_riders !== null && {
+        label: "Seats",
+        value: isRideFull ? `Full, ${ride.max_riders} riders` : `${ride.seats_available} of ${ride.max_riders} left`,
+        tone: isRideFull ? ("full" as const) : lowSeats ? ("low" as const) : undefined,
+      },
+    isOrganizedRide &&
+      ride.ride_fee && { label: "Ride fee", value: `₹${Number(ride.ride_fee).toLocaleString("en-IN")}` },
+    isOrganizedRide &&
+      ride.booking_deadline && {
+        label: "Book by",
+        value: format(new Date(ride.booking_deadline), "d MMM, h:mm a"),
+      },
+  ].filter((spec): spec is { label: string; value: string; tone?: "low" | "full" } => Boolean(spec));
+
   const joinSlot = (
     <div id="join" className="scroll-mt-24">
       {!isOrganizer && !isMember && user && isOrganizerViewer && (
@@ -197,7 +217,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             <p className="text-sm font-medium">Organizer accounts can&apos;t join rides.</p>
             <p className="text-muted-foreground text-sm">
               Host your own from your{" "}
-              <Link href="/profile" className="text-primary underline">
+              <Link href="/profile" className="text-primary-ink underline">
                 organizer home
               </Link>
               .
@@ -228,7 +248,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         <Card>
           <CardContent className="flex flex-col gap-3">
             <p className="text-muted-foreground text-sm">Sign in to claim your seat.</p>
-            <Button nativeButton={false} render={<Link href="/login">Sign In</Link>} />
+            <Button nativeButton={false} render={<Link href="/login">Sign in</Link>} />
           </CardContent>
         </Card>
       )}
@@ -248,8 +268,8 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
 
-      {/* Full-bleed cover — the trip's postcard. */}
-      <section className="bg-secondary relative h-[42vh] min-h-85 w-full overflow-hidden sm:h-[54vh]">
+      {/* Full-bleed cover — the trip's postcard, with its milestone on the roadside. */}
+      <section className="bg-secondary relative h-[52svh] min-h-96 w-full overflow-hidden sm:h-[62svh]">
         {ride.cover_image_url ? (
           <Image
             src={ride.cover_image_url}
@@ -260,74 +280,98 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             className="object-cover"
           />
         ) : (
-          <div className="from-secondary via-secondary/70 to-secondary/30 absolute inset-0 bg-linear-to-br">
-            <CoverIcon className="text-secondary-foreground/15 absolute -right-8 -bottom-8 size-64" />
-          </div>
+          <CoverIcon
+            className="text-secondary-foreground/10 absolute -right-8 -bottom-8 size-72"
+            aria-hidden
+          />
         )}
-        <div className="absolute inset-0 bg-linear-to-t from-black via-black/50 to-black/10" />
-        <div
-          aria-hidden
-          className="bg-road-dashes absolute inset-x-0 bottom-0 h-px text-white/25"
-        />
+        {/* Neutral scrim so the white title holds on any photo. */}
+        <div aria-hidden className="absolute inset-0 bg-linear-to-t from-black/85 via-black/35 to-black/0" /> {/* taste-skill-ignore */}
+        {ride.destination && (
+          <Milestone
+            place={ride.destination}
+            km={ride.estimated_distance_km}
+            size="md"
+            className="absolute top-4 right-4 max-w-[45%] md:hidden"
+          />
+        )}
 
         <div className="absolute inset-x-0 bottom-0">
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-6 pb-8 sm:pb-10">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge
-                variant="secondary"
-                className={cn(
-                  "border-0 text-white",
-                  isOrganizedRide ? "bg-primary" : "bg-ride-community",
-                )}
-              >
-                {isOrganizedRide ? "Organized Ride" : "Community Ride"}
-              </Badge>
-              {badges.map((badge) => (
-                <Badge
-                  key={badge}
-                  variant="secondary"
-                  className="bg-white/15 text-white backdrop-blur-sm"
-                >
-                  {badge}
-                </Badge>
-              ))}
-              {ride.seats_available !== null && (
-                <StatusChip
-                  status={isRideFull ? "full" : lowSeats ? "filling" : "open"}
-                  className="border-transparent bg-white/15 text-white backdrop-blur-sm"
-                >
-                  {isRideFull ? "Full" : `${ride.seats_available} seats left`}
-                </StatusChip>
-              )}
-            </div>
-            <h1 className="font-display max-w-4xl text-4xl text-balance text-white uppercase sm:text-6xl">
-              {ride.title}
-            </h1>
-            {ride.organizer && (
-              <div className="flex items-center gap-2 text-sm text-white/80">
-                <Avatar size="sm">
-                  <AvatarImage
-                    src={ride.organizer.profile_image_url ?? undefined}
-                    alt={ride.organizer.name}
-                  />
-                  <AvatarFallback>
-                    <UserRound className="size-3.5" />
-                  </AvatarFallback>
-                </Avatar>
+          <div className="mx-auto flex w-full max-w-[90rem] items-end justify-between gap-6 px-4 pb-8 sm:px-8 sm:pb-12">
+            <div className="flex min-w-0 flex-col gap-4">
+              <div className="flex flex-wrap items-center gap-2">
                 <span
                   className={cn(
-                    "size-1.5 rounded-full",
-                    isOrganizedRide ? "bg-primary" : "bg-ride-community",
+                    "inline-flex h-7 items-center rounded-sm px-2.5 text-[13px] font-bold",
+                    isOrganizedRide ? "bg-primary text-primary-foreground" : "bg-white text-[#111]",
                   )}
-                />
-                {isOrganizedRide ? "Captained by" : "Led by"} {ride.organizer.name}
+                >
+                  {isOrganizedRide ? "Organized tour" : "Community ride"}
+                </span>
+                {badges.map((badge) => (
+                  <span
+                    key={badge}
+                    className="inline-flex h-7 items-center rounded-sm bg-black/55 px-2.5 text-[13px] font-semibold text-white"
+                  >
+                    {badge}
+                  </span>
+                ))}
               </div>
+              <h1 className="font-display max-w-5xl text-[clamp(48px,7vw,112px)] text-balance text-white">
+                {ride.title}
+              </h1>
+              {ride.organizer && (
+                <div className="flex items-center gap-2.5 text-[15px] text-white/85">
+                  <Avatar size="sm">
+                    <AvatarImage
+                      src={ride.organizer.profile_image_url ?? undefined}
+                      alt={ride.organizer.name}
+                    />
+                    <AvatarFallback>
+                      <UserRound className="size-3.5" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <span>
+                    {isOrganizedRide ? "Captained by" : "Led by"}{" "}
+                    <span className="font-bold text-white">{ride.organizer.name}</span>
+                    {ride.city && <> · rolling out from {ride.city}</>}
+                  </span>
+                </div>
+              )}
+            </div>
+            {ride.destination && (
+              <Milestone
+                place={ride.destination}
+                km={ride.estimated_distance_km}
+                size="lg"
+                className="hidden max-w-[16rem] shrink-0 md:inline-flex"
+              />
             )}
           </div>
         </div>
       </section>
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 py-10 lg:flex-row lg:items-start lg:gap-12">
+      {/* The spec plate: every figure a rider checks before claiming a seat. */}
+      <section aria-label="Trip details" className="bg-card">
+        <dl className="mx-auto grid w-full max-w-[90rem] grid-cols-2 gap-x-6 gap-y-5 px-4 py-6 sm:grid-cols-3 sm:px-8 lg:flex lg:flex-wrap lg:justify-between lg:gap-x-10">
+          {specs.map((spec) => (
+            <div key={spec.label} className="flex flex-col gap-1">
+              <dt className="text-muted-foreground text-sm font-medium">{spec.label}</dt>
+              <dd
+                className={cn(
+                  "text-xl font-bold tabular-nums sm:text-2xl",
+                  spec.tone === "low" && "text-primary-ink",
+                  spec.tone === "full" && "text-muted-foreground",
+                )}
+              >
+                {spec.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <main className="mx-auto flex w-full max-w-[90rem] flex-1 flex-col gap-12 px-4 py-12 sm:px-8 lg:flex-row lg:items-start lg:gap-16">
         {/* The journey — main column */}
         <div className="flex min-w-0 flex-1 flex-col gap-10">
           <div className="flex flex-wrap items-center gap-3">
@@ -335,7 +379,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
               {isOrganizer && (
                 <Button
                   nativeButton={false}
-                  render={<Link href={`/rides/${id}/edit`}>Edit Ride</Link>}
+                  render={<Link href={`/rides/${id}/edit`}>Edit ride</Link>}
                   variant="outline"
                   size="sm"
                 />
@@ -350,15 +394,15 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
               />
             </div>
             {isOrganizer && (
-              <Link href="/profile" className="text-muted-foreground text-xs hover:underline">
-                Manage join requests from your {isOrganizerViewer ? "Organizer Home" : "Rider Home"}{" "}
+              <Link href="/profile" className="text-muted-foreground text-sm hover:underline">
+                Manage join requests from your {isOrganizerViewer ? "Organizer home" : "Ride home"}{" "}
                 →
               </Link>
             )}
           </div>
 
           {ride.description && (
-            <p className="text-muted-foreground text-lg leading-relaxed text-pretty">
+            <p className="max-w-[65ch] text-lg leading-relaxed text-pretty">
               {ride.description}
             </p>
           )}
@@ -385,18 +429,18 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
                 {isMember ? (
                   <div className="flex flex-col gap-1.5 text-sm">
                     <span className="flex items-center gap-2">
-                      <Mail className="text-primary size-3.5" />
+                      <Mail className="text-muted-foreground size-3.5" />
                       {organizerDetails.business_email}
                     </span>
                     <span className="flex items-center gap-2">
-                      <Phone className="text-primary size-3.5" />
+                      <Phone className="text-muted-foreground size-3.5" />
                       {organizerDetails.business_phone}
                     </span>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-                    <Lock className="size-3" />
-                    Contact details unlock once you&apos;ve joined this ride.
+                  <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
+                    <Lock className="size-3.5" />
+                    Contact details are shared once you&apos;ve joined this ride.
                   </p>
                 )}
               </CardContent>
@@ -404,7 +448,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           )}
 
           <section className="flex flex-col gap-4">
-            <p className="text-telemetry text-primary text-[11px]">The Route</p>
+            <h2 className="text-xl font-bold">The route</h2>
             <Card>
               <CardContent className="flex flex-col gap-6">
                 <Timeline items={timelineItems} />
@@ -413,10 +457,10 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
                     href={directionsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary -mt-4 ml-13 flex items-center gap-1.5 text-xs hover:underline"
+                    className="text-primary-ink -mt-4 ml-13 flex items-center gap-1.5 text-sm font-semibold hover:underline"
                   >
                     <ExternalLink className="size-3.5" />
-                    Get Directions To Meeting Point
+                    Directions to the meeting point
                   </a>
                 )}
                 {ride.destination_map_url && (
@@ -424,10 +468,10 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
                     href={ride.destination_map_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary -mt-4 ml-13 flex items-center gap-1.5 text-xs hover:underline"
+                    className="text-primary-ink -mt-4 ml-13 flex items-center gap-1.5 text-sm font-semibold hover:underline"
                   >
                     <ExternalLink className="size-3.5" />
-                    View Destination On Google Maps
+                    Destination on Google Maps
                   </a>
                 )}
                 <MapContainer>
@@ -459,7 +503,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           {isOrganizedRide && (ride.ride_inclusions?.length ?? 0) > 0 && (
             <Card>
               <CardContent className="flex flex-col gap-3">
-                <h2 className="font-heading text-lg font-bold">What&apos;s Included</h2>
+                <h2 className="text-lg font-bold">What&apos;s included</h2>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {ride.ride_inclusions?.map((value) => (
                     <span key={value} className="flex items-center gap-2 text-sm">
@@ -475,7 +519,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           {isOrganizedRide && notIncluded.length > 0 && (
             <Card>
               <CardContent className="flex flex-col gap-3">
-                <h2 className="font-heading text-lg font-bold">What&apos;s Not Included</h2>
+                <h2 className="text-lg font-bold">Not included</h2>
                 <div className="flex flex-wrap gap-2">
                   {notIncluded.map((item) => (
                     <Badge key={item.value} variant="outline" className="text-muted-foreground">
@@ -490,16 +534,20 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
           {isOrganizedRide && (ride.ride_itinerary as unknown as ItineraryDay[] | null)?.length ? (
             <section className="flex flex-col gap-4">
-              <p className="text-telemetry text-primary text-[11px]">The Itinerary</p>
+              <h2 className="text-xl font-bold">The itinerary</h2>
               <Card>
                 <CardContent className="flex flex-col gap-5">
                   {(ride.ride_itinerary as unknown as ItineraryDay[]).map((day) => (
                     <div key={day.day} className="flex flex-col gap-2">
-                      <p className="font-heading text-sm font-bold">Day {day.day}</p>
+                      <p className="text-[15px] font-bold">Day {day.day}</p>
                       <ul className="text-muted-foreground flex flex-col gap-1 text-sm">
                         {day.items.map((item, index) => (
                           <li key={index} className="flex gap-2">
-                            {item.time && <span className="font-medium">{item.time}</span>}
+                            {item.time && (
+                              <span className="text-foreground font-semibold tabular-nums">
+                                {item.time}
+                              </span>
+                            )}
                             <span>{item.label}</span>
                           </li>
                         ))}
@@ -514,7 +562,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           {isOrganizedRide && ride.cancellation_policy && (
             <Card>
               <CardContent>
-                <h2 className="font-heading mb-2 text-lg font-bold">Cancellation Policy</h2>
+                <h2 className="mb-2 text-lg font-bold">Cancellation policy</h2>
                 <p className="text-muted-foreground text-sm">{ride.cancellation_policy}</p>
               </CardContent>
             </Card>
@@ -522,13 +570,13 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
           {images.length > 0 && (
             <section className="flex flex-col gap-4">
-              <p className="text-telemetry text-primary text-[11px]">Ride Gallery</p>
+              <h2 className="text-xl font-bold">From the ride</h2>
               <ImageGallery images={images.map((image) => ({ url: image.image_url }))} />
             </section>
           )}
 
           <section className="flex flex-col gap-4">
-            <p className="text-telemetry text-primary text-[11px]">Your Road Family Here</p>
+            <h2 className="text-xl font-bold">Who&apos;s riding</h2>
             <ParticipantsList
               members={members}
               currentUserId={user?.id ?? null}
@@ -543,57 +591,8 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         </div>
 
         {/* Trip dossier — sticky sidebar */}
-        <aside className="flex w-full flex-col gap-5 lg:sticky lg:top-24 lg:w-80 lg:shrink-0">
-          <Card>
-            <CardContent className="flex flex-col gap-4">
-              <p className="text-telemetry text-muted-foreground text-[10px]">Trip Details</p>
-              <div className="flex flex-col gap-3">
-                <TripRow
-                  icon={Calendar}
-                  label="Date"
-                  value={ride.ride_date && format(new Date(ride.ride_date), "EEE, MMM d, yyyy")}
-                />
-                <TripRow icon={Clock} label="Departs" value={ride.departure_time?.slice(0, 5)} />
-                <TripRow
-                  icon={Users}
-                  label="Seats"
-                  value={
-                    ride.seats_available !== null && ride.max_riders !== null
-                      ? `${ride.seats_available} of ${ride.max_riders} left`
-                      : undefined
-                  }
-                />
-                <TripRow
-                  icon={Bike}
-                  label="Distance"
-                  value={
-                    ride.estimated_distance_km ? `${ride.estimated_distance_km} km` : undefined
-                  }
-                />
-                <TripRow
-                  icon={Hourglass}
-                  label="Duration"
-                  value={formatRideDuration(ride.estimated_duration_minutes)}
-                />
-                {isOrganizedRide && (
-                  <TripRow
-                    icon={IndianRupee}
-                    label="Ride Fee"
-                    value={ride.ride_fee ? `₹${ride.ride_fee}` : undefined}
-                  />
-                )}
-                {isOrganizedRide && ride.booking_deadline && (
-                  <TripRow
-                    icon={Clock}
-                    label="Book By"
-                    value={format(new Date(ride.booking_deadline), "MMM d, h:mm a")}
-                  />
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="hidden lg:block">{joinSlot}</div>
+        <aside className="hidden w-full flex-col gap-5 lg:sticky lg:top-24 lg:flex lg:w-96 lg:shrink-0">
+          {joinSlot}
         </aside>
       </main>
 
@@ -614,29 +613,6 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           participants={members.filter((member) => member.profile).map((member) => member.profile!)}
         />
       )}
-    </div>
-  );
-}
-
-function TripRow({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: typeof Calendar;
-  label: string;
-  value?: string | null;
-}) {
-  if (!value) {
-    return null;
-  }
-  return (
-    <div className="border-border/60 flex items-center justify-between gap-3 border-t pt-3 first:border-t-0 first:pt-0">
-      <span className="text-muted-foreground flex items-center gap-2 text-sm">
-        <Icon className="size-3.5 shrink-0" />
-        {label}
-      </span>
-      <span className="text-sm font-medium">{value}</span>
     </div>
   );
 }

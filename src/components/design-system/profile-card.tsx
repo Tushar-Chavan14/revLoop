@@ -29,10 +29,7 @@ export function ProfileCard({
   return (
     <div
       data-slot="profile-card"
-      className={cn(
-        "bg-card ring-foreground/10 flex items-center gap-4 rounded-2xl p-4 ring-1 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg",
-        className,
-      )}
+      className={cn("bg-card flex items-center gap-4 rounded-md p-4", className)}
     >
       <Avatar size="lg">
         <AvatarImage src={imageUrl ?? undefined} alt={name} />
@@ -40,7 +37,7 @@ export function ProfileCard({
       </Avatar>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className="font-heading truncate font-semibold">{name}</p>
+          <p className="truncate font-semibold">{name}</p>
           {riderLevel && (
             <Badge variant="outline" className="text-muted-foreground shrink-0">
               {riderLevel}
@@ -48,16 +45,16 @@ export function ProfileCard({
           )}
         </div>
         <p className="text-muted-foreground truncate text-sm">@{username}</p>
-        <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
+        <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm">
           {location && (
             <span className="flex items-center gap-1">
-              <MapPin className="size-3" aria-hidden />
+              <MapPin className="size-3.5" aria-hidden />
               {location}
             </span>
           )}
           {bike && (
             <span className="flex items-center gap-1">
-              <Bike className="size-3" aria-hidden />
+              <Bike className="size-3.5" aria-hidden />
               {bike}
             </span>
           )}

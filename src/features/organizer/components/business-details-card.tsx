@@ -33,9 +33,11 @@ export function BusinessDetailsCard({ details }: { details: OrganizerDetails | n
       <CardHeader>
         <div className="flex items-center gap-2">
           <Building2 className="text-muted-foreground size-4" />
-          <CardTitle>Business Details</CardTitle>
+          <CardTitle>Business details</CardTitle>
         </div>
-        <CardDescription>Shown on your public profile and to riders once they join.</CardDescription>
+        <CardDescription>
+          Shown on your public profile and to riders once they join.
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {!editing && details && (
@@ -71,7 +73,7 @@ export function BusinessDetailsCard({ details }: { details: OrganizerDetails | n
           <form action={handleSave} className="flex flex-col gap-3">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="businessName">Business Name</Label>
+                <Label htmlFor="businessName">Business name</Label>
                 <Input
                   id="businessName"
                   name="businessName"
@@ -80,7 +82,7 @@ export function BusinessDetailsCard({ details }: { details: OrganizerDetails | n
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="primaryDestination">Signature Destination</Label>
+                <Label htmlFor="primaryDestination">Signature destination</Label>
                 <LocationAutocomplete
                   id="primaryDestination"
                   name="primaryDestination"
@@ -97,7 +99,7 @@ export function BusinessDetailsCard({ details }: { details: OrganizerDetails | n
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="businessEmail">Business Email</Label>
+                <Label htmlFor="businessEmail">Business email</Label>
                 <Input
                   id="businessEmail"
                   name="businessEmail"
@@ -107,7 +109,7 @@ export function BusinessDetailsCard({ details }: { details: OrganizerDetails | n
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="businessPhone">Business Phone</Label>
+                <Label htmlFor="businessPhone">Business phone</Label>
                 <Input
                   id="businessPhone"
                   name="businessPhone"
@@ -117,7 +119,7 @@ export function BusinessDetailsCard({ details }: { details: OrganizerDetails | n
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="eventsOrganisedCount">Events Organised</Label>
+                <Label htmlFor="eventsOrganisedCount">Events organised</Label>
                 <Input
                   id="eventsOrganisedCount"
                   name="eventsOrganisedCount"

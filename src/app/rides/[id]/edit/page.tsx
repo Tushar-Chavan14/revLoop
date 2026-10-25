@@ -38,7 +38,7 @@ export default async function EditRidePage({ params }: EditRidePageProps) {
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
-        <PageHeading eyebrow="Edit" title="Edit your ride" />
+        <PageHeading title="Edit your ride" />
         <RideForm
           mode="edit"
           action={updateRide.bind(null, id)}

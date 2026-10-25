@@ -149,12 +149,12 @@ export function RideChat({
   return (
     <div
       className={cn(
-        "border-border bg-card flex h-[75vh] flex-col overflow-hidden rounded-2xl border",
+        "border-border bg-card flex h-[75vh] flex-col overflow-hidden rounded-md border",
         className,
       )}
     >
       <div className="border-border/60 flex items-center gap-3 border-b p-3">
-        <div className="bg-secondary relative size-11 shrink-0 overflow-hidden rounded-xl">
+        <div className="bg-muted relative size-11 shrink-0 overflow-hidden rounded-sm">
           {ride.coverImageUrl && (
             <Image src={ride.coverImageUrl} alt="" fill sizes="44px" className="object-cover" />
           )}
@@ -185,7 +185,7 @@ export function RideChat({
       </div>
 
       {ride.meetingPoint && (
-        <div className="border-border/60 bg-primary/5 flex items-center gap-2 border-b px-4 py-2 text-xs">
+        <div className="border-border/60 bg-muted flex items-center gap-2 border-b px-4 py-2 text-sm">
           <MapPin className="text-muted-foreground size-3.5 shrink-0" />
           <span className="text-muted-foreground truncate">
             Meeting at <span className="text-foreground font-medium">{ride.meetingPoint}</span>

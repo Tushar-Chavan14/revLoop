@@ -21,6 +21,10 @@ const nextConfig: NextConfig = {
     // Fewer breakpoints = fewer distinct variants to generate and cache.
     deviceSizes: [640, 828, 1080, 1440, 1920],
     imageSizes: [48, 96, 128, 256, 384],
+    // On NAT64/DNS64 networks Supabase resolves to 64:ff9b::/96 addresses,
+    // which the optimizer counts as private and rejects with a 400. Allow it
+    // in dev only; remotePatterns still limits which hosts can be fetched.
+    dangerouslyAllowLocalIP: process.env.NODE_ENV === "development",
     remotePatterns: [
       {
         protocol: "https",

@@ -165,7 +165,7 @@ export function LocationAutocomplete({
           <div
             ref={menuRef}
             style={{ top: menuRect.top, left: menuRect.left, width: menuRect.width }}
-            className="border-border bg-popover absolute z-50 overflow-hidden rounded-lg border shadow-md"
+            className="border-border bg-popover absolute z-50 overflow-hidden rounded-md border shadow-md"
           >
             {suggestions.map((suggestion, index) => (
               <button

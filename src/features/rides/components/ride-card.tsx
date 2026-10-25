@@ -1,18 +1,12 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { Check, MapPin } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { StatusChip } from "@/components/ui/status-chip";
+import { Milestone } from "@/components/design-system/milestone";
 import { DEFAULT_RIDE_TYPE_ICON, RIDE_TYPE_ICONS, RIDE_TYPES } from "@/constants/ride-type";
 import { RIDER_LEVELS } from "@/constants/rider-level";
 import { SPEED_LEVELS } from "@/constants/speed-level";
-import { hoverLift } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { RideCardData } from "@/services/rides";
 import { formatRideDuration } from "@/utils/ride-duration";
@@ -29,137 +23,127 @@ function difficultyLabel(value: string | null) {
   return RIDER_LEVELS.find((level) => level.value === value)?.label ?? value;
 }
 
-// Difficulty reads as its own colour — beginner/intermediate/experienced —
-// rather than a flat neutral badge, so pace is legible at a glance.
-const DIFFICULTY_COLOR: Record<string, string> = {
-  beginner: "border-level-beginner/30 text-level-beginner bg-level-beginner/10",
-  intermediate: "border-level-intermediate/30 text-level-intermediate bg-level-intermediate/10",
-  experienced: "border-level-experienced/30 text-level-experienced bg-level-experienced/10",
+// Difficulty is a coloured dot beside an ink label — coloured text on white
+// fails contrast, and the dot is enough to read pace at a glance.
+const DIFFICULTY_DOT: Record<string, string> = {
+  beginner: "bg-level-beginner",
+  intermediate: "bg-level-intermediate",
+  experienced: "bg-level-experienced",
 };
 
+/**
+ * The photograph is the card (no box, no shadow): the ride's cover with its
+ * milestone — destination and distance — on the roadside corner, then the
+ * facts set flat underneath like a catalogue entry.
+ */
 export function RideCard({ ride, isJoined = false }: { ride: RideCardData; isJoined?: boolean }) {
   const isFull = ride.seats_available !== null && ride.seats_available <= 0;
-  const lowSeats =
-    !isFull &&
-    ride.seats_available !== null &&
-    ride.seats_available !== 0 &&
-    ride.seats_available <= 2;
+  const lowSeats = !isFull && ride.seats_available !== null && ride.seats_available <= 2;
   const CoverIcon = (ride.ride_type && RIDE_TYPE_ICONS[ride.ride_type]) || DEFAULT_RIDE_TYPE_ICON;
   const duration = formatRideDuration(ride.estimated_duration_minutes);
   const riderCount = ride.member_count ?? 0;
   const isOrganized = ride.pricing_model === "organized";
 
   const cta = isJoined
-    ? { label: "You're In", variant: "outline" as const, href: `/rides/${ride.id}` }
+    ? { label: "You're in", href: `/rides/${ride.id}` }
     : isFull
-      ? { label: "View Ride", variant: "outline" as const, href: `/rides/${ride.id}` }
-      : { label: "Claim Your Seat", variant: "default" as const, href: `/rides/${ride.id}#join` };
+      ? { label: "View ride", href: `/rides/${ride.id}` }
+      : { label: "Claim your seat", href: `/rides/${ride.id}#join` };
+
+  const facts = [
+    ride.ride_date && format(new Date(ride.ride_date), "EEE, d MMM"),
+    ride.departure_time?.slice(0, 5),
+    ride.city && `from ${ride.city}`,
+  ].filter(Boolean);
 
   return (
-    <motion.div
-      {...hoverLift}
-      className="group bg-card ring-foreground/10 hover:ring-primary/40 flex flex-col overflow-hidden rounded-2xl ring-1 transition-shadow duration-300 hover:shadow-xl"
-    >
+    <article className="group flex flex-col gap-3">
       <Link
         href={`/rides/${ride.id}`}
-        className="focus-visible:ring-primary flex flex-1 flex-col outline-none focus-visible:ring-2"
+        className="focus-visible:ring-ring bg-surface relative block aspect-4/3 w-full overflow-hidden rounded-md outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
       >
-        <div className="from-secondary via-secondary/60 to-secondary/20 relative aspect-4/3 w-full overflow-hidden bg-linear-to-br">
-          {ride.cover_image_url ? (
-            <Image
-              src={ride.cover_image_url}
-              alt={ride.title ?? "Ride cover"}
-              fill
-              sizes="(min-width: 1024px) 368px, (min-width: 640px) 50vw, 100vw"
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <CoverIcon className="text-secondary-foreground/20 absolute -right-4 -bottom-4 size-32" />
-          )}
-          {/* Darkens top and bottom regardless of the uploaded photo's own
-              brightness — a light/white cover photo would otherwise make the
-              white badge text and title illegible. */}
-          <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/0 to-black/85" />
+        {ride.cover_image_url ? (
+          <Image
+            src={ride.cover_image_url}
+            alt={ride.title ?? "Ride cover"}
+            fill
+            sizes="(min-width: 1024px) 368px, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+          />
+        ) : (
+          <span className="bg-secondary absolute inset-0 flex items-center justify-center">
+            <CoverIcon className="size-20 text-white/15" aria-hidden />
+          </span>
+        )}
 
-          <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-2">
-            <Badge variant="secondary" className="bg-white/15 text-white backdrop-blur-sm">
-              {rideTypeLabel(ride.ride_type)}
-            </Badge>
-            {ride.seats_available !== null && (
-              <StatusChip
-                status={isFull ? "full" : lowSeats ? "filling" : "open"}
-                className="border-transparent bg-white/15 text-white backdrop-blur-sm"
-              >
-                {isFull ? "Full" : `${ride.seats_available} seats left`}
-              </StatusChip>
+        <span className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
+          <span
+            className={cn(
+              "inline-flex h-6 items-center rounded-sm px-2 text-xs font-bold",
+              isOrganized ? "bg-primary text-[#111]" : "bg-white text-[#111]",
             )}
-          </div>
-
-          <div className="absolute inset-x-3 bottom-3 flex flex-col gap-1.5">
-            <p className="font-heading truncate text-lg font-semibold text-balance text-white">
-              {ride.title}
-            </p>
-            {ride.organizer && (
-              <div className="flex items-center gap-1.5">
+          >
+            {isOrganized ? "Organized tour" : rideTypeLabel(ride.ride_type)}
+          </span>
+          {ride.seats_available !== null && (
+            <span
+              className={cn(
+                "inline-flex h-6 items-center gap-1.5 rounded-sm px-2 text-xs font-bold tabular-nums",
+                isFull ? "bg-[#111] text-white" : "bg-white text-[#111]",
+              )}
+            >
+              {!isFull && (
                 <span
-                  className={cn(
-                    "size-1.5 shrink-0 rounded-full",
-                    isOrganized ? "bg-ride-organized" : "bg-ride-community",
-                  )}
+                  className={cn("size-1.5 rounded-full", lowSeats ? "bg-primary" : "bg-[#1f7a45]")}
                 />
-                <p className="text-telemetry truncate text-[10px] text-white/70">
-                  {isOrganized ? "Captain" : "Led by"} {ride.organizer.name}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+              )}
+              {isFull
+                ? "Full"
+                : `${ride.seats_available} seat${ride.seats_available === 1 ? "" : "s"} left`}
+            </span>
+          )}
+        </span>
 
-        <div className="flex flex-1 flex-col gap-3 p-4">
-          <div className="flex flex-wrap items-center gap-1.5">
-            {ride.speed && (
-              <Badge variant="outline" className="text-muted-foreground">
-                {speedLabel(ride.speed)}
-              </Badge>
-            )}
-            {ride.difficulty && (
-              <Badge
-                variant="outline"
-                className={cn(
-                  DIFFICULTY_COLOR[ride.difficulty] ?? "text-muted-foreground",
-                  "border",
-                )}
-              >
-                {difficultyLabel(ride.difficulty)}
-              </Badge>
-            )}
-            {ride.estimated_distance_km && (
-              <Badge variant="outline" className="text-muted-foreground">
-                {ride.estimated_distance_km} km
-              </Badge>
-            )}
-            {duration && (
-              <Badge variant="outline" className="text-muted-foreground">
-                {duration}
-              </Badge>
-            )}
-          </div>
-
-          <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
-            <MapPin className="text-muted-foreground size-3.5 shrink-0" />
-            <span className="truncate">{ride.destination}</span>
-          </div>
-
-          <p className="text-muted-foreground text-xs">
-            {ride.ride_date && format(new Date(ride.ride_date), "EEE, MMM d")}
-            {ride.departure_time && ` · ${ride.departure_time.slice(0, 5)}`}
-            {riderCount > 0 && ` · ${riderCount} rider${riderCount === 1 ? "" : "s"} in`}
-          </p>
-        </div>
+        {ride.destination && (
+          <Milestone
+            place={ride.destination}
+            km={ride.estimated_distance_km}
+            className="absolute bottom-3 left-3 max-w-[70%]"
+          />
+        )}
       </Link>
 
+      <div className="flex flex-col gap-1">
+        <h3 className="text-base leading-snug font-bold">
+          <Link href={`/rides/${ride.id}`} className="decoration-2 underline-offset-4 hover:underline">
+            {ride.title}
+          </Link>
+        </h3>
+        <p className="text-muted-foreground text-sm tabular-nums">{facts.join(" · ")}</p>
+        <p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+          {ride.difficulty && (
+            <span className="text-foreground inline-flex items-center gap-1.5">
+              <span
+                className={cn(
+                  "size-2 rounded-full",
+                  DIFFICULTY_DOT[ride.difficulty] ?? "bg-muted-foreground",
+                )}
+              />
+              {difficultyLabel(ride.difficulty)}
+            </span>
+          )}
+          {ride.speed && <span>{speedLabel(ride.speed)} pace</span>}
+          {duration && <span>{duration}</span>}
+          {riderCount > 0 && (
+            <span className="tabular-nums">
+              {riderCount} rider{riderCount === 1 ? "" : "s"} in
+            </span>
+          )}
+        </p>
+      </div>
+
       {ride.organizer && (
-        <div className="border-border/60 flex items-center justify-between gap-2 border-t px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <Avatar size="sm">
               <AvatarImage
@@ -168,22 +152,29 @@ export function RideCard({ ride, isJoined = false }: { ride: RideCardData; isJoi
               />
               <AvatarFallback>{ride.organizer.name?.[0]?.toUpperCase()}</AvatarFallback>
             </Avatar>
-            <p className="text-muted-foreground truncate text-xs">{ride.organizer.name}</p>
+            <p className="text-muted-foreground truncate text-sm">
+              {isOrganized ? "Captain" : "Led by"}{" "}
+              <span className="text-foreground font-semibold">{ride.organizer.name}</span>
+            </p>
           </div>
-          <Button
-            nativeButton={false}
-            size="sm"
-            variant={cta.variant}
-            className="shrink-0"
-            render={
-              <Link href={cta.href}>
-                {isJoined && <Check className="size-3.5" />}
-                {cta.label}
-              </Link>
-            }
-          />
+          <Link
+            href={cta.href}
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1 text-sm font-bold underline-offset-4 hover:underline",
+              isJoined || isFull ? "text-foreground" : "text-primary-ink",
+            )}
+          >
+            {isJoined && <Check className="size-3.5" aria-hidden />}
+            {cta.label}
+            {!isJoined && (
+              <ArrowRight
+                className="size-3.5 transition-transform group-hover:translate-x-0.5"
+                aria-hidden
+              />
+            )}
+          </Link>
         </div>
       )}
-    </motion.div>
+    </article>
   );
 }

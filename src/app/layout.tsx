@@ -7,7 +7,7 @@ import { TimezoneSync } from "@/components/timezone-sync";
 import { AppInstallProvider } from "@/features/app-install/components/app-install-provider";
 import { ChatActivityProvider } from "@/features/chat/components/chat-activity-provider";
 import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE } from "@/constants/site";
-import { bebasNeue, inter, manrope } from "./fonts";
+import { bebasNeue, manrope } from "./fonts";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${manrope.variable} ${bebasNeue.variable} h-full antialiased`}
+      className={`${manrope.variable} ${bebasNeue.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col pb-16 sm:pb-0">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

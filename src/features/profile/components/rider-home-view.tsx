@@ -1,17 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
-import {
-  AtSign,
-  Bike,
-  Check,
-  ChevronRight,
-  Compass,
-  MapPin,
-  MessageSquare,
-  Sparkles,
-  Users,
-} from "lucide-react";
+import { ChevronRight, Compass, MapPin, MessageSquare, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -78,34 +68,30 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
 
   const stats = [
     {
-      icon: Check,
-      label: "Rides Completed",
+      label: "Rides completed",
+      numeric: true,
       value: attendance.attended > 0 ? String(attendance.attended) : undefined,
     },
     {
-      icon: Compass,
-      label: "Rides Organized",
+      label: "Rides organized",
+      numeric: true,
       value: organizedCount > 0 ? String(organizedCount) : undefined,
     },
     {
-      icon: MapPin,
-      label: "Based In",
+      label: "Based in",
       value: [profile.city, profile.country].filter(Boolean).join(", "),
     },
     {
-      icon: Bike,
-      label: "Rides A",
+      label: "Bike",
       value: [profile.bike_brand, profile.bike_model].filter(Boolean).join(" "),
     },
     {
-      icon: Sparkles,
       label: "Experience",
       value: profile.experience_level
         ? `${capitalize(profile.experience_level)} · ${profile.years_riding ?? 0} yrs`
         : undefined,
     },
     {
-      icon: AtSign,
       label: "Instagram",
       value: profile.instagram_handle ? `@${profile.instagram_handle}` : undefined,
     },
@@ -118,7 +104,7 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
       {/* Rider identity + greeting */}
       <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <div className="bg-secondary ring-primary/10 size-16 shrink-0 overflow-hidden rounded-full ring-4">
+          <div className="bg-secondary size-16 shrink-0 overflow-hidden rounded-full">
             {profile.profile_image_url && (
               <Image
                 src={profile.profile_image_url}
@@ -130,28 +116,27 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
             )}
           </div>
           <div>
-            <p className="text-telemetry text-primary text-[11px]">
+            <h1 className="font-display text-[2.5rem] text-balance sm:text-5xl">
               {greeting(currentHour)}, {firstName}
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              {profile.name} ·{" "}
+              <Link href={`/riders/${profile.username}`} className="hover:underline">
+                @{profile.username} · View public profile
+              </Link>
             </p>
-            <h1 className="font-heading text-2xl font-extrabold tracking-tight">{profile.name}</h1>
-            <Link
-              href={`/riders/${profile.username}`}
-              className="text-muted-foreground text-sm hover:underline"
-            >
-              @{profile.username} · View public profile
-            </Link>
           </div>
         </div>
         <div className="flex gap-2">
           <Button
             nativeButton={false}
-            render={<Link href="/profile/edit">Edit Profile</Link>}
+            render={<Link href="/profile/edit">Edit profile</Link>}
             variant="outline"
             size="sm"
           />
           <form action={signOut}>
             <Button type="submit" variant="ghost" size="sm">
-              Sign Out
+              Sign out
             </Button>
           </form>
         </div>
@@ -161,13 +146,8 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
 
       {/* The weekend-planner moment — your next ride, front and centre */}
       {nextRide ? (
-        <section className="bg-secondary text-secondary-foreground relative overflow-hidden rounded-3xl p-8 sm:p-12">
-          <div
-            aria-hidden
-            className="bg-primary/20 pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full blur-3xl"
-          />
-          <div aria-hidden className="bg-road-dashes absolute inset-x-0 top-0 h-px text-white/25" />
-          <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <section className="bg-secondary text-secondary-foreground rounded-md p-8 sm:p-12">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div className="flex flex-col gap-3">
               {nextRide.status === "ongoing" ? (
                 <StatusChip
@@ -175,21 +155,20 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
                   pulse
                   className="w-fit border-white/20 bg-white/10 text-white"
                 >
-                  Ride In Progress
+                  Ride in progress
                 </StatusChip>
-              ) : (
-                <p className="text-telemetry text-primary text-[11px]">Your Next Ride</p>
-              )}
-              <h2 className="font-display text-4xl text-white uppercase sm:text-5xl">
-                {nextRide.title}
-              </h2>
-              <p className="text-secondary-foreground/70 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              ) : null}
+              <h2 className="font-display text-4xl text-white sm:text-5xl">{nextRide.title}</h2>
+              <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/75">
+                {nextRide.status !== "ongoing" && (
+                  <span className="font-semibold text-white">Your next ride</span>
+                )}
                 <span className="flex items-center gap-1.5">
                   <MapPin className="size-3.5 text-white/50" />
                   {nextRide.destination}
                 </span>
                 {nextRide.ride_date && (
-                  <span>
+                  <span className="tabular-nums">
                     {format(new Date(nextRide.ride_date), "EEE, MMM d")}
                     {nextRide.departure_time && ` · ${nextRide.departure_time.slice(0, 5)}`}
                   </span>
@@ -201,32 +180,29 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
                 <div className="flex flex-col gap-1">
                   <RideCountdown
                     targetIso={`${nextRide.ride_date}T${nextRide.departure_time ?? "00:00"}`}
-                    className="font-display text-6xl text-white sm:text-7xl"
+                    className="font-display text-6xl text-white tabular-nums sm:text-7xl"
                   />
-                  <span className="text-telemetry text-secondary-foreground/60 text-[10px]">
-                    until kickstands up
-                  </span>
+                  <span className="text-sm text-white/75">until kickstands up</span>
                 </div>
               )}
               <Button
                 nativeButton={false}
-                render={<Link href={`/rides/${nextRide.id}`}>View Ride</Link>}
-                className="bg-sunrise border-0 text-white"
+                render={<Link href={`/rides/${nextRide.id}`}>View ride</Link>}
               />
             </div>
           </div>
         </section>
       ) : (
         <EmptyState
-          title="Your Weekend's Wide Open"
+          title="Your weekend's wide open"
           description="Nothing booked yet — post a ride or find one and claim your seat."
           action={
             <div className="flex gap-2">
-              <Button nativeButton={false} render={<Link href="/rides/create">Post A Ride</Link>} />
+              <Button nativeButton={false} render={<Link href="/rides/create">Post a ride</Link>} />
               <Button
                 nativeButton={false}
                 variant="outline"
-                render={<Link href="/rides">Discover Rides</Link>}
+                render={<Link href="/rides">Discover rides</Link>}
               />
             </div>
           }
@@ -234,39 +210,44 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
       )}
 
       {stats.length > 0 && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-6">
+        <dl className="bg-card grid grid-cols-2 gap-x-6 gap-y-5 rounded-md p-5 sm:grid-cols-3 lg:grid-cols-6">
           {stats.map((stat) => (
-            <Card key={stat.label} size="sm">
-              <CardContent className="flex flex-col gap-1.5">
-                <stat.icon className="text-muted-foreground size-4" />
-                <p className="text-telemetry text-muted-foreground text-[10px]">{stat.label}</p>
-                <p className="text-sm font-medium">{stat.value}</p>
-              </CardContent>
-            </Card>
+            <div key={stat.label} className="flex min-w-0 flex-col gap-1">
+              <dt className="text-muted-foreground text-sm">{stat.label}</dt>
+              <dd
+                className={
+                  stat.numeric
+                    ? "text-2xl font-bold tabular-nums"
+                    : "text-base font-semibold break-words"
+                }
+              >
+                {stat.value}
+              </dd>
+            </div>
           ))}
-        </div>
+        </dl>
       )}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="flex flex-col gap-8 lg:col-span-2">
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-heading text-lg font-bold tracking-tight">Pending Requests</h2>
+              <h2 className="text-lg font-bold">Pending requests</h2>
             </div>
             <RideRequestsAccordion rides={upcoming} requests={requests} />
           </section>
 
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-heading text-lg font-bold tracking-tight">
+              <h2 className="text-lg font-bold">
                 <Compass className="text-muted-foreground mr-1.5 inline size-4" />
-                Your Rides
+                Your rides
               </h2>
               <Button
                 nativeButton={false}
                 variant="ghost"
                 size="sm"
-                render={<Link href="/profile/rides">See All</Link>}
+                render={<Link href="/profile/rides">See all</Link>}
               />
             </div>
             {myRides.ongoing.length + myRides.upcoming.length > 0 ? (
@@ -275,7 +256,7 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
                   <Link
                     key={ride.id}
                     href={`/rides/${ride.id}`}
-                    className="border-border hover:border-primary/50 flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm transition-colors"
+                    className="bg-card hover:bg-muted flex items-center justify-between gap-3 rounded-md px-4 py-3 text-sm transition-colors"
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
@@ -286,7 +267,7 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
                           </StatusChip>
                         )}
                       </div>
-                      <p className="text-muted-foreground truncate text-xs">
+                      <p className="text-muted-foreground truncate text-sm tabular-nums">
                         {ride.ride_date && format(new Date(ride.ride_date), "EEE, MMM d")} ·{" "}
                         {ride.destination}
                       </p>
@@ -298,7 +279,7 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
             ) : (
               <p className="text-muted-foreground text-sm">No upcoming rides yet.</p>
             )}
-            <p className="text-muted-foreground text-xs">
+            <p className="text-muted-foreground text-sm tabular-nums">
               {myRides.completed.length} completed · {myRides.cancelled.length} cancelled
             </p>
           </section>
@@ -306,9 +287,9 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
 
         <div className="flex flex-col gap-8">
           <section className="flex flex-col gap-3">
-            <h2 className="font-heading flex items-center gap-1.5 text-lg font-bold tracking-tight">
+            <h2 className="flex items-center gap-1.5 text-lg font-bold">
               <Users className="text-muted-foreground size-4" />
-              Riders You&apos;ll See Again
+              Riders you&apos;ll see again
             </h2>
             {fellowRiders.length > 0 ? (
               <div className="flex flex-col gap-2">
@@ -334,9 +315,9 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
           </section>
 
           <section className="flex flex-col gap-3">
-            <h2 className="font-heading flex items-center gap-1.5 text-lg font-bold tracking-tight">
+            <h2 className="flex items-center gap-1.5 text-lg font-bold">
               <MessageSquare className="text-muted-foreground size-4" />
-              Recent Messages
+              Recent messages
             </h2>
             {recentMessages.length > 0 ? (
               <div className="flex flex-col gap-1">
@@ -344,7 +325,7 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
                   <Link
                     key={message.id}
                     href={`/chats/${message.rideId}`}
-                    className="hover:bg-muted -mx-2 flex items-start gap-2.5 rounded-lg px-2 py-2"
+                    className="hover:bg-muted -mx-2 flex items-start gap-2.5 rounded-md px-2 py-2"
                   >
                     <Avatar size="sm">
                       <AvatarImage
@@ -355,7 +336,7 @@ export async function RiderHomeView({ profile }: { profile: Profile }) {
                     </Avatar>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{message.rideTitle}</p>
-                      <p className="text-muted-foreground truncate text-xs">
+                      <p className="text-muted-foreground truncate text-sm">
                         {message.sender?.name}: {message.body}
                       </p>
                     </div>

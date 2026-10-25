@@ -16,7 +16,7 @@ export const metadata = {
 // reliable Unsplash frame (keyless), unlike a random keyword match.
 const SETUP_IMAGE = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b";
 
-const STEPS = ["Basics", "Riding Details", "Location", "About You"];
+const STEPS = ["Basics", "Riding details", "Location", "About you"];
 
 export default async function ProfileSetupPage() {
   const user = await getAuthUser();
@@ -44,14 +44,6 @@ export default async function ProfileSetupPage() {
           aria-hidden
           className="absolute inset-0 bg-linear-to-t from-black via-black/70 to-black/50"
         />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(100%_80%_at_85%_10%,rgba(231,111,36,0.25),transparent_55%)]"
-        />
-        <div
-          aria-hidden
-          className="bg-road-dashes absolute inset-x-0 bottom-0 h-px text-white/25"
-        />
         <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 py-16 sm:py-20">
           <div className="flex items-center justify-between">
             <Logo className="text-white" />
@@ -59,8 +51,7 @@ export default async function ProfileSetupPage() {
           </div>
 
           <div className="mt-4 flex flex-col gap-4">
-            <p className="text-telemetry text-[11px] text-white/70">Welcome Aboard</p>
-            <h1 className="font-display text-5xl leading-[0.9] text-white uppercase sm:text-7xl">
+            <h1 className="font-display text-5xl leading-[0.9] text-white sm:text-7xl">
               Welcome to the crew
             </h1>
             <p className="max-w-md text-lg text-pretty text-white/75">
@@ -70,12 +61,11 @@ export default async function ProfileSetupPage() {
           </div>
 
           <ol className="flex flex-wrap gap-2 pt-2">
-            {STEPS.map((step, index) => (
+            {STEPS.map((step) => (
               <li
                 key={step}
-                className="text-telemetry flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-[10px] text-white/80 ring-1 ring-white/15"
+                className="rounded-sm bg-white/10 px-2.5 py-1 text-sm font-medium text-white/85"
               >
-                <span className="text-primary">{String(index + 1).padStart(2, "0")}</span>
                 {step}
               </li>
             ))}

@@ -18,7 +18,7 @@ import {
 import type { Enums } from "@/types/supabase";
 
 export const metadata = {
-  title: "Discover Rides",
+  title: "Discover rides",
   description:
     "Browse upcoming motorcycle group rides near your city — breakfast runs, weekend loops, touring, and off-road. Filter by type, pace, distance, and date.",
 };
@@ -113,7 +113,6 @@ export default async function RidesPage({ searchParams }: RidesPageProps) {
       <main className="flex flex-1 flex-col gap-6 px-6 py-10">
         <div className="mx-auto w-full max-w-6xl">
           <PageHeading
-            eyebrow="Where Are We Riding?"
             title={cityLabel ? `Rides near ${cityLabel}` : "Discover rides"}
             description={
               cityLabel
@@ -124,7 +123,7 @@ export default async function RidesPage({ searchParams }: RidesPageProps) {
         </div>
 
         <div className="sticky top-16.25 z-30 mx-auto w-full max-w-6xl">
-          <div className="bg-background/70 supports-backdrop-filter:bg-background/55 ring-border rounded-2xl p-2 shadow-lg ring-1 backdrop-blur-xl">
+          <div className="bg-background py-2">
             <RidesFilters cityOptions={cityOptions} hidePricingFilter={isOrganizerViewer} />
           </div>
         </div>
