@@ -63,9 +63,10 @@ const HERO_CREW: HeroScene = {
   ink: "ink",
 };
 
-// The roadside stone's journey is fixed copy, not data: the page always reads
-// as one long ride to the southern tip, counted down as the visitor scrolls.
-const STONE = { place: "Kanyakumari", km: 900 } as const;
+// The roadside stone's journey is fixed copy, not data: the page is one ride
+// down the length of India, Kashmir at the top of the page to Kanyakumari at
+// the close (3,676 km by road), counted down as the visitor scrolls.
+const STONE = { place: "Kanyakumari", km: 3676 } as const;
 
 const STAGES = [
   {

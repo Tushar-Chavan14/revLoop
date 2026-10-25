@@ -54,7 +54,20 @@ const INK = { ink: "text-[#111]", white: "text-white" } as const;
  * the answer. The first 10% of the scroll is held still so the opening reads.
  * Reduced motion: one still with the answer.
  */
-export function LandingHero({
+export function LandingHero(props: LandingHeroProps) {
+  return props.mode !== "wipe" && props.ride ? (
+    <SplitScrubHero
+      ride={props.ride}
+      ctaHref={props.ctaHref}
+      ctaLabel={props.ctaLabel}
+      weekendRideCount={props.weekendRideCount}
+    />
+  ) : (
+    <WipeHero {...props} />
+  );
+}
+
+function WipeHero({
   mode = "scrub",
   ride,
   alone,
@@ -240,10 +253,13 @@ function ScrubbedRide({
   ride,
   section,
   still,
+  position = "object-[55%_50%]",
 }: {
   ride: HeroRide;
   section: React.RefObject<HTMLElement | null>;
   still: boolean;
+  /** object-position utility for the poster and the clip. */
+  position?: string;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const phone = useSyncExternalStore(subscribePhone, isPhone, () => null);
@@ -290,7 +306,8 @@ function ScrubbedRide({
           alt="A crew of motorcyclists riding together up a mountain highway in morning light"
           fetchPriority="high"
           className={cn(
-            "absolute inset-0 h-full w-full object-cover object-[55%_50%] transition-opacity duration-300",
+            "absolute inset-0 h-full w-full object-cover transition-opacity duration-300",
+            position,
             painted && "opacity-0",
           )}
         />
@@ -304,9 +321,263 @@ function ScrubbedRide({
           preload="auto"
           disablePictureInPicture
           aria-hidden
-          className="absolute inset-0 h-full w-full object-cover object-[55%_50%]"
+          className={cn("absolute inset-0 h-full w-full object-cover", position)}
         />
       )}
     </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* The split hero: the scrubbed ride runs in the band between the two */
+/* headline lines, and the lines flip like a departures board.        */
+/* ------------------------------------------------------------------ */
+
+// Each headline line is sized to the screen's height as well as its width,
+// so the two lines plus the road between them always fill one screen.
+const LINE_SIZE = "text-[min(15vw,6rem)] lg:text-[min(11vw,17svh)]";
+
+/** Pads two phrases to one length so every letter slot has a partner. */
+function pairUp(from: string, to: string, align: "start" | "end") {
+  const length = Math.max(from.length, to.length);
+  const pad = (text: string) => (align === "start" ? text.padEnd(length) : text.padStart(length));
+  return { from: pad(from), to: pad(to) };
+}
+
+function SplitScrubHero({
+  ride,
+  ctaHref,
+  ctaLabel,
+  weekendRideCount,
+}: {
+  ride: HeroRide;
+  ctaHref: string;
+  ctaLabel: string;
+  weekendRideCount: number;
+}) {
+  const sectionRef = useRef<HTMLElement>(null);
+  const still = !!useReducedMotion();
+  const { scrollYProgress: p } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"],
+  });
+
+  const intro = (
+    <div className="flex max-w-[30rem] flex-col gap-4">
+      <p className="text-lg leading-snug font-medium text-pretty">
+        RoadKin is where India&apos;s weekend motorcycle crews plan their rides: route, meeting
+        pin, pace and seats on one page.
+      </p>
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <Button nativeButton={false} size="lg" render={<Link href={ctaHref}>{ctaLabel}</Link>} />
+        <Link
+          href="/rides"
+          className="text-[15px] font-bold underline decoration-2 underline-offset-4 hover:decoration-[3px]"
+        >
+          See every ride
+        </Link>
+      </div>
+    </div>
+  );
+
+  return (
+    <section
+      ref={sectionRef}
+      aria-labelledby="hero-title"
+      className={still ? "relative" : "relative h-[200svh] md:h-[220svh]"}
+    >
+      <div
+        className={cn(
+          "flex flex-col overflow-hidden",
+          still
+            ? "lg:h-[calc(100svh-4rem)]"
+            : "sticky top-16 h-[max(calc(100svh-8rem),34rem)] sm:h-[max(calc(100svh-4rem),36rem)]",
+        )}
+      >
+        <div className="relative mx-auto flex min-h-0 w-full max-w-[90rem] flex-1 flex-col px-4 pt-4 pb-4 sm:px-8 sm:pb-6">
+          {/* The road runs inside the h1; assistive tech reads the answer. */}
+          <h1
+            id="hero-title"
+            aria-label="Never ride alone again"
+            className={cn(
+              "font-display flex min-h-0 flex-1 flex-col gap-3 leading-[0.86] lg:gap-5",
+              LINE_SIZE,
+            )}
+          >
+            <FlipLine from="Still riding" to="Never ride" align="start" span={[0.18, 0.42]} progress={p} still={still} />
+            <span
+              aria-hidden
+              className="bg-secondary relative -mx-4 block min-h-0 flex-1 overflow-hidden sm:-mx-8 lg:mx-[calc(50%-50vw)]"
+            >
+              <ScrubbedRide
+                ride={ride}
+                section={sectionRef}
+                still={still}
+                position="object-[55%_62%]"
+              />
+            </span>
+            <FlipLine
+              from="alone?"
+              to="alone again"
+              align="end"
+              span={[0.4, 0.62]}
+              progress={p}
+              still={still}
+              // From 1024 the intro sits beside this line: the line is at
+              // least as tall as the intro so the band always ends above it.
+              className="lg:min-h-[9.5rem] lg:items-end"
+            />
+          </h1>
+
+          {/* From tablet width the countdown answers line one from the
+              top-right (line one never reaches past the middle), and from
+              1024 the intro shares line two's baseline on the left, capped so
+              it never meets "alone again". Each block is aligned to its line
+              by the same size formula the headline uses. */}
+          <div className="absolute top-4 right-4 hidden items-end sm:right-8 md:flex md:h-[calc(min(15vw,6rem)*0.86)] lg:h-[calc(min(11vw,17svh)*0.86)]">
+            <WeekendCountdown rideCount={weekendRideCount} />
+          </div>
+          <div className="absolute bottom-6 left-8 hidden max-w-[min(30rem,40vw)] lg:block">
+            {intro}
+          </div>
+
+          {/* Phones and tablets: the intro follows the sentence. */}
+          <div className="mt-5 lg:hidden">{intro}</div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * One headline line that flips letter by letter, like a split-flap board:
+ * every slot holds the old and the new character, the old one folds away and
+ * the new one folds in, staggered across the line by scroll progress.
+ */
+function FlipLine({
+  from,
+  to,
+  align,
+  span,
+  progress,
+  still,
+  className,
+}: {
+  from: string;
+  to: string;
+  align: "start" | "end";
+  span: [number, number];
+  className?: string;
+  progress: ReturnType<typeof useScroll>["scrollYProgress"];
+  still: boolean;
+}) {
+  if (still) {
+    return (
+      <span
+        aria-hidden
+        className={cn("flex", align === "end" && "self-end", className)}
+      >
+        {to}
+      </span>
+    );
+  }
+  const pair = pairUp(from, to, align);
+  const slots = pair.from.length;
+  const step = (span[1] - span[0]) / slots;
+  // Right-aligned lines flip from their end, so the motion reads outward.
+  return (
+    <span
+      aria-hidden
+      className={cn("flex whitespace-pre", align === "end" && "self-end", className)}
+    >
+      {[...pair.from].map((char, index) => (
+        <FlipChar
+          key={index}
+          from={char}
+          to={pair.to[index]}
+          at={span[0] + (align === "end" ? slots - 1 - index : index) * step}
+          progress={progress}
+        />
+      ))}
+    </span>
+  );
+}
+
+const FLIP = 0.045;
+
+function FlipChar({
+  from,
+  to,
+  at,
+  progress,
+}: {
+  from: string;
+  to: string;
+  at: number;
+  progress: ReturnType<typeof useScroll>["scrollYProgress"];
+}) {
+  const half = FLIP / 2;
+  const fromRef = useRef<HTMLSpanElement>(null);
+  const toRef = useRef<HTMLSpanElement>(null);
+  const [widths, setWidths] = useState<[number, number] | null>(null);
+
+  // Each slot is exactly as wide as the letter it shows: the old letter's
+  // width until the flip is edge-on, the new letter's after, so both phrases
+  // keep their natural spacing and the switch is never visible.
+  useEffect(() => {
+    let alive = true;
+    const measure = () => {
+      if (alive && fromRef.current && toRef.current) {
+        setWidths([fromRef.current.offsetWidth, toRef.current.offsetWidth]);
+      }
+    };
+    document.fonts.ready.then(measure);
+    window.addEventListener("resize", measure);
+    return () => {
+      alive = false;
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
+
+  const outRotate = useTransform(progress, [0, at, at + half, 1], [0, 0, -90, -90]);
+  const outOpacity = useTransform(progress, [0, at + half * 0.9, at + half, 1], [1, 1, 0, 0]);
+  const inRotate = useTransform(progress, [0, at + half, at + FLIP, 1], [90, 90, 0, 0]);
+  const inOpacity = useTransform(progress, [0, at + half, at + half * 1.1, 1], [0, 0, 1, 1]);
+  const width = useTransform(
+    progress,
+    [0, at + half, at + half + 0.0001, 1],
+    widths ? [widths[0], widths[0], widths[1], widths[1]] : [0, 0, 0, 0],
+  );
+
+  if (from === to) {
+    return <span className="inline-block">{to}</span>;
+  }
+  return (
+    <motion.span
+      className="relative inline-block [perspective:800px]"
+      style={widths ? { width } : undefined}
+    >
+      {/* Holds the line's height once both letters are positioned absolutely. */}
+      <span aria-hidden className="invisible inline-block w-0">
+        X
+      </span>
+      <motion.span
+        ref={fromRef}
+        className={cn(
+          "inline-block origin-center [backface-visibility:hidden]",
+          widths && "absolute top-0 left-0",
+        )}
+        style={{ rotateX: outRotate, opacity: outOpacity }}
+      >
+        {from}
+      </motion.span>
+      <motion.span
+        ref={toRef}
+        className="absolute top-0 left-0 inline-block origin-center [backface-visibility:hidden]"
+        style={{ rotateX: inRotate, opacity: inOpacity }}
+      >
+        {to}
+      </motion.span>
+    </motion.span>
   );
 }
