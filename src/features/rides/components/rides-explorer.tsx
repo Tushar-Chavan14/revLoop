@@ -57,13 +57,13 @@ export function RidesExplorer({
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-telemetry text-muted-foreground text-[11px]">
+      <p className="text-muted-foreground text-sm tabular-nums">
         {total} ride{total === 1 ? "" : "s"} on the map
       </p>
 
       {rides.length === 0 ? (
         <EmptyState
-          title="No Rides Match Those Filters"
+          title="No rides match those filters"
           description="Try widening your search, or start your next adventure yourself."
         />
       ) : (

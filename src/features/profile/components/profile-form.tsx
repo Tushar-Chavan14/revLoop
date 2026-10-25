@@ -72,9 +72,9 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
       {mode === "create" && (
         <Card>
           <CardHeader>
-            <CardTitle>Account Type</CardTitle>
+            <CardTitle>Account type</CardTitle>
             <CardDescription>
-              Riders join and organize free Community Rides. Organizers run paid, hosted rides —
+              Riders join and organize free community rides. Organizers run paid, hosted rides —
               you&apos;ll fill in business details instead of bike details.
             </CardDescription>
           </CardHeader>
@@ -98,9 +98,8 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <SectionHeader
-            step={1}
             icon={UserRound}
-            title="Photo & Basics"
+            title="Photo & basics"
             description="How other riders will recognize you."
           />
           <CardContent className="flex flex-col gap-5">
@@ -115,7 +114,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
               onError={setFormError}
             />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Full Name" htmlFor="name" error={fieldError("name")}>
+              <Field label="Full name" htmlFor="name" error={fieldError("name")}>
                 <Input
                   id="name"
                   name="name"
@@ -140,13 +139,16 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
         {isOrganizer ? (
           <Card>
             <SectionHeader
-              step={2}
               icon={Building2}
-              title="Business Details"
+              title="Business details"
               description="Shown on your public profile and used to settle your payouts."
             />
             <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Business Name" htmlFor="businessName" error={fieldError("businessName")}>
+              <Field
+                label="Business name"
+                htmlFor="businessName"
+                error={fieldError("businessName")}
+              >
                 <Input
                   id="businessName"
                   name="businessName"
@@ -156,7 +158,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
                 />
               </Field>
               <Field
-                label="Signature Destination"
+                label="Signature destination"
                 htmlFor="primaryDestination"
                 error={fieldError("primaryDestination")}
                 hint="The one destination you organize most often."
@@ -178,7 +180,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
                 />
               </Field>
               <Field
-                label="Business Email"
+                label="Business email"
                 htmlFor="businessEmail"
                 error={fieldError("businessEmail")}
               >
@@ -192,7 +194,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
                 />
               </Field>
               <Field
-                label="Business Phone"
+                label="Business phone"
                 htmlFor="businessPhone"
                 error={fieldError("businessPhone")}
               >
@@ -206,7 +208,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
                 />
               </Field>
               <Field
-                label="Events Organised"
+                label="Events organised"
                 htmlFor="eventsOrganisedCount"
                 error={fieldError("eventsOrganisedCount")}
                 hint="Your track record so far — 0 if you're just starting out."
@@ -226,13 +228,12 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
         ) : (
           <Card>
             <SectionHeader
-              step={2}
               icon={Bike}
-              title="Riding Details"
+              title="Riding details"
               description="What you ride and how long you've been at it."
             />
             <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Bike Brand" htmlFor="bikeBrand" error={fieldError("bikeBrand")}>
+              <Field label="Bike brand" htmlFor="bikeBrand" error={fieldError("bikeBrand")}>
                 <Input
                   id="bikeBrand"
                   name="bikeBrand"
@@ -241,7 +242,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
                   onBlur={formik.handleBlur}
                 />
               </Field>
-              <Field label="Bike Model" htmlFor="bikeModel" error={fieldError("bikeModel")}>
+              <Field label="Bike model" htmlFor="bikeModel" error={fieldError("bikeModel")}>
                 <Input
                   id="bikeModel"
                   name="bikeModel"
@@ -251,7 +252,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
                 />
               </Field>
               <Field
-                label="Experience Level"
+                label="Experience level"
                 htmlFor="experienceLevel"
                 error={fieldError("experienceLevel")}
               >
@@ -274,7 +275,7 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Years Riding" htmlFor="yearsRiding" error={fieldError("yearsRiding")}>
+              <Field label="Years riding" htmlFor="yearsRiding" error={fieldError("yearsRiding")}>
                 <Input
                   id="yearsRiding"
                   name="yearsRiding"
@@ -292,9 +293,8 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
 
         <Card>
           <SectionHeader
-            step={3}
             icon={MapPin}
-            title="Where You Ride"
+            title="Where you ride"
             description="Used to surface rides near you."
           />
           <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -336,9 +336,8 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
 
         <Card>
           <SectionHeader
-            step={4}
             icon={PenLine}
-            title="About You"
+            title="About you"
             description="Optional, but it helps riders get to know you."
           />
           <CardContent className="flex flex-col gap-4">
@@ -372,35 +371,28 @@ export function ProfileForm({ mode, initialValues, initialAvatarUrl, action }: P
       {formError && <p className="text-destructive text-sm">{formError}</p>}
 
       <Button type="submit" disabled={isPending} size="lg" className="self-start">
-        {isPending ? "Saving..." : mode === "create" ? "Complete Profile" : "Save Changes"}
+        {isPending ? "Saving..." : mode === "create" ? "Complete profile" : "Save changes"}
       </Button>
     </form>
   );
 }
 
 function SectionHeader({
-  step,
   icon: Icon,
   title,
   description,
 }: {
-  step: number;
   icon: LucideIcon;
   title: string;
   description: string;
 }) {
   return (
     <CardHeader>
-      <div className="flex items-center gap-3">
-        <span className="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold">
-          {step}
-        </span>
-        <div className="flex items-center gap-2">
-          <Icon className="text-muted-foreground size-4" />
-          <CardTitle>{title}</CardTitle>
-        </div>
+      <div className="flex items-center gap-2">
+        <Icon className="text-muted-foreground size-4" />
+        <CardTitle>{title}</CardTitle>
       </div>
-      <CardDescription className="pl-9">{description}</CardDescription>
+      <CardDescription>{description}</CardDescription>
     </CardHeader>
   );
 }
@@ -425,7 +417,7 @@ function Field({
       {error ? (
         <p className="text-destructive text-sm">{error}</p>
       ) : hint ? (
-        <p className="text-muted-foreground text-xs">{hint}</p>
+        <p className="text-muted-foreground text-sm">{hint}</p>
       ) : null}
     </div>
   );

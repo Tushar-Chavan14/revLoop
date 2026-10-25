@@ -82,7 +82,7 @@ export function InstallAppCard({ className }: { className?: string }) {
     <section
       aria-label="Install RoadKin"
       className={cn(
-        "border-border bg-card relative flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center",
+        "bg-card relative flex flex-col gap-4 rounded-md p-5 sm:flex-row sm:items-center",
         className,
       )}
     >
@@ -101,10 +101,10 @@ export function InstallAppCard({ className }: { className?: string }) {
           alt=""
           width={48}
           height={48}
-          className="bg-secondary size-12 shrink-0 rounded-xl"
+          className="bg-secondary size-12 shrink-0 rounded-md"
         />
         <div className="min-w-0">
-          <p className="font-heading font-semibold">Put RoadKin on your Home Screen</p>
+          <p className="font-bold">Put RoadKin on your Home Screen</p>
           {mode === "prompt" ? (
             <p className="text-muted-foreground mt-0.5 text-sm">
               Your rides and crew chats one tap away. Opens like an app, and ride alerts land like
@@ -146,7 +146,7 @@ export function InstallAppCard({ className }: { className?: string }) {
               onClick={dismissForNow}
               className="flex-1 sm:flex-none"
             >
-              Not Now
+              Not now
             </Button>
           </>
         ) : (
@@ -156,7 +156,7 @@ export function InstallAppCard({ className }: { className?: string }) {
             onClick={dismissForNow}
             className="w-full sm:w-auto"
           >
-            Got It
+            Got it
           </Button>
         )}
       </div>

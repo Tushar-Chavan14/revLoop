@@ -28,7 +28,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
         <button
           type="button"
           onClick={() => setOpenIndex(0)}
-          className="focus-visible:ring-primary relative col-span-2 row-span-2 overflow-hidden rounded-2xl outline-none focus-visible:ring-2"
+          className="focus-visible:ring-ring relative col-span-2 row-span-2 overflow-hidden rounded-md outline-none focus-visible:ring-2"
         >
           <Image
             src={featured.url}
@@ -43,7 +43,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
             key={image.url}
             type="button"
             onClick={() => setOpenIndex(index + 1)}
-            className="focus-visible:ring-primary relative overflow-hidden rounded-2xl outline-none focus-visible:ring-2"
+            className="focus-visible:ring-ring relative overflow-hidden rounded-md outline-none focus-visible:ring-2"
           >
             <Image
               src={image.url}
@@ -53,7 +53,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
               className="object-cover"
             />
             {index === 3 && images.length > 5 && (
-              <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-sm font-semibold text-white">
+              <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-sm font-semibold text-white tabular-nums">
                 +{images.length - 5}
               </span>
             )}
@@ -74,7 +74,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
               />
               <DialogClose
                 aria-label="Close"
-                className="absolute top-3 right-3 rounded-full bg-white/10 p-2 text-white backdrop-blur-sm hover:bg-white/20"
+                className="absolute top-3 right-3 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
               >
                 <X className="size-5" />
               </DialogClose>
@@ -83,7 +83,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
                   type="button"
                   aria-label="Previous photo"
                   onClick={() => setOpenIndex((i) => (i === null ? i : i - 1))}
-                  className="absolute top-1/2 left-3 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white backdrop-blur-sm hover:bg-white/20"
+                  className="absolute top-1/2 left-3 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
                 >
                   <ChevronLeft className="size-5" />
                 </button>
@@ -93,7 +93,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
                   type="button"
                   aria-label="Next photo"
                   onClick={() => setOpenIndex((i) => (i === null ? i : i + 1))}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white backdrop-blur-sm hover:bg-white/20"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
                 >
                   <ChevronRight className="size-5" />
                 </button>

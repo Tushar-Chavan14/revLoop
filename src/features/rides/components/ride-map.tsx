@@ -84,7 +84,7 @@ export function RideMap({
           // MapLibre's style spec only parses hex/rgb/hsl — no oklch() — so
           // this is the same brand orange as the meeting marker, spelled out
           // as a hex literal instead of the CSS variable used elsewhere.
-          "line-color": "#e76f24",
+          "line-color": "#ff5f0f",
           "line-width": 3,
           "line-dasharray": [2, 1.5],
         },
@@ -103,7 +103,7 @@ export function RideMap({
       });
     }
 
-    const meetingMarker = new maplibregl.Marker({ color: "#e76f24", draggable: interactive });
+    const meetingMarker = new maplibregl.Marker({ color: "#ff5f0f", draggable: interactive });
     meetingMarker.on("dragend", () => {
       const lngLat = meetingMarker.getLngLat();
       meetingDraggedRef.current = true;
@@ -111,7 +111,7 @@ export function RideMap({
     });
     meetingMarkerRef.current = meetingMarker;
 
-    const destinationMarker = new maplibregl.Marker({ color: "#27272a", draggable: interactive });
+    const destinationMarker = new maplibregl.Marker({ color: "#111111", draggable: interactive });
     destinationMarker.on("dragend", () => {
       const lngLat = destinationMarker.getLngLat();
       destinationDraggedRef.current = true;
@@ -210,7 +210,7 @@ export function RideMap({
   return (
     <div
       ref={containerRef}
-      className={cn("border-border h-80 w-full overflow-hidden rounded-lg border", className)}
+      className={cn("border-border h-80 w-full overflow-hidden rounded-md border", className)}
     />
   );
 }

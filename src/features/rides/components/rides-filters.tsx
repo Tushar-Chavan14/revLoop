@@ -26,15 +26,15 @@ import type { DestinationSummary } from "@/services/rides";
 const SORT_OPTIONS = [
   { value: "soonest", label: "Soonest" },
   { value: "newest", label: "Newest" },
-  { value: "seats", label: "Most Seats" },
+  { value: "seats", label: "Most seats" },
 ] as const;
 
 // Buckets for the ride's own trip length (estimated_distance_km) — distinct
 // from the fixed 50km "how far from the selected city" radius used for
 // nearby-city search, which isn't user-configurable.
 const DISTANCE_OPTIONS = [
-  { value: "any", label: "Any Distance", min: undefined, max: undefined },
-  { value: "0-50", label: "Up To 50 km", min: undefined, max: 50 },
+  { value: "any", label: "Any distance", min: undefined, max: undefined },
+  { value: "0-50", label: "Up to 50 km", min: undefined, max: 50 },
   { value: "50-150", label: "50–150 km", min: 50, max: 150 },
   { value: "150-300", label: "150–300 km", min: 150, max: 300 },
   { value: "300+", label: "300+ km", min: 300, max: undefined },
@@ -145,7 +145,7 @@ export function RidesFilters({
   }
 
   return (
-    <div className="border-border bg-card/80 flex flex-col gap-3 rounded-2xl border p-4 backdrop-blur-md">
+    <div className="border-border bg-card flex flex-col gap-3 rounded-md border p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <CityPicker cityOptions={cityOptions} value={citySelection} onChange={handleCityChange} />
 
@@ -183,7 +183,9 @@ export function RidesFilters({
           <span className="flex items-center gap-2">
             <SlidersHorizontal className="size-4" />
             Filters
-            {advancedFilterCount > 0 && <Badge>{advancedFilterCount}</Badge>}
+            {advancedFilterCount > 0 && (
+              <Badge className="tabular-nums">{advancedFilterCount}</Badge>
+            )}
           </span>
           <ChevronDown className={cn("size-4 transition-transform", filtersOpen && "rotate-180")} />
         </Button>
@@ -192,7 +194,7 @@ export function RidesFilters({
       {filtersOpen && (
         <div className="border-border flex flex-col gap-4 border-t pt-4">
           <div className="flex flex-col gap-2">
-            <Label className="text-muted-foreground text-xs">Ride Type</Label>
+            <Label className="text-muted-foreground text-sm">Ride type</Label>
             <ToggleGroup
               multiple
               variant="outline"
@@ -204,7 +206,7 @@ export function RidesFilters({
               className="flex-wrap"
             >
               {RIDE_TYPES.map((type) => (
-                <ToggleGroupItem key={type.value} value={type.value} className="text-xs">
+                <ToggleGroupItem key={type.value} value={type.value} className="text-sm">
                   {type.label}
                 </ToggleGroupItem>
               ))}
@@ -214,7 +216,7 @@ export function RidesFilters({
           <div className="flex flex-col gap-2.5">
             {!hidePricingFilter && (
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-muted-foreground w-20 shrink-0 text-xs">Category</span>
+                <span className="text-muted-foreground w-20 shrink-0 text-sm">Category</span>
                 <ToggleGroup
                   variant="outline"
                   size="sm"
@@ -226,11 +228,11 @@ export function RidesFilters({
                   }}
                   className="flex-wrap"
                 >
-                  <ToggleGroupItem value="any" className="text-xs">
+                  <ToggleGroupItem value="any" className="text-sm">
                     All
                   </ToggleGroupItem>
                   {PRICING_OPTIONS.map((option) => (
-                    <ToggleGroupItem key={option.value} value={option.value} className="text-xs">
+                    <ToggleGroupItem key={option.value} value={option.value} className="text-sm">
                       {option.label}
                     </ToggleGroupItem>
                   ))}
@@ -238,7 +240,7 @@ export function RidesFilters({
               </div>
             )}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-muted-foreground w-20 shrink-0 text-xs">Speed</span>
+              <span className="text-muted-foreground w-20 shrink-0 text-sm">Speed</span>
               <ToggleGroup
                 variant="outline"
                 size="sm"
@@ -250,18 +252,18 @@ export function RidesFilters({
                 }}
                 className="flex-wrap"
               >
-                <ToggleGroupItem value="any" className="text-xs">
+                <ToggleGroupItem value="any" className="text-sm">
                   Any
                 </ToggleGroupItem>
                 {SPEED_LEVELS.map((level) => (
-                  <ToggleGroupItem key={level.value} value={level.value} className="text-xs">
+                  <ToggleGroupItem key={level.value} value={level.value} className="text-sm">
                     {level.label}
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-muted-foreground w-20 shrink-0 text-xs">Difficulty</span>
+              <span className="text-muted-foreground w-20 shrink-0 text-sm">Difficulty</span>
               <ToggleGroup
                 variant="outline"
                 size="sm"
@@ -273,11 +275,11 @@ export function RidesFilters({
                 }}
                 className="flex-wrap"
               >
-                <ToggleGroupItem value="any" className="text-xs">
+                <ToggleGroupItem value="any" className="text-sm">
                   Any
                 </ToggleGroupItem>
                 {RIDER_LEVELS.map((level) => (
-                  <ToggleGroupItem key={level.value} value={level.value} className="text-xs">
+                  <ToggleGroupItem key={level.value} value={level.value} className="text-sm">
                     {level.label}
                   </ToggleGroupItem>
                 ))}
@@ -287,8 +289,8 @@ export function RidesFilters({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="filter-distance" className="text-muted-foreground text-xs">
-                Ride Distance
+              <Label htmlFor="filter-distance" className="text-muted-foreground text-sm">
+                Ride distance
               </Label>
               <Select
                 value={distance}
@@ -309,7 +311,7 @@ export function RidesFilters({
               </Select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label className="text-muted-foreground text-xs">Date Range</Label>
+              <Label className="text-muted-foreground text-sm">Date range</Label>
               <div className="flex items-center">
                 <Input
                   type="date"
@@ -318,7 +320,7 @@ export function RidesFilters({
                   onChange={(event) => updateParams({ from: event.target.value || null })}
                   className="rounded-r-none"
                 />
-                <span className="border-input text-muted-foreground flex h-8 shrink-0 items-center border-y px-1.5 text-xs">
+                <span className="border-input text-muted-foreground flex h-10 shrink-0 items-center border-y px-1.5 text-sm">
                   to
                 </span>
                 <Input
@@ -340,13 +342,13 @@ export function RidesFilters({
                 onCheckedChange={(checked) => updateParams({ seats: checked ? "1" : null })}
               />
               <Label htmlFor="open-seats-only" className="text-sm font-normal">
-                Open Seats Only
+                Open seats only
               </Label>
             </div>
             {hasActiveFilters && (
               <Button type="button" variant="ghost" size="sm" onClick={clearAll}>
                 <X className="size-3.5" />
-                Clear Filters
+                Clear filters
               </Button>
             )}
           </div>

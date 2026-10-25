@@ -27,7 +27,7 @@ export function UserMenu({ name, username, avatarUrl, isOrganizer }: UserMenuPro
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="hover:bg-muted flex items-center gap-1.5 rounded-lg py-1 pr-1.5 pl-1 text-sm font-medium transition-colors outline-none">
+      <DropdownMenuTrigger className="hover:bg-muted flex items-center gap-1.5 rounded-md py-1 pr-1.5 pl-1 text-sm font-semibold transition-colors outline-none">
         <Avatar size="sm">
           <AvatarImage src={avatarUrl ?? undefined} alt={name} />
           <AvatarFallback>{name[0]}</AvatarFallback>
@@ -43,15 +43,15 @@ export function UserMenu({ name, username, avatarUrl, isOrganizer }: UserMenuPro
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<Link href="/profile" />}>
           <UserRound />
-          {isOrganizer ? "Organizer Home" : "Rider Home"}
+          {isOrganizer ? "Organizer home" : "Ride home"}
         </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/profile/rides" />}>
           <Compass />
-          My Rides
+          My rides
         </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/profile/edit" />}>
           <PenLine />
-          Edit Profile
+          Edit profile
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -60,7 +60,7 @@ export function UserMenu({ name, username, avatarUrl, isOrganizer }: UserMenuPro
           className="text-destructive hover:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
         >
           <LogOut />
-          {isPending ? "Signing out..." : "Sign Out"}
+          {isPending ? "Signing out..." : "Sign out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

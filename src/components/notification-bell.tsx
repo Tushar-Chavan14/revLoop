@@ -5,7 +5,6 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { Bell } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -97,16 +96,16 @@ export function NotificationBell({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : "Notifications"}
-        className="hover:bg-muted relative inline-flex size-8 items-center justify-center rounded-lg transition-colors"
+        className="hover:bg-muted relative inline-flex size-8 items-center justify-center rounded-full transition-colors"
       >
         <Bell className="size-4.5" aria-hidden />
         {unreadCount > 0 && (
-          <Badge className="absolute -top-1 -right-1 h-4 min-w-4 justify-center px-1 text-[10px]">
+          <span className="bg-primary text-primary-foreground absolute -top-0.5 -right-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full px-1 text-xs font-bold tabular-nums">
             {unreadCount > 9 ? "9+" : unreadCount}
-          </Badge>
+          </span>
         )}
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0">
+      <PopoverContent align="end" className="w-80 gap-0 p-0">
         <Tabs
           value={tab}
           onValueChange={(value) => setTab(value as "general" | "community")}
@@ -125,7 +124,7 @@ export function NotificationBell({
                 onClick={handleMarkAllRead}
                 className="shrink-0"
               >
-                Mark All Read
+                Mark all read
               </Button>
             )}
           </div>
@@ -144,7 +143,7 @@ export function NotificationBell({
                     onClick={() => handleNotificationClick(notification)}
                     className={cn(
                       "hover:bg-muted flex flex-col gap-1 border-b px-3 py-2.5 text-sm last:border-b-0",
-                      !notification.read_at && "bg-primary/5",
+                      !notification.read_at && "font-semibold",
                     )}
                   >
                     <span className="flex items-start gap-2">
@@ -156,7 +155,7 @@ export function NotificationBell({
                       />
                       <span className="flex-1">{notification.message}</span>
                     </span>
-                    <span className="text-muted-foreground pl-3.5 text-xs">
+                    <span className="text-muted-foreground pl-3.5 text-xs font-normal">
                       {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                     </span>
                   </Link>
@@ -166,9 +165,9 @@ export function NotificationBell({
             <Link
               href="/notifications"
               onClick={() => setOpen(false)}
-              className="text-primary hover:bg-muted border-border block border-t px-3 py-2.5 text-center text-xs font-medium"
+              className="text-primary-ink hover:bg-muted border-border block border-t px-3 py-2.5 text-center text-sm font-bold"
             >
-              See All Notifications
+              See all notifications
             </Link>
           </TabsContent>
 

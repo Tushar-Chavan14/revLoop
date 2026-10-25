@@ -36,7 +36,7 @@ export function SettlementGroupCard({ group }: { group: OrganizerSettlementGroup
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <CardTitle>{group.organizerName}</CardTitle>
           <Button
             type="button"
@@ -44,7 +44,7 @@ export function SettlementGroupCard({ group }: { group: OrganizerSettlementGroup
             disabled={isPending}
             onClick={() => settle(remaining.map((b) => b.id))}
           >
-            Mark All Settled — ₹{remainingTotal.toFixed(2)}
+            <span className="tabular-nums">Mark all settled — ₹{remainingTotal.toFixed(2)}</span>
           </Button>
         </div>
       </CardHeader>
@@ -67,7 +67,7 @@ export function SettlementGroupCard({ group }: { group: OrganizerSettlementGroup
             >
               <div>
                 <p className="font-medium">{booking.rideTitle}</p>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-muted-foreground text-sm tabular-nums">
                   {booking.riderName} · ₹{booking.organizer_amount.toFixed(2)} owed (of ₹
                   {booking.amount.toFixed(2)}, {booking.currency}) ·{" "}
                   {booking.paid_at ? format(new Date(booking.paid_at), "MMM d, yyyy") : ""}
@@ -80,7 +80,7 @@ export function SettlementGroupCard({ group }: { group: OrganizerSettlementGroup
                 disabled={isPending}
                 onClick={() => settle([booking.id])}
               >
-                Mark Settled
+                Mark settled
               </Button>
             </div>
           ))}

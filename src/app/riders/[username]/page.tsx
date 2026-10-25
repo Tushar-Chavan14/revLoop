@@ -1,18 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import {
-  AtSign,
-  Award,
-  Bike,
-  Check,
-  Compass,
-  Flame,
-  MapPin,
-  Medal,
-  Sparkles,
-  X,
-} from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Award, Flame, Medal } from "lucide-react";
 import { EmptyState } from "@/components/design-system/state-panel";
 import { ImageGallery } from "@/components/design-system/image-gallery";
 import { Timeline } from "@/components/design-system/timeline";
@@ -30,28 +18,6 @@ import { capitalize } from "@/utils/capitalize";
 type RiderProfilePageProps = {
   params: Promise<{ username: string }>;
 };
-
-function hashSeed(value: string) {
-  let hash = 0;
-  for (let i = 0; i < value.length; i++) {
-    hash = (hash * 31 + value.charCodeAt(i)) | 0;
-  }
-  return Math.abs(hash);
-}
-
-// No per-rider photo — a hero-style gradient in the app's own brand colors,
-// varied by position so profiles don't all look identical.
-const COVER_GRADIENTS = [
-  { radialPosition: "20% 20%", blobClassName: "-top-12 -right-12" },
-  { radialPosition: "80% 20%", blobClassName: "-top-12 -left-12" },
-  { radialPosition: "20% 80%", blobClassName: "-bottom-12 -right-12" },
-  { radialPosition: "80% 80%", blobClassName: "-bottom-12 -left-12" },
-  { radialPosition: "50% 50%", blobClassName: "-top-12 -right-12" },
-] as const;
-
-function coverGradient(username: string) {
-  return COVER_GRADIENTS[hashSeed(username) % COVER_GRADIENTS.length];
-}
 
 export async function generateMetadata({ params }: RiderProfilePageProps) {
   const { username } = await params;
@@ -99,22 +65,18 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
   const stats = isOrganizer
     ? [
         {
-          icon: MapPin,
-          label: "Based In",
+          label: "Based in",
           value: [profile.city, profile.country].filter(Boolean).join(", "),
         },
         {
-          icon: Compass,
-          label: "Events Organised",
+          label: "Events organised",
           value: organizerDetails ? String(organizerDetails.events_organised_count) : undefined,
         },
         {
-          icon: MapPin,
-          label: "Signature Trip",
+          label: "Signature trip",
           value: organizerDetails?.primary_destination,
         },
         {
-          icon: AtSign,
           label: "Instagram",
           value: organizerDetails?.instagram_handle
             ? `@${organizerDetails.instagram_handle}`
@@ -123,59 +85,35 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
       ].filter((stat) => stat.value)
     : [
         {
-          icon: MapPin,
-          label: "Based In",
+          label: "Based in",
           value: [profile.city, profile.country].filter(Boolean).join(", "),
         },
         {
-          icon: Bike,
-          label: "Rides A",
+          label: "Bike",
           value: [profile.bike_brand, profile.bike_model].filter(Boolean).join(" "),
         },
         {
-          icon: Sparkles,
           label: "Experience",
           value: profile.experience_level
             ? `${capitalize(profile.experience_level)} · ${profile.years_riding ?? 0} yrs`
             : undefined,
         },
         {
-          icon: AtSign,
           label: "Instagram",
           value: profile.instagram_handle ? `@${profile.instagram_handle}` : undefined,
         },
       ].filter((stat) => stat.value);
 
   const badges = [
-    { icon: Flame, label: "First Ride", earned: attendance.attended >= 1 },
-    { icon: Medal, label: "Regular Rider", earned: attendance.attended >= 5 },
-    { icon: Award, label: "Road Veteran", earned: attendance.attended >= 10 },
+    { icon: Flame, label: "First ride", earned: attendance.attended >= 1 },
+    { icon: Medal, label: "Regular rider", earned: attendance.attended >= 5 },
+    { icon: Award, label: "Road veteran", earned: attendance.attended >= 10 },
   ];
 
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
-      <div className="bg-secondary relative h-56 w-full overflow-hidden sm:h-72">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at ${coverGradient(profile.username).radialPosition}, oklch(0.705 0.191 41.6 / 30%), transparent 55%)`,
-          }}
-        />
-        <div
-          aria-hidden
-          className={cn(
-            "bg-primary/25 pointer-events-none absolute h-64 w-64 rounded-full blur-3xl",
-            coverGradient(profile.username).blobClassName,
-          )}
-        />
-        <div
-          aria-hidden
-          className="bg-road-dashes absolute top-0 right-0 left-0 h-px text-white/25"
-        />
-        <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
-      </div>
+      <div className="bg-secondary h-36 w-full sm:h-48" />
 
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 pb-12">
         <div className="-mt-16 flex flex-col gap-4 sm:flex-row sm:items-end">
@@ -191,62 +129,43 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
             ) : null}
           </div>
           <div className="pb-1">
-            <p className="text-telemetry text-primary text-[11px]">
-              {isOrganizer ? "Organizer" : "Rider"}
+            <h1 className="font-display text-5xl text-balance">{displayName}</h1>
+            <p className="text-muted-foreground">
+              @{profile.username} · {isOrganizer ? "Organizer" : "Rider"}
             </p>
-            <h1 className="font-heading text-3xl font-extrabold tracking-tight">{displayName}</h1>
-            <p className="text-muted-foreground">@{profile.username}</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+        <dl className="bg-card grid grid-cols-2 gap-x-6 gap-y-5 rounded-md p-5 sm:grid-cols-3">
           {!isOrganizer && (
             <>
-              <Card size="sm">
-                <CardContent className="flex flex-col gap-1.5">
-                  <Check className="text-muted-foreground size-4" />
-                  <p className="text-muted-foreground text-xs">Rides Completed</p>
-                  <p className="text-sm font-medium">{attendance.attended}</p>
-                </CardContent>
-              </Card>
-              <Card size="sm">
-                <CardContent className="flex flex-col gap-1.5">
-                  <X className="text-muted-foreground size-4" />
-                  <p className="text-muted-foreground text-xs">No-Shows</p>
-                  <p className="text-sm font-medium">{attendance.noShow}</p>
-                </CardContent>
-              </Card>
+              <div className="flex flex-col gap-1">
+                <dt className="text-muted-foreground text-sm">Rides completed</dt>
+                <dd className="text-2xl font-bold tabular-nums">{attendance.attended}</dd>
+              </div>
+              <div className="flex flex-col gap-1">
+                <dt className="text-muted-foreground text-sm">No-shows</dt>
+                <dd className="text-2xl font-bold tabular-nums">{attendance.noShow}</dd>
+              </div>
             </>
           )}
-          <Card size="sm">
-            <CardContent className="flex flex-col gap-1.5">
-              <Compass className="text-muted-foreground size-4" />
-              <p className="text-muted-foreground text-xs">Rides Organized</p>
-              <p className="text-sm font-medium">{organizedCount}</p>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col gap-1">
+            <dt className="text-muted-foreground text-sm">Rides organized</dt>
+            <dd className="text-2xl font-bold tabular-nums">{organizedCount}</dd>
+          </div>
           {stats.map((stat) => (
-            <Card key={stat.label} size="sm">
-              <CardContent className="flex flex-col gap-1.5">
-                <stat.icon className="text-muted-foreground size-4" />
-                <p className="text-muted-foreground text-xs">{stat.label}</p>
-                <p className="text-sm font-medium">{stat.value}</p>
-              </CardContent>
-            </Card>
+            <div key={stat.label} className="flex min-w-0 flex-col gap-1">
+              <dt className="text-muted-foreground text-sm">{stat.label}</dt>
+              <dd className="text-base font-semibold break-words">{stat.value}</dd>
+            </div>
           ))}
-        </div>
+        </dl>
 
-        {profile.bio && (
-          <Card>
-            <CardContent>
-              <p className="text-muted-foreground">{profile.bio}</p>
-            </CardContent>
-          </Card>
-        )}
+        {profile.bio && <p className="text-muted-foreground text-base">{profile.bio}</p>}
 
         {myRides.ongoing.length > 0 && (
           <section className="flex flex-col gap-3">
-            <h2 className="font-heading text-lg font-bold tracking-tight">Ongoing</h2>
+            <h2 className="text-lg font-bold">Ongoing</h2>
             <Timeline
               items={myRides.ongoing.map((ride) => rideToTimelineItem(ride, true, "live"))}
             />
@@ -255,20 +174,25 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
 
         {!isOrganizer && (
           <section className="flex flex-col gap-3">
-            <h2 className="font-heading text-lg font-bold tracking-tight">Badges</h2>
+            <h2 className="text-lg font-bold">Badges</h2>
             <div className="flex flex-wrap gap-3">
               {badges.map((badge) => (
                 <div
                   key={badge.label}
                   className={cn(
-                    "flex flex-col items-center gap-2 rounded-2xl px-5 py-4 text-center ring-1",
+                    "flex flex-col items-center gap-2 rounded-md px-5 py-4 text-center",
                     badge.earned
-                      ? "bg-primary-soft ring-primary/20 text-primary-soft-foreground"
-                      : "bg-muted ring-border text-muted-foreground opacity-50",
+                      ? "bg-card text-foreground"
+                      : "bg-muted text-muted-foreground opacity-60",
                   )}
                 >
-                  <badge.icon className="size-6" />
-                  <p className="text-xs font-medium">{badge.label}</p>
+                  <badge.icon
+                    className={cn(
+                      "size-6",
+                      badge.earned ? "text-primary-ink" : "text-muted-foreground",
+                    )}
+                  />
+                  <p className="text-sm font-semibold">{badge.label}</p>
                 </div>
               ))}
             </div>
@@ -277,7 +201,7 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
 
         {myRides.completed.length > 0 && (
           <section className="flex flex-col gap-3">
-            <h2 className="font-heading text-lg font-bold tracking-tight">Ride History</h2>
+            <h2 className="text-lg font-bold">Ride history</h2>
             <Timeline
               items={myRides.completed
                 .slice(0, 8)
@@ -287,19 +211,19 @@ export default async function RiderProfilePage({ params }: RiderProfilePageProps
         )}
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-heading text-lg font-bold tracking-tight">Ride Gallery</h2>
+          <h2 className="text-lg font-bold">Ride gallery</h2>
           {gallery.length > 0 ? (
             <ImageGallery images={gallery.map((image) => ({ url: image.image_url }))} />
           ) : (
             <EmptyState
-              title="No Photos Yet"
+              title="No photos yet"
               description="Ride photos posted to shared rides will show up here."
             />
           )}
         </section>
 
         {!isOrganizer && (
-          <p className="text-muted-foreground text-xs">
+          <p className="text-muted-foreground text-sm">
             Attendance is marked by ride organizers after each ride.
           </p>
         )}

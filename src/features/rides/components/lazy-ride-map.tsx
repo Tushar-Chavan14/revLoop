@@ -11,7 +11,7 @@ import type { RideMap as RideMapComponent } from "@/features/rides/components/ri
 // who never scroll down to the route never download it.
 const RideMap = dynamic(
   () => import("@/features/rides/components/ride-map").then((mod) => mod.RideMap),
-  { ssr: false, loading: () => <Skeleton className="size-full rounded-lg" /> },
+  { ssr: false, loading: () => <Skeleton className="size-full rounded-md" /> },
 );
 
 /** Drop-in for RideMap — takes the same props, and the caller's className sizes the frame. */
@@ -42,7 +42,7 @@ export function LazyRideMap({ className, ...props }: ComponentProps<typeof RideM
       {nearViewport ? (
         <RideMap {...props} className="h-full" />
       ) : (
-        <Skeleton className="size-full rounded-lg" />
+        <Skeleton className="size-full rounded-md" />
       )}
     </div>
   );

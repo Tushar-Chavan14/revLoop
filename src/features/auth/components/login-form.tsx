@@ -31,13 +31,13 @@ export function LoginForm({ error, message }: LoginFormProps) {
     <div className="flex w-full max-w-sm flex-col gap-6">
       <form action={signInWithGoogle}>
         <Button type="submit" variant="outline" className="w-full">
-          Continue With Google
+          Continue with Google
         </Button>
       </form>
 
       <div className="flex items-center gap-3">
         <Separator className="flex-1" />
-        <span className="text-muted-foreground text-xs">OR</span>
+        <span className="text-muted-foreground text-sm">or</span>
         <Separator className="flex-1" />
       </div>
 
@@ -59,7 +59,7 @@ export function LoginForm({ error, message }: LoginFormProps) {
           )}
         </div>
         <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? "Sending..." : "Send Magic Link"}
+          {isPending ? "Sending..." : "Send magic link"}
         </Button>
       </form>
 

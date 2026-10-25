@@ -3,16 +3,16 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const statusChipVariants = cva(
-  "inline-flex h-6 w-fit shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium whitespace-nowrap",
+  "inline-flex h-6 w-fit flex-none shrink-0 items-center gap-1.5 rounded-sm px-2 text-xs font-semibold whitespace-nowrap",
   {
     variants: {
       status: {
-        open: "border-success/20 bg-success/10 text-success",
-        filling: "border-warning/25 bg-warning/10 text-warning",
-        full: "border-border bg-muted text-muted-foreground",
-        cancelled: "border-destructive/20 bg-destructive/10 text-destructive",
-        completed: "border-border bg-muted text-muted-foreground",
-        live: "border-primary/25 bg-primary/10 text-primary",
+        open: "bg-success/12 text-success",
+        filling: "bg-warning/12 text-warning",
+        full: "bg-muted text-muted-foreground",
+        cancelled: "bg-destructive/10 text-destructive",
+        completed: "bg-muted text-muted-foreground",
+        live: "bg-primary-soft text-primary-soft-foreground",
       },
     },
     defaultVariants: {

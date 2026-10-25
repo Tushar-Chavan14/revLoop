@@ -14,15 +14,12 @@ export function MapContainer({ children, loading = false, badge, className }: Ma
   return (
     <div
       data-slot="map-container"
-      className={cn(
-        "ring-foreground/10 relative isolate h-80 w-full overflow-hidden rounded-2xl ring-1",
-        className,
-      )}
+      className={cn("bg-muted relative isolate h-80 w-full overflow-hidden rounded-md", className)}
     >
       {children}
       {badge && (
         <div className="absolute top-3 left-3 z-10">
-          <div className="bg-background/85 rounded-full px-3 py-1 text-xs font-medium backdrop-blur-sm">
+          <div className="bg-background rounded-sm px-2 py-1 text-xs font-bold tabular-nums">
             {badge}
           </div>
         </div>

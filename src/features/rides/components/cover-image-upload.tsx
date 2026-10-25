@@ -48,14 +48,14 @@ export function CoverImageUpload({
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="group border-border bg-secondary/50 relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg border border-dashed"
+        className="group border-input bg-muted relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-md border border-dashed"
       >
         {previewUrl ? (
           <Image src={previewUrl} alt="Ride cover" fill unoptimized className="object-cover" />
         ) : (
           <div className="text-muted-foreground flex flex-col items-center gap-1.5">
             <ImageIcon className="size-6" />
-            <span className="text-sm">Add A Cover Photo</span>
+            <span className="text-sm">Add a cover photo</span>
           </div>
         )}
         <div className="absolute inset-0 flex items-center justify-center bg-black/0 text-transparent transition-colors group-hover:bg-black/40 group-hover:text-white">

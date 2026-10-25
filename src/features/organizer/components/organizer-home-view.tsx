@@ -1,10 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
-import { Compass, IndianRupee, MapPin, MessageSquare } from "lucide-react";
+import { Compass, MapPin, MessageSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/status-chip";
 import { EmptyState } from "@/components/design-system/state-panel";
 import { RideCountdown } from "@/components/design-system/ride-countdown";
@@ -46,7 +45,7 @@ export async function OrganizerHomeView({ profile }: { profile: Profile }) {
       {/* Organizer identity */}
       <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <div className="bg-secondary ring-primary/10 size-16 shrink-0 overflow-hidden rounded-full ring-4">
+          <div className="bg-secondary size-16 shrink-0 overflow-hidden rounded-full">
             {profile.profile_image_url && (
               <Image
                 src={profile.profile_image_url}
@@ -58,26 +57,25 @@ export async function OrganizerHomeView({ profile }: { profile: Profile }) {
             )}
           </div>
           <div>
-            <p className="text-telemetry text-primary text-[11px]">Organizer Home</p>
-            <h1 className="font-heading text-2xl font-extrabold tracking-tight">{displayName}</h1>
-            <Link
-              href={`/riders/${profile.username}`}
-              className="text-muted-foreground text-sm hover:underline"
-            >
-              @{profile.username} · View public profile
-            </Link>
+            <h1 className="font-display text-[2.5rem] text-balance sm:text-5xl">{displayName}</h1>
+            <p className="text-muted-foreground text-sm">
+              Organizer ·{" "}
+              <Link href={`/riders/${profile.username}`} className="hover:underline">
+                @{profile.username} · View public profile
+              </Link>
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
           <Button
             nativeButton={false}
-            render={<Link href="/profile/edit">Edit Profile</Link>}
+            render={<Link href="/profile/edit">Edit profile</Link>}
             variant="outline"
             size="sm"
           />
           <form action={signOut}>
             <Button type="submit" variant="ghost" size="sm">
-              Sign Out
+              Sign out
             </Button>
           </form>
         </div>
@@ -87,13 +85,8 @@ export async function OrganizerHomeView({ profile }: { profile: Profile }) {
 
       {/* Next ride hero */}
       {nextRide ? (
-        <section className="bg-secondary text-secondary-foreground relative overflow-hidden rounded-3xl p-8 sm:p-12">
-          <div
-            aria-hidden
-            className="bg-primary/20 pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full blur-3xl"
-          />
-          <div aria-hidden className="bg-road-dashes absolute inset-x-0 top-0 h-px text-white/25" />
-          <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <section className="bg-secondary text-secondary-foreground rounded-md p-8 sm:p-12">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div className="flex flex-col gap-3">
               {nextRide.status === "ongoing" ? (
                 <StatusChip
@@ -101,21 +94,20 @@ export async function OrganizerHomeView({ profile }: { profile: Profile }) {
                   pulse
                   className="w-fit border-white/20 bg-white/10 text-white"
                 >
-                  Ride In Progress
+                  Ride in progress
                 </StatusChip>
-              ) : (
-                <p className="text-telemetry text-primary text-[11px]">Your Next Ride</p>
-              )}
-              <h2 className="font-display text-4xl text-white uppercase sm:text-5xl">
-                {nextRide.title}
-              </h2>
-              <p className="text-secondary-foreground/70 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              ) : null}
+              <h2 className="font-display text-4xl text-white sm:text-5xl">{nextRide.title}</h2>
+              <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/75">
+                {nextRide.status !== "ongoing" && (
+                  <span className="font-semibold text-white">Your next ride</span>
+                )}
                 <span className="flex items-center gap-1.5">
                   <MapPin className="size-3.5 text-white/50" />
                   {nextRide.destination}
                 </span>
                 {nextRide.ride_date && (
-                  <span>
+                  <span className="tabular-nums">
                     {format(new Date(nextRide.ride_date), "EEE, MMM d")}
                     {nextRide.departure_time && ` · ${nextRide.departure_time.slice(0, 5)}`}
                   </span>
@@ -127,82 +119,67 @@ export async function OrganizerHomeView({ profile }: { profile: Profile }) {
                 <div className="flex flex-col gap-1">
                   <RideCountdown
                     targetIso={`${nextRide.ride_date}T${nextRide.departure_time ?? "00:00"}`}
-                    className="font-display text-6xl text-white sm:text-7xl"
+                    className="font-display text-6xl text-white tabular-nums sm:text-7xl"
                   />
-                  <span className="text-telemetry text-secondary-foreground/60 text-[10px]">
-                    until kickstands up
-                  </span>
+                  <span className="text-sm text-white/75">until kickstands up</span>
                 </div>
               )}
               <Button
                 nativeButton={false}
-                render={<Link href={`/rides/${nextRide.id}`}>View Ride</Link>}
-                className="bg-sunrise border-0 text-white"
+                render={<Link href={`/rides/${nextRide.id}`}>View ride</Link>}
               />
             </div>
           </div>
         </section>
       ) : (
         <EmptyState
-          title="No Rides Live Yet"
-          description="Host your first Organized Ride and get it in front of riders."
+          title="No rides live yet"
+          description="Host your first organized ride and get it in front of riders."
           action={
-            <Button nativeButton={false} render={<Link href="/rides/create">Host A Ride</Link>} />
+            <Button nativeButton={false} render={<Link href="/rides/create">Host a ride</Link>} />
           }
         />
       )}
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <Card size="sm">
-          <CardContent className="flex flex-col gap-1.5">
-            <Compass className="text-muted-foreground size-4" />
-            <p className="text-telemetry text-muted-foreground text-[10px]">Rides Organized</p>
-            <p className="text-sm font-medium">{organizedCount}</p>
-          </CardContent>
-        </Card>
-        <Card size="sm">
-          <CardContent className="flex flex-col gap-1.5">
-            <Compass className="text-muted-foreground size-4" />
-            <p className="text-telemetry text-muted-foreground text-[10px]">Upcoming Rides</p>
-            <p className="text-sm font-medium">{upcoming.length}</p>
-          </CardContent>
-        </Card>
-        <Card size="sm">
-          <CardContent className="flex flex-col gap-1.5">
-            <MapPin className="text-muted-foreground size-4" />
-            <p className="text-telemetry text-muted-foreground text-[10px]">Based In</p>
-            <p className="text-sm font-medium">
-              {[profile.city, profile.country].filter(Boolean).join(", ") || "—"}
-            </p>
-          </CardContent>
-        </Card>
-        <Card size="sm">
-          <CardContent className="flex flex-col gap-1.5">
-            <IndianRupee className="text-muted-foreground size-4" />
-            <p className="text-telemetry text-muted-foreground text-[10px]">Awaiting Settlement</p>
-            <p className="text-sm font-medium">
-              {pendingSettlement.count > 0
-                ? `₹${pendingSettlement.totalOwed.toFixed(2)} · ${pendingSettlement.count} paid`
-                : "None"}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <dl className="bg-card grid grid-cols-2 gap-x-6 gap-y-5 rounded-md p-5 sm:grid-cols-4">
+        <div className="flex flex-col gap-1">
+          <dt className="text-muted-foreground text-sm">Rides organized</dt>
+          <dd className="text-2xl font-bold tabular-nums">{organizedCount}</dd>
+        </div>
+        <div className="flex flex-col gap-1">
+          <dt className="text-muted-foreground text-sm">Upcoming rides</dt>
+          <dd className="text-2xl font-bold tabular-nums">{upcoming.length}</dd>
+        </div>
+        <div className="flex min-w-0 flex-col gap-1">
+          <dt className="text-muted-foreground text-sm">Based in</dt>
+          <dd className="text-base font-semibold break-words">
+            {[profile.city, profile.country].filter(Boolean).join(", ") || "—"}
+          </dd>
+        </div>
+        <div className="flex flex-col gap-1">
+          <dt className="text-muted-foreground text-sm">Awaiting settlement</dt>
+          <dd className="text-base font-semibold tabular-nums">
+            {pendingSettlement.count > 0
+              ? `₹${pendingSettlement.totalOwed.toFixed(2)} · ${pendingSettlement.count} paid`
+              : "None"}
+          </dd>
+        </div>
+      </dl>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="flex flex-col gap-8 lg:col-span-2">
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-heading text-lg font-bold tracking-tight">
+              <h2 className="text-lg font-bold">
                 <Compass className="text-muted-foreground mr-1.5 inline size-4" />
-                Your Rides
+                Your rides
               </h2>
               <Button
                 nativeButton={false}
                 variant="ghost"
                 size="sm"
-                render={<Link href="/profile/rides">See All</Link>}
+                render={<Link href="/profile/rides">See all</Link>}
               />
             </div>
             {upcoming.length > 0 ? (
@@ -211,11 +188,11 @@ export async function OrganizerHomeView({ profile }: { profile: Profile }) {
                   <Link
                     key={ride.id}
                     href={`/rides/${ride.id}`}
-                    className="border-border hover:border-primary/50 flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm transition-colors"
+                    className="bg-card hover:bg-muted flex items-center justify-between gap-3 rounded-md px-4 py-3 text-sm transition-colors"
                   >
                     <div className="min-w-0">
                       <p className="truncate font-medium">{ride.title}</p>
-                      <p className="text-muted-foreground truncate text-xs">
+                      <p className="text-muted-foreground truncate text-sm tabular-nums">
                         {ride.ride_date && format(new Date(ride.ride_date), "EEE, MMM d")} ·{" "}
                         {ride.destination} · {ride.seats_available ?? 0} seats left
                       </p>
@@ -233,9 +210,9 @@ export async function OrganizerHomeView({ profile }: { profile: Profile }) {
 
         <div className="flex flex-col gap-8">
           <section className="flex flex-col gap-3">
-            <h2 className="font-heading flex items-center gap-1.5 text-lg font-bold tracking-tight">
+            <h2 className="flex items-center gap-1.5 text-lg font-bold">
               <MessageSquare className="text-muted-foreground size-4" />
-              Recent Messages
+              Recent messages
             </h2>
             {recentMessages.length > 0 ? (
               <div className="flex flex-col gap-1">
@@ -243,7 +220,7 @@ export async function OrganizerHomeView({ profile }: { profile: Profile }) {
                   <Link
                     key={message.id}
                     href={`/chats/${message.rideId}`}
-                    className="hover:bg-muted -mx-2 flex items-start gap-2.5 rounded-lg px-2 py-2"
+                    className="hover:bg-muted -mx-2 flex items-start gap-2.5 rounded-md px-2 py-2"
                   >
                     <Avatar size="sm">
                       <AvatarImage
@@ -254,7 +231,7 @@ export async function OrganizerHomeView({ profile }: { profile: Profile }) {
                     </Avatar>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{message.rideTitle}</p>
-                      <p className="text-muted-foreground truncate text-xs">
+                      <p className="text-muted-foreground truncate text-sm">
                         {message.sender?.name}: {message.body}
                       </p>
                     </div>

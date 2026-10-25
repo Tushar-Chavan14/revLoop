@@ -38,9 +38,9 @@ export function RideRequestsAccordion({ rides, requests }: RideRequestsAccordion
     .map((ride) => ({ ride, requests: pendingByRide.get(ride.id as string) ?? [] }));
 
   return (
-    <Card className="border-border border">
+    <Card>
       <CardHeader>
-        <CardTitle>Join Requests</CardTitle>
+        <CardTitle>Join requests</CardTitle>
       </CardHeader>
       <CardContent>
         {entries.length === 0 ? (
@@ -58,7 +58,7 @@ export function RideRequestsAccordion({ rides, requests }: RideRequestsAccordion
                   <AccordionTrigger>
                     <span className="flex items-center gap-2">
                       {ride.title}
-                      <Badge>{rideRequests.length}</Badge>
+                      <Badge className="tabular-nums">{rideRequests.length}</Badge>
                     </span>
                   </AccordionTrigger>
                   <AccordionContent className="flex flex-col gap-4">
@@ -143,7 +143,7 @@ function RequestRow({
         </div>
       </div>
       {request.message && (
-        <p className="text-muted-foreground bg-muted rounded-md px-2.5 py-1.5 text-xs">
+        <p className="text-muted-foreground bg-muted rounded-sm px-2.5 py-1.5 text-sm">
           {request.message}
         </p>
       )}

@@ -5,10 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * RoadKin Design System — tokens
- * The home of weekend riders. Premium adventure, not SaaS-dashboard —
- * BMW Motorrad / Triumph / RE Himalayan / Garmin / Peak Design / Apple.
- * Burnt orange stays an accent; earthy neutrals + photography carry the mood.
+ * RoadKin Design System — tokens (see /DESIGN.md for the full system)
+ * Billboard above, catalogue below: Bebas Neue posters over real road
+ * photography, Manrope for everything a rider reads or taps. Flat surfaces,
+ * square corners, one hi-vis orange with black ink — the colours of the road
+ * itself (signboards, cones, the Indian highway milestone).
  * Slot names (--color-primary etc.) match the shadcn component contracts
  * already wired into ui/button.tsx, ui/card.tsx, ui/badge.tsx, ui/input.tsx —
  * changing the values here re-skins every existing component at once.
@@ -16,7 +17,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-manrope);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-heading: var(--font-manrope);
   --font-display: var(--font-bebas-neue);
@@ -51,6 +52,7 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
+  --color-primary-ink: var(--primary-ink);
   --color-primary-soft: var(--primary-soft);
   --color-primary-soft-foreground: var(--primary-soft-foreground);
   --color-surface: var(--surface);
@@ -77,156 +79,156 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  /* Softer, warm-tinted elevation instead of flat black — reads as premium
-     rather than enterprise-dashboard. Used by the default shadow-* utilities. */
-  --shadow-color: 20 30% 8%;
-  --shadow-xs: 0 1px 2px oklch(var(--shadow-color) / 0.06);
-  --shadow-sm:
-    0 1px 3px oklch(var(--shadow-color) / 0.08), 0 1px 2px oklch(var(--shadow-color) / 0.05);
-  --shadow-md:
-    0 6px 16px -4px oklch(var(--shadow-color) / 0.1),
-    0 2px 6px -2px oklch(var(--shadow-color) / 0.06);
-  --shadow-lg:
-    0 16px 32px -8px oklch(var(--shadow-color) / 0.14),
-    0 4px 12px -4px oklch(var(--shadow-color) / 0.08);
-  --shadow-xl:
-    0 24px 48px -12px oklch(var(--shadow-color) / 0.18),
-    0 8px 20px -6px oklch(var(--shadow-color) / 0.1);
-  --shadow-2xl: 0 32px 64px -16px oklch(var(--shadow-color) / 0.24);
+  /* Flat at rest: cards, tiles and buttons never cast a shadow. Only what
+     truly floats (popovers, menus, dialogs, the sticky composer) keeps one,
+     so xs/sm resolve to nothing and md+ stay for overlays. */
+  --shadow-color: 0 0% 0%;
+  --shadow-xs: 0 0 #0000;
+  --shadow-sm: 0 0 #0000;
+  --shadow-md: 0 8px 24px -8px oklch(0% 0 0 / 0.18);
+  --shadow-lg: 0 16px 40px -12px oklch(0% 0 0 / 0.22);
+  --shadow-xl: 0 24px 56px -16px oklch(0% 0 0 / 0.26);
+  --shadow-2xl: 0 32px 72px -20px oklch(0% 0 0 / 0.3);
 }
 
+/*
+ * Light: a neutral stone ground with white sheets on it (the Nike "studio"
+ * stage), true ink, and one hi-vis road-sign orange. No warm cream, no
+ * terracotta — the orange is the colour of a cone, a safety vest, a
+ * highway diversion board, and it always carries black ink on top.
+ */
 :root {
-  /* Surfaces — cream page, pure-white cards floating over a warm off-white
-     surface tint. Three tones give depth without a single cold grey. */
-  --background: #f8f8f6;
-  --foreground: #161616;
+  --background: #f4f4f3;
+  --foreground: #111111;
   --card: #ffffff;
-  --card-foreground: #161616;
-  --surface: #f2f2ef;
-  --surface-foreground: #161616;
+  --card-foreground: #111111;
+  --surface: #e9e9e7;
+  --surface-foreground: #111111;
   --popover: #ffffff;
-  --popover-foreground: #161616;
+  --popover-foreground: #111111;
 
-  /* Brand — burnt adventure orange, reserved for CTAs / active nav / links /
-     ride badges. Everything else stays neutral so this reads as intent. */
-  --primary: #e76f24;
-  --primary-hover: #d65f18;
-  --primary-foreground: #ffffff;
-  --primary-soft: #fff1e8;
-  --primary-soft-foreground: #b3401a;
+  /* Brand — hi-vis orange as a FILL (buttons, the milestone cap, the footer
+     field) with black ink on it. --primary-ink is the same hue deep enough
+     to read as text on white (5.2:1): links, active nav, selected states. */
+  --primary: #ff5f0f;
+  --primary-hover: #e65200;
+  --primary-foreground: #111111;
+  --primary-ink: #c43d00;
+  --primary-soft: #ffe9dc;
+  --primary-soft-foreground: #8a2b00;
 
-  /* Near-black "night ride" band for hero/footer/callout sections regardless
-     of light/dark mode — an intentional accent surface, not inverted text. */
-  --secondary: #0d0d0d;
+  /* The night-ride band: always near-black, in both modes. */
+  --secondary: #111111;
   --secondary-foreground: #ffffff;
 
-  --muted: #f2f2ef;
-  --muted-foreground: #6a6a6a;
-  --accent: #fff1e8;
-  --accent-foreground: #161616;
+  --muted: #e9e9e7;
+  --muted-foreground: #5c5c5c;
+  --accent: #e9e9e7;
+  --accent-foreground: #111111;
 
-  --border: #e5e5e0;
-  --input: #e5e5e0;
-  --ring: #e76f24;
+  --border: #e2e2df;
+  --input: #cfcfcb;
+  --ring: #ff5f0f;
 
-  --destructive: #e5484d;
+  --destructive: #c4242a;
   --destructive-foreground: #ffffff;
-  --success: #2e8b57;
+  --success: #1f7a45;
   --success-foreground: #ffffff;
-  --warning: #f5a623;
-  --warning-foreground: #161616;
-  --info: #3b82f6;
+  --warning: #b45309;
+  --warning-foreground: #ffffff;
+  --info: #1d4ed8;
   --info-foreground: #ffffff;
 
-  /* Ride semantics */
-  --ride-community: #2563eb;
-  --ride-organized: #e76f24;
-  --ride-completed: #16a34a;
-  --ride-cancelled: #737373;
-  --level-beginner: #22c55e;
-  --level-intermediate: #f59e0b;
-  --level-experienced: #dc2626;
+  /* Ride semantics — community rides are road-sign blue, organized tours are
+     the brand orange; status greys stay grey. Text-safe on white. */
+  --ride-community: #1d4ed8;
+  --ride-organized: #c43d00;
+  --ride-completed: #1f7a45;
+  --ride-cancelled: #5c5c5c;
+  --level-beginner: #1f7a45;
+  --level-intermediate: #b45309;
+  --level-experienced: #c4242a;
 
-  --chart-1: #e76f24;
-  --chart-2: #161616;
-  --chart-3: #6a6a6a;
-  --chart-4: #2e8b57;
-  --chart-5: #f5a623;
+  --chart-1: #ff5f0f;
+  --chart-2: #111111;
+  --chart-3: #5c5c5c;
+  --chart-4: #1f7a45;
+  --chart-5: #b45309;
 
-  --radius: 0.625rem;
+  /* Square-cut, like a road sign or a spec plate: 4px, never the soft 12px
+     app-kit radius. Pills stay only where the shape means "person" (avatars). */
+  --radius: 0.25rem;
 
   --sidebar: #ffffff;
-  --sidebar-foreground: #161616;
-  --sidebar-primary: #e76f24;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #fff1e8;
-  --sidebar-accent-foreground: #161616;
-  --sidebar-border: #e5e5e0;
-  --sidebar-ring: #e76f24;
+  --sidebar-foreground: #111111;
+  --sidebar-primary: #ff5f0f;
+  --sidebar-primary-foreground: #111111;
+  --sidebar-accent: #e9e9e7;
+  --sidebar-accent-foreground: #111111;
+  --sidebar-border: #e2e2df;
+  --sidebar-ring: #ff5f0f;
 }
 
 .dark {
-  --background: #0d0d0d;
+  --background: #0b0b0b;
   --foreground: #ffffff;
-  --card: #202020;
+  --card: #161616;
   --card-foreground: #ffffff;
-  --surface: #171717;
+  --surface: #1f1f1f;
   --surface-foreground: #ffffff;
-  --popover: #171717;
+  --popover: #1a1a1a;
   --popover-foreground: #ffffff;
 
-  --primary: #e76f24;
-  --primary-hover: #ff8a4d;
-  --primary-foreground: #ffffff;
-  --primary-soft: color-mix(in oklch, #e76f24 18%, #202020);
-  --primary-soft-foreground: #ffb08a;
+  --primary: #ff5f0f;
+  --primary-hover: #ff7a33;
+  --primary-foreground: #111111;
+  --primary-ink: #ff7a33;
+  --primary-soft: #2a1709;
+  --primary-soft-foreground: #ffa673;
 
-  --secondary: #171717;
+  --secondary: #161616;
   --secondary-foreground: #ffffff;
 
-  --muted: #171717;
-  --muted-foreground: #b3b3b3;
-  --accent: #303030;
+  --muted: #1f1f1f;
+  --muted-foreground: #b4b4b4;
+  --accent: #262626;
   --accent-foreground: #ffffff;
 
-  --border: #303030;
-  --input: #303030;
-  --ring: #e76f24;
+  --border: #262626;
+  --input: #3a3a3a;
+  --ring: #ff5f0f;
 
-  --destructive: #e5484d;
-  --destructive-foreground: #ffffff;
-  --success: #2e8b57;
-  --success-foreground: #ffffff;
+  --destructive: #f2545b;
+  --destructive-foreground: #111111;
+  --success: #3fc07a;
+  --success-foreground: #111111;
   --warning: #f5a623;
-  --warning-foreground: #1a1204;
-  --info: #3b82f6;
-  --info-foreground: #ffffff;
+  --warning-foreground: #111111;
+  --info: #60a5fa;
+  --info-foreground: #111111;
 
-  /* Ride semantics — nudged brighter to hold up on near-black. */
-  --ride-community: #3b82f6;
-  --ride-organized: #ff8a4d;
-  --ride-completed: #22c55e;
-  --ride-cancelled: #8a8a8a;
-  --level-beginner: #22c55e;
+  --ride-community: #60a5fa;
+  --ride-organized: #ff7a33;
+  --ride-completed: #3fc07a;
+  --ride-cancelled: #949494;
+  --level-beginner: #3fc07a;
   --level-intermediate: #f5a623;
   --level-experienced: #f2545b;
 
-  --chart-1: #e76f24;
+  --chart-1: #ff5f0f;
   --chart-2: #ffffff;
-  --chart-3: #b3b3b3;
-  --chart-4: #2e8b57;
+  --chart-3: #b4b4b4;
+  --chart-4: #3fc07a;
   --chart-5: #f5a623;
 
-  --shadow-color: 0 0% 0%;
-
-  --sidebar: #171717;
+  --sidebar: #111111;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #e76f24;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #303030;
+  --sidebar-primary: #ff5f0f;
+  --sidebar-primary-foreground: #111111;
+  --sidebar-accent: #262626;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #303030;
-  --sidebar-ring: #e76f24;
+  --sidebar-border: #262626;
+  --sidebar-ring: #ff5f0f;
 }
 
 @layer base {
@@ -241,38 +243,47 @@
   }
 }
 
-@utility bg-road-dashes {
-  background-image: repeating-linear-gradient(
-    90deg,
-    currentcolor 0,
-    currentcolor 24px,
-    transparent 24px,
-    transparent 48px
-  );
-}
-
-/* Poster-style display type — hero statements only. Bebas Neue is all-caps
-   by design and runs tight, so bake in the tracking every caller would
-   otherwise have to repeat. */
+/* Poster display — Bebas Neue, all caps by design. Billboard moments only:
+   the hero sentence, section titles on the landing page, page titles, the
+   milestone. Tight leading so two lines lock together. */
 @utility font-display {
   font-family: var(--font-display);
-  letter-spacing: 0.01em;
-  line-height: 0.95;
+  letter-spacing: 0;
+  line-height: 0.9;
+  font-weight: 400;
 }
 
-/* Sunrise gradient — the dawn-departure accent (many crews roll out at first
-   light). Used sparingly on the hero and primary CTAs so orange never sits as
-   a flat fill. */
+/* Kept for old call sites: the one orange fill, flat, with black ink. */
 @utility bg-sunrise {
-  background-image: linear-gradient(135deg, #e76f24 0%, #f4a261 100%);
+  background-color: var(--primary);
+  color: var(--primary-foreground);
 }
 
-/* Instrument-panel label — small uppercase caps with wide tracking and
-   tabular figures, the way a trip meter or GPS readout is set. Used for
-   eyebrows, live counts, and data readouts. */
+/* Instrument-panel figures: tabular, semibold, sentence case. (It used to be
+   a tiny tracked uppercase label; those read as costume, so the trip-meter
+   feel now comes from the figures alone.) */
 @utility text-telemetry {
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
+}
+
+@layer base {
+  ::selection {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+  :focus-visible {
+    outline-color: var(--ring);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -3,7 +3,6 @@
 import { useRef, type ChangeEvent } from "react";
 import Image from "next/image";
 import { Camera, UserRound } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { compressImage } from "@/utils/compress-image";
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
@@ -49,9 +48,7 @@ export function AvatarUpload({
   return (
     <div className="flex items-center gap-4">
       <div
-        className={cn(
-          "group bg-secondary ring-primary/10 relative shrink-0 overflow-hidden rounded-full ring-4",
-        )}
+        className="group bg-secondary relative shrink-0 overflow-hidden rounded-full"
         style={{ width: size, height: size }}
       >
         {previewUrl ? (
@@ -85,7 +82,7 @@ export function AvatarUpload({
         >
           {previewUrl ? "Change photo" : "Add a photo"}
         </button>
-        <p className="text-muted-foreground text-xs">JPG, PNG or WEBP. Up to 5MB.</p>
+        <p className="text-muted-foreground text-sm">JPG, PNG or WEBP. Up to 5MB.</p>
       </div>
       <input
         ref={inputRef}

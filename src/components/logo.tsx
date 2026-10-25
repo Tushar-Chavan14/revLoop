@@ -6,9 +6,9 @@ interface LogoProps {
 }
 
 /**
- * The RoadKin lockup — the motorcycle-engine mark beside a tracked, uppercase
- * wordmark. The wide letter-spacing gives it the premium, technical register of
- * Peak Design / Garmin gear rather than a soft app logotype.
+ * The RoadKin lockup — the motorcycle-engine mark beside the wordmark set in
+ * the poster face, so the smallest brand moment speaks the same Bebas as the
+ * billboard. One colour: the wordmark is ink, the mark carries the orange.
  */
 export function Logo({ className, iconClassName }: LogoProps) {
   return (
@@ -20,9 +20,7 @@ export function Logo({ className, iconClassName }: LogoProps) {
         aria-hidden="true"
         className={cn("h-8 w-8", iconClassName)}
       />
-      <span className="font-heading text-[15px] font-extrabold tracking-[0.2em] uppercase">
-        Road<span className="text-primary">Kin</span>
-      </span>
+      <span className="font-display pt-0.5 text-[28px] leading-none">RoadKin</span>
     </div>
   );
 }

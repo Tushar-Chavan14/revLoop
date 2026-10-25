@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Milestone } from "@/components/design-system/milestone";
 import { StepIndicator } from "@/components/design-system/step-indicator";
 import { RIDE_TYPE_ICONS, RIDE_TYPES } from "@/constants/ride-type";
 import { SPEED_LEVELS } from "@/constants/speed-level";
@@ -64,19 +65,19 @@ type StepDef = { label: string; fields: (keyof RideFormValues)[] };
 const BASE_STEPS: StepDef[] = [
   { label: "Basics", fields: ["title", "description"] },
   {
-    label: "When & Where",
+    label: "When & where",
     fields: ["rideDate", "departureTime", "meetingPoint", "destination", "city"],
   },
   { label: "Details", fields: ["maxRiders", "rideType", "speed", "difficulty"] },
 ];
 
 const ORGANIZED_STEPS: StepDef[] = [
-  { label: "Pricing & Booking", fields: ["rideFee", "bookingDeadline", "minimumRiders"] },
+  { label: "Pricing & booking", fields: ["rideFee", "bookingDeadline", "minimumRiders"] },
   { label: "Inclusions", fields: [] },
   { label: "Itinerary", fields: [] },
 ];
 
-const FINAL_STEP: StepDef = { label: "Rules & Review", fields: [] };
+const FINAL_STEP: StepDef = { label: "Rules & review", fields: [] };
 
 function getSteps(pricingModel: string): StepDef[] {
   return pricingModel === "organized"
@@ -276,9 +277,9 @@ export function RideForm({
       <StepIndicator steps={steps.map((s) => s.label)} currentStep={step} />
 
       {isOrganized && !canCreateOrganized && (
-        <p className="text-muted-foreground text-xs">
+        <p className="text-muted-foreground text-sm">
           Complete{" "}
-          <Link href="/profile#payout" className="text-primary underline">
+          <Link href="/profile#payout" className="text-primary-ink underline underline-offset-4">
             payout setup in your profile
           </Link>{" "}
           before this ride can go live.
@@ -290,7 +291,7 @@ export function RideForm({
           <CardHeader>
             <div className="flex items-center gap-2">
               <ImageIcon className="text-muted-foreground size-4" />
-              <CardTitle>Ride Basics</CardTitle>
+              <CardTitle>Ride basics</CardTitle>
             </div>
             <CardDescription>What is this ride, and what does it look like?</CardDescription>
           </CardHeader>
@@ -328,7 +329,7 @@ export function RideForm({
         </Card>
       )}
 
-      {currentStep.label === "When & Where" && (
+      {currentStep.label === "When & where" && (
         <>
           <Card>
             <CardHeader>
@@ -338,7 +339,7 @@ export function RideForm({
               </div>
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Ride Date" htmlFor="rideDate" error={fieldError("rideDate")}>
+              <Field label="Ride date" htmlFor="rideDate" error={fieldError("rideDate")}>
                 <Input
                   id="rideDate"
                   name="rideDate"
@@ -349,7 +350,7 @@ export function RideForm({
                 />
               </Field>
               <Field
-                label="Departure Time"
+                label="Departure time"
                 htmlFor="departureTime"
                 error={fieldError("departureTime")}
               >
@@ -377,7 +378,7 @@ export function RideForm({
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <Field
-                label="Meeting Point"
+                label="Meeting point"
                 htmlFor="meetingPoint"
                 error={fieldError("meetingPoint")}
               >
@@ -397,7 +398,7 @@ export function RideForm({
                   }}
                 />
                 {formik.values.city && (
-                  <p className="text-muted-foreground text-xs">
+                  <p className="text-muted-foreground text-sm">
                     City: <span className="text-foreground font-medium">{formik.values.city}</span>
                   </p>
                 )}
@@ -421,7 +422,7 @@ export function RideForm({
                 />
               </Field>
               <Field
-                label="Google Maps Link (Optional)"
+                label="Google Maps link (optional)"
                 htmlFor="destinationMapUrl"
                 error={fieldError("destinationMapUrl")}
               >
@@ -443,7 +444,7 @@ export function RideForm({
                   size="sm"
                   onClick={() => setActiveMarker("meeting")}
                 >
-                  Placing: Meeting Point
+                  Placing: meeting point
                 </Button>
                 <Button
                   type="button"
@@ -451,10 +452,10 @@ export function RideForm({
                   size="sm"
                   onClick={() => setActiveMarker("destination")}
                 >
-                  Placing: Destination
+                  Placing: destination
                 </Button>
               </div>
-              <p className="text-muted-foreground text-xs">
+              <p className="text-muted-foreground text-sm">
                 Click or drag on the map to fine-tune whichever pin is selected above — the field
                 and city above update to match.
               </p>
@@ -476,11 +477,11 @@ export function RideForm({
           <CardHeader>
             <div className="flex items-center gap-2">
               <Bike className="text-muted-foreground size-4" />
-              <CardTitle>Ride Details</CardTitle>
+              <CardTitle>Ride details</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Maximum Riders" htmlFor="maxRiders" error={fieldError("maxRiders")}>
+            <Field label="Maximum riders" htmlFor="maxRiders" error={fieldError("maxRiders")}>
               <Input
                 id="maxRiders"
                 name="maxRiders"
@@ -493,7 +494,7 @@ export function RideForm({
               />
             </Field>
             <Field
-              label="Ride Type"
+              label="Ride type"
               htmlFor="rideType"
               error={fieldError("rideType")}
               className="sm:col-span-2"
@@ -568,7 +569,7 @@ export function RideForm({
               </Select>
             </Field>
             <Field
-              label="Estimated Distance (km)"
+              label="Estimated distance (km)"
               htmlFor="estimatedDistanceKm"
               error={fieldError("estimatedDistanceKm")}
             >
@@ -584,7 +585,7 @@ export function RideForm({
               />
             </Field>
             <Field
-              label="Estimated Duration"
+              label="Estimated duration"
               htmlFor="estimatedDurationDays"
               error={fieldError("estimatedDurationDays") ?? fieldError("estimatedDurationHours")}
             >
@@ -610,7 +611,7 @@ export function RideForm({
                     onBlur={formik.handleBlur}
                     className="pr-12"
                   />
-                  <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs">
+                  <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm">
                     days
                   </span>
                 </div>
@@ -628,13 +629,13 @@ export function RideForm({
                       onBlur={formik.handleBlur}
                       className="pr-12"
                     />
-                    <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs">
+                    <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm">
                       hrs
                     </span>
                   </div>
                 )}
               </div>
-              <p className="text-muted-foreground text-xs">
+              <p className="text-muted-foreground text-sm">
                 For a same-day ride, set Days to 1 and estimate the hours.
               </p>
             </Field>
@@ -642,18 +643,18 @@ export function RideForm({
         </Card>
       )}
 
-      {currentStep.label === "Pricing & Booking" && (
+      {currentStep.label === "Pricing & booking" && (
         <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
                 <IndianRupee className="text-muted-foreground size-4" />
-                <CardTitle>Pricing & Booking</CardTitle>
+                <CardTitle>Pricing & booking</CardTitle>
               </div>
               <CardDescription>Razorpay settles in INR only, so the fee is in ₹.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Ride Fee" htmlFor="rideFee" error={fieldError("rideFee")}>
+              <Field label="Ride fee" htmlFor="rideFee" error={fieldError("rideFee")}>
                 <div className="relative">
                   <IndianRupee className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                   <Input
@@ -670,7 +671,7 @@ export function RideForm({
                 </div>
               </Field>
               <Field
-                label="Booking Deadline"
+                label="Booking deadline"
                 htmlFor="bookingDeadline"
                 error={fieldError("bookingDeadline")}
               >
@@ -684,7 +685,7 @@ export function RideForm({
                 />
               </Field>
               <Field
-                label="Minimum Riders (Optional)"
+                label="Minimum riders (optional)"
                 htmlFor="minimumRiders"
                 error={fieldError("minimumRiders")}
               >
@@ -714,7 +715,7 @@ export function RideForm({
             <CardHeader>
               <div className="flex items-center gap-2">
                 <ListChecks className="text-muted-foreground size-4" />
-                <CardTitle>What&apos;s Included</CardTitle>
+                <CardTitle>What&apos;s included</CardTitle>
               </div>
               <CardDescription>Select everything covered by the ride fee.</CardDescription>
             </CardHeader>
@@ -738,7 +739,7 @@ export function RideForm({
 
           <Card>
             <CardHeader>
-              <CardTitle>What&apos;s Not Included</CardTitle>
+              <CardTitle>What&apos;s not included</CardTitle>
               <CardDescription>
                 Optional — call out costs riders should expect to cover.
               </CardDescription>
@@ -793,7 +794,7 @@ export function RideForm({
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Clock className="text-muted-foreground size-4" />
-                <CardTitle>Trip Itinerary</CardTitle>
+                <CardTitle>Trip itinerary</CardTitle>
               </div>
               <CardDescription>
                 Optional — sketch out the plan for each day. You can always fill this in later.
@@ -813,7 +814,7 @@ export function RideForm({
                     onClick={() => removeItineraryDay(dayIndex)}
                   >
                     <Trash2 className="size-4" />
-                    Remove Day
+                    Remove day
                   </Button>
                 </div>
               </CardHeader>
@@ -853,7 +854,7 @@ export function RideForm({
                   onClick={() => addItineraryItem(dayIndex)}
                 >
                   <Plus className="size-4" />
-                  Add Stop
+                  Add stop
                 </Button>
               </CardContent>
             </Card>
@@ -861,7 +862,7 @@ export function RideForm({
 
           <Button type="button" variant="outline" onClick={addItineraryDay} className="self-start">
             <Plus className="size-4" />
-            Add Day
+            Add day
           </Button>
         </motion.div>
       )}
@@ -871,7 +872,7 @@ export function RideForm({
           {isOrganized && (
             <Card>
               <CardHeader>
-                <CardTitle>Cancellation Policy</CardTitle>
+                <CardTitle>Cancellation policy</CardTitle>
                 <CardDescription>Optional — shown to riders before they book.</CardDescription>
               </CardHeader>
               <CardContent>
@@ -891,27 +892,27 @@ export function RideForm({
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Settings2 className="text-muted-foreground size-4" />
-                <CardTitle>Ride Rules</CardTitle>
+                <CardTitle>Ride rules</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <ToggleField
-                label="Breakfast Stop"
+                label="Breakfast stop"
                 checked={formik.values.breakfastStop}
                 onCheckedChange={(checked) => formik.setFieldValue("breakfastStop", checked)}
               />
               <ToggleField
-                label="Fuel Stop"
+                label="Fuel stop"
                 checked={formik.values.fuelStop}
                 onCheckedChange={(checked) => formik.setFieldValue("fuelStop", checked)}
               />
               <ToggleField
-                label="Helmet Required"
+                label="Helmet required"
                 checked={formik.values.helmetRequired}
                 onCheckedChange={(checked) => formik.setFieldValue("helmetRequired", checked)}
               />
               <ToggleField
-                label="Pillion Allowed"
+                label="Pillion allowed"
                 checked={formik.values.pillionAllowed}
                 onCheckedChange={(checked) => formik.setFieldValue("pillionAllowed", checked)}
               />
@@ -923,9 +924,9 @@ export function RideForm({
       )}
 
       {isLastStep && (
-        <p className="text-muted-foreground text-xs">
+        <p className="text-muted-foreground text-sm">
           {isOrganized
-            ? "Anything not listed under “What's Included” is the rider's own responsibility."
+            ? "Anything not listed under “What's included” is the rider's own responsibility."
             : "Riders who join are responsible for their own expenses — fuel, food, accommodation, and any other costs. You're not expected to cover these as the organizer."}
         </p>
       )}
@@ -942,14 +943,8 @@ export function RideForm({
           <span />
         )}
         {isLastStep ? (
-          <Button
-            key="submit"
-            type="submit"
-            disabled={isPending}
-            size="lg"
-            className="bg-sunrise border-0 text-white shadow-lg transition-opacity hover:opacity-90"
-          >
-            {isPending ? "Publishing..." : mode === "create" ? "Publish This Ride" : "Save Changes"}
+          <Button key="submit" type="submit" disabled={isPending} size="lg">
+            {isPending ? "Publishing..." : mode === "create" ? "Publish this ride" : "Save changes"}
           </Button>
         ) : (
           <Button key="next" type="button" size="lg" onClick={handleNext}>
@@ -975,18 +970,27 @@ function RidePreviewCard({
   return (
     <div className="flex flex-col gap-3">
       <p className="text-muted-foreground text-sm font-medium">Preview</p>
-      <div className="bg-card ring-foreground/10 flex flex-col overflow-hidden rounded-2xl ring-1 sm:flex-row">
-        <div className="from-secondary via-secondary/60 to-primary/30 relative aspect-4/3 w-full overflow-hidden bg-linear-to-br sm:w-56 sm:shrink-0">
+      <div className="bg-card flex flex-col overflow-hidden rounded-md sm:flex-row">
+        <div className="bg-secondary relative aspect-4/3 w-full overflow-hidden sm:w-56 sm:shrink-0">
           {coverImagePreview ? (
             // eslint-disable-next-line @next/next/no-img-element -- local object URL preview, not a next/image candidate
             <img src={coverImagePreview} alt="" className="h-full w-full object-cover" />
           ) : (
-            <RideTypeIcon className="text-secondary-foreground/20 absolute -right-4 -bottom-4 size-24" />
+            <span className="absolute inset-0 flex items-center justify-center">
+              <RideTypeIcon className="size-16 text-white/15" />
+            </span>
+          )}
+          {values.destination && (
+            <Milestone
+              place={values.destination}
+              km={values.estimatedDistanceKm}
+              className="absolute bottom-3 left-3 max-w-[80%]"
+            />
           )}
         </div>
         <div className="flex flex-1 flex-col gap-2 p-4">
-          <p className="font-heading text-lg font-semibold">{values.title || "Untitled ride"}</p>
-          <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+          <p className="text-base leading-snug font-bold">{values.title || "Untitled ride"}</p>
+          <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-sm tabular-nums">
             {values.rideDate && (
               <span className="flex items-center gap-1.5">
                 <Calendar className="text-muted-foreground size-3.5" />
@@ -1004,7 +1008,7 @@ function RidePreviewCard({
             )}
           </div>
           {values.pricingModel === "organized" && values.bookingDeadline && (
-            <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
+            <p className="text-muted-foreground flex items-center gap-1.5 text-sm tabular-nums">
               <Clock className="text-muted-foreground size-3.5 shrink-0" />
               Book by {format(new Date(values.bookingDeadline), "MMM d, h:mm a")}
             </p>

@@ -22,13 +22,13 @@ function DrawerContent({ className, children, ...props }: DrawerPrimitive.Popup.
     <DrawerPrimitive.Portal>
       <DrawerPrimitive.Backdrop
         data-slot="drawer-backdrop"
-        className="data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+        className="data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 z-50 bg-black/50"
       />
       <DrawerPrimitive.Viewport className="fixed inset-x-0 bottom-0 z-50 flex justify-center">
         <DrawerPrimitive.Popup
           data-slot="drawer-content"
           className={cn(
-            "bg-card text-card-foreground ring-foreground/10 data-open:animate-in data-open:slide-in-from-bottom data-closed:animate-out data-closed:slide-out-to-bottom mx-auto flex max-h-[85vh] w-full max-w-lg flex-col gap-4 rounded-t-3xl pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl ring-1 duration-200 outline-none",
+            "bg-card text-card-foreground border-border data-open:animate-in data-open:slide-in-from-bottom data-closed:animate-out data-closed:slide-out-to-bottom mx-auto flex max-h-[85vh] w-full max-w-lg flex-col gap-4 rounded-t-md border border-b-0 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-lg duration-200 outline-none",
             className,
           )}
           {...props}
@@ -56,7 +56,7 @@ function DrawerTitle({ className, ...props }: DrawerPrimitive.Title.Props) {
   return (
     <DrawerPrimitive.Title
       data-slot="drawer-title"
-      className={cn("font-heading text-lg font-semibold tracking-tight", className)}
+      className={cn("text-lg font-bold", className)}
       {...props}
     />
   );

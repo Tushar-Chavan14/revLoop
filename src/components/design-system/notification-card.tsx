@@ -40,22 +40,20 @@ export function NotificationCard({
     <div
       data-slot="notification-card"
       className={cn(
-        "flex items-start gap-3 rounded-2xl p-4 transition-colors",
-        read ? "bg-card" : "bg-primary-soft",
+        "bg-card hover:bg-muted/60 flex items-start gap-3 rounded-md p-4 transition-colors",
         className,
       )}
     >
-      <span
+      <Icon
         className={cn(
-          "flex size-9 shrink-0 items-center justify-center rounded-full",
-          read ? "bg-muted text-muted-foreground" : "bg-primary/15 text-primary",
+          "mt-0.5 size-4.5 shrink-0",
+          read ? "text-muted-foreground" : "text-foreground",
         )}
-      >
-        <Icon className="size-4" aria-hidden />
-      </span>
+        aria-hidden
+      />
       <div className="min-w-0 flex-1">
-        <p className={cn("text-sm text-pretty", !read && "font-medium")}>{message}</p>
-        <p className="text-muted-foreground mt-0.5 text-xs">{timeAgo}</p>
+        <p className={cn("text-sm text-pretty", !read && "font-semibold")}>{message}</p>
+        <p className="text-muted-foreground mt-0.5 text-sm">{timeAgo}</p>
       </div>
       {!read && <span className="bg-primary mt-1.5 size-2 shrink-0 rounded-full" aria-hidden />}
     </div>

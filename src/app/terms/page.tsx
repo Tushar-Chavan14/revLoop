@@ -13,7 +13,7 @@ const EFFECTIVE_DATE = "August 14, 2026";
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="font-heading text-xl font-bold tracking-tight">{title}</h2>
+      <h2 className="text-foreground text-lg font-bold">{title}</h2>
       <div className="text-muted-foreground flex flex-col gap-3 leading-relaxed">{children}</div>
     </section>
   );
@@ -23,28 +23,24 @@ export default function TermsPage() {
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />
-      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
-        <PageHeading
-          eyebrow="Legal"
-          title="Terms & Conditions"
-          description={`Last updated ${EFFECTIVE_DATE}`}
-        />
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-12 sm:px-6">
+        <PageHeading title="Terms & Conditions" description={`Last updated ${EFFECTIVE_DATE}`} />
 
         <div className="flex flex-col gap-10">
           <p className="text-muted-foreground leading-relaxed">
-            These Terms govern your use of {APP_NAME}. By creating an account or using the app,
-            you agree to them. Please read them carefully before joining or hosting a ride.
+            These Terms govern your use of {APP_NAME}. By creating an account or using the app, you
+            agree to them. Please read them carefully before joining or hosting a ride.
           </p>
 
-          <Section title="1. Who Can Use RoadKin">
+          <Section title="1. Who can use RoadKin">
             <p>
-              You must be at least 18 years old and hold a valid license for the vehicle you ride
-              to use {APP_NAME}. You're responsible for complying with all local traffic, licensing,
+              You must be at least 18 years old and hold a valid license for the vehicle you ride to
+              use {APP_NAME}. You're responsible for complying with all local traffic, licensing,
               and safety laws when riding — on or off a ride organized through the app.
             </p>
           </Section>
 
-          <Section title="2. Account Types">
+          <Section title="2. Account types">
             <p>
               {APP_NAME} has two account types. A <strong className="text-foreground">Rider</strong>{" "}
               account can create free Community Rides and join or book any ride. An{" "}
@@ -54,7 +50,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="3. Community Rides & Organized Rides">
+          <Section title="3. Community rides & organized rides">
             <p>
               <strong className="text-foreground">Community Rides</strong> are free, peer-run rides
               that any rider can create and join, subject to the organizer's approval of join
@@ -68,7 +64,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="4. Payments, Cancellations & Refunds">
+          <Section title="4. Payments, cancellations & refunds">
             <p>
               All payments for Organized Rides are processed by Razorpay. {APP_NAME} does not store
               your payment card or bank details. Cancellation and refund terms for a specific ride
@@ -79,7 +75,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="5. Assumption of Risk">
+          <Section title="5. Assumption of risk">
             <p>
               Motorcycle riding carries inherent risks, including serious injury or death.{" "}
               {APP_NAME} is a platform that connects riders — we do not organize, supervise, lead,
@@ -90,7 +86,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="6. Organizer & Ride Captain Responsibilities">
+          <Section title="6. Organizer & Ride Captain responsibilities">
             <p>
               If you create a ride, you're responsible for the accuracy of its details (route,
               timing, difficulty, inclusions), for fairly reviewing join requests, and — for
@@ -100,7 +96,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="7. User Content">
+          <Section title="7. User content">
             <p>
               You retain ownership of the photos, messages, and ride details you post. By posting
               them, you grant {APP_NAME} a license to display and distribute that content within the
@@ -109,13 +105,17 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="8. Prohibited Conduct">
+          <Section title="8. Prohibited conduct">
             <p>You agree not to:</p>
             <ul className="list-disc pl-5">
               <li>Post false, misleading, or fraudulent ride listings or profile information.</li>
               <li>Harass, threaten, or discriminate against another rider.</li>
-              <li>Use the platform to solicit payment outside of Razorpay for an Organized Ride.</li>
-              <li>Attempt to access another user's account or interfere with the platform's security.</li>
+              <li>
+                Use the platform to solicit payment outside of Razorpay for an Organized Ride.
+              </li>
+              <li>
+                Attempt to access another user's account or interfere with the platform's security.
+              </li>
             </ul>
           </Section>
 
@@ -126,7 +126,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="10. Disclaimers & Limitation Of Liability">
+          <Section title="10. Disclaimers & limitation of liability">
             <p>
               {APP_NAME} is provided "as is," without warranties of any kind. To the fullest extent
               permitted by law, {APP_NAME} and its team are not liable for any indirect, incidental,
@@ -135,21 +135,24 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="11. Governing Law">
+          <Section title="11. Governing law">
             <p>These Terms are governed by the laws of India.</p>
           </Section>
 
-          <Section title="12. Changes To These Terms">
+          <Section title="12. Changes to these terms">
             <p>
               We may update these Terms as {APP_NAME} evolves. Continuing to use the app after a
               change means you accept the updated Terms.
             </p>
           </Section>
 
-          <Section title="13. Contact Us">
+          <Section title="13. Contact us">
             <p>
               Questions about these Terms? Reach us at{" "}
-              <a href="mailto:support@roadkin.in" className="text-primary underline">
+              <a
+                href="mailto:support@roadkin.in"
+                className="text-primary-ink font-semibold underline underline-offset-4"
+              >
                 support@roadkin.in
               </a>
               .

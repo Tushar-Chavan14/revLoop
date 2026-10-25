@@ -28,24 +28,25 @@ export function DestinationCard({
     <motion.div {...hoverLift} className={cn("group relative shrink-0", className)}>
       <Link
         href={href}
-        className="ring-foreground/10 focus-visible:ring-primary relative block aspect-3/4 w-full overflow-hidden rounded-2xl ring-1 outline-none focus-visible:ring-2"
+        className="bg-secondary focus-visible:ring-ring relative block aspect-3/4 w-full overflow-hidden rounded-md outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
       >
-        {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt=""
-            fill
-            unoptimized
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
-          />
-        ) : (
-          <div className="from-secondary via-secondary/70 to-primary/30 absolute inset-0 bg-linear-to-br" />
+        {imageUrl && (
+          <>
+            <Image
+              src={imageUrl}
+              alt=""
+              fill
+              unoptimized
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+            />
+            {/* Neutral scrim so the white type reads on any photograph. */}
+            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/10 to-transparent" />
+          </>
         )}
-        <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/10 to-transparent" />
         <div className="absolute inset-x-4 bottom-4 flex flex-col gap-1">
-          <p className="font-heading text-lg font-semibold text-white">{city}</p>
-          <p className="flex items-center gap-1 text-xs text-white/70">
-            <MapPin className="size-3" aria-hidden />
+          <p className="text-lg font-bold text-white">{city}</p>
+          <p className="flex items-center gap-1 text-sm text-white/75 tabular-nums">
+            <MapPin className="size-3.5" aria-hidden />
             {rideCount} ride{rideCount === 1 ? "" : "s"} planned
           </p>
         </div>
