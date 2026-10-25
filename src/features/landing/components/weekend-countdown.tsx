@@ -22,7 +22,14 @@ function untilSaturdayRollout(now: Date): { days: number; hours: number } | null
  * many rides are leaving. Rendered after mount (it depends on the visitor's
  * clock); before that, and without script, the plain sentence stands in.
  */
-export function WeekendCountdown({ rideCount }: { rideCount: number }) {
+export function WeekendCountdown({
+  rideCount,
+  tone = "ink",
+}: {
+  rideCount: number;
+  /** "light" for white type over a photograph. */
+  tone?: "ink" | "light";
+}) {
   const [left, setLeft] = useState<ReturnType<typeof untilSaturdayRollout> | "weekend" | null>(
     null,
   );
@@ -48,7 +55,15 @@ export function WeekendCountdown({ rideCount }: { rideCount: number }) {
             ? "Rolling out this weekend"
             : `Saturday in ${left.days > 0 ? `${left.days}d ` : ""}${left.hours}h`}
       </span>
-      <span className="text-muted-foreground text-[15px] font-medium">{rides}</span>
+      <span
+        className={
+          tone === "light"
+            ? "text-[15px] font-medium text-white/80"
+            : "text-muted-foreground text-[15px] font-medium"
+        }
+      >
+        {rides}
+      </span>
     </p>
   );
 }
