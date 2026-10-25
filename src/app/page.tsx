@@ -7,8 +7,17 @@ import { Milestone } from "@/components/design-system/milestone";
 import { Reveal } from "@/components/reveal";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { cn } from "@/lib/utils";
-import { LandingHero } from "@/features/landing/components/landing-hero";
+import {
+  LandingHero,
+  type HeroRide,
+  type HeroScene,
+} from "@/features/landing/components/landing-hero";
+import {
+  DealtPrints,
+  JourneyStone,
+  PinnedStages,
+  WipeUp,
+} from "@/features/landing/components/scroll-scenes";
 import { WeekendRidesTable } from "@/features/landing/components/weekend-rides-table";
 import { getDestinationPhoto } from "@/lib/wikimedia-photo";
 import { getAuthUser } from "@/services/profiles";
@@ -22,8 +31,6 @@ import {
 } from "@/services/rides";
 import { getUpcomingWeekendRange } from "@/utils/weekend";
 
-// Hand-picked Unsplash frame: a rider cruising into golden hour.
-const HERO_IMAGE = "https://images.unsplash.com/photo-1558981806-ec527fa84c39";
 
 const PHOTO_CREDITS = [
   "“The world's highest motorable claim – Khardung La Pass” by Ashishyadav.photographs, CC BY-SA 4.0",
@@ -31,6 +38,35 @@ const PHOTO_CREDITS = [
 ];
 
 // The sequence is written, not counted: each stage of a ride is one line.
+// The hero's two scenes on one ghat road, generated for RoadKin (kie.ai,
+// scrollcraft/builds/roadkin-landing): the rider alone at first light, then
+// the crew an hour later. Each has a 3:4 frame art-directed for phones.
+const HERO_ALONE: HeroScene = {
+  src: "/hero/scene1-alone.webp",
+  mobileSrc: "/hero/scene1-alone-m.webp",
+  alt: "A lone motorcyclist riding up a misty mountain highway at dawn, a white milestone with an orange top at the roadside",
+  ink: "ink",
+};
+// The scrubbed ride: one generated 5 s clip of the crew (kling, from the crew
+// still), reversed so scrolling down brings the riders toward the visitor,
+// encoded with dense keyframes for seeking.
+const HERO_RIDE: HeroRide = {
+  mp4: "/hero/ride.mp4",
+  mp4Mobile: "/hero/ride-m.mp4",
+  poster: "/hero/ride-poster.webp",
+  posterMobile: "/hero/ride-poster-m.webp",
+};
+const HERO_CREW: HeroScene = {
+  src: "/hero/scene2-crew.webp",
+  mobileSrc: "/hero/scene2-crew-m.webp",
+  alt: "A crew of five motorcyclists riding together up the same mountain highway in warm morning light",
+  ink: "ink",
+};
+
+// The roadside stone's journey is fixed copy, not data: the page always reads
+// as one long ride to the southern tip, counted down as the visitor scrolls.
+const STONE = { place: "Kanyakumari", km: 900 } as const;
+
 const STAGES = [
   {
     line: "First, post the ride.",
@@ -50,12 +86,18 @@ const STAGES = [
   },
 ] as const;
 
-const STAGE_INDENT = ["", "lg:pl-[12%]", "lg:pl-[24%]", "lg:pl-[36%]"];
-const STAGE_INDENT_PHONE = ["pl-0", "pl-[6vw]", "pl-[12vw]", "pl-[18vw]"];
 
-const PRINT_TILT = ["-rotate-[6deg] mt-6", "rotate-[5deg] relative z-[1]", "-rotate-[2deg] mt-10"];
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ hero?: string }>;
+}) {
+  // Preview switch while the hero is being chosen: the default is the
+  // scroll-scrubbed ride; /?hero=wipe shows the two-scene wipe.
+  const { hero } = await searchParams;
+  const heroMode = hero === "wipe" ? "wipe" : "scrub";
+
   const [user, upcomingRides, popularDestinations, stats, weekend, featuredCommunity, featuredOrganized] =
     await Promise.all([
       getAuthUser(),
@@ -95,8 +137,10 @@ export default async function HomePage() {
 
       <main className="flex flex-1 flex-col">
         <LandingHero
-          image={HERO_IMAGE}
-          imageAlt="A rider on a motorcycle leaning into an open highway at golden hour"
+          mode={heroMode}
+          ride={HERO_RIDE}
+          alone={HERO_ALONE}
+          crew={HERO_CREW}
           ctaHref={primaryCtaHref}
           ctaLabel={primaryCtaLabel}
           weekendRideCount={weekend.rideCount}
@@ -183,105 +227,11 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* How a ride comes together: four lines stepping down to Saturday. */}
-        <section
-          aria-labelledby="stage-0"
-          className="mx-auto w-full max-w-[90rem] px-4 pt-36 sm:px-8 lg:pt-52"
-        >
-          <ol className="flex flex-col gap-10 lg:gap-14">
-            {STAGES.map((stage, index) => (
-              <li key={stage.line} className={cn(STAGE_INDENT_PHONE[index], STAGE_INDENT[index])}>
-                <Reveal delay={index * 80}>
-                  {index === 0 ? (
-                    <h2
-                      id="stage-0"
-                      className="font-display text-[8.4vw] leading-none sm:text-[clamp(36px,4.6vw,76px)]"
-                    >
-                      {stage.line}
-                    </h2>
-                  ) : (
-                    <p
-                      className={cn(
-                        "font-display text-[8.4vw] leading-none sm:text-[clamp(36px,4.6vw,76px)]",
-                        index === STAGES.length - 1 && "text-primary-ink",
-                      )}
-                    >
-                      {stage.line}
-                    </p>
-                  )}
-                  <p className="mt-3 max-w-[34ch] text-[17px] leading-snug">
-                    {stage.detail}
-                  </p>
-                </Reveal>
-              </li>
-            ))}
-          </ol>
-        </section>
+        {/* How a ride comes together: the frame holds while four lines step down. */}
+        <PinnedStages stages={STAGES} />
 
-        {/* Where the crews keep riding: the headline, then the prints dropped
-            in a fanned pile under it — each one a destination, on its milestone. */}
-        {prints.length >= 2 && (
-          <section
-            aria-labelledby="roads-title"
-            className="bg-secondary text-secondary-foreground mt-36 overflow-hidden px-4 pt-20 pb-16 sm:px-8 lg:mt-52 lg:pt-28 lg:pb-20"
-          >
-            <div className="mx-auto w-full max-w-[90rem]">
-              <Reveal>
-                <h2
-                  id="roads-title"
-                  className="font-display text-center text-[19vw] leading-[0.85] sm:text-[clamp(120px,13vw,200px)]"
-                >
-                  Roads we
-                  <br />
-                  keep riding
-                </h2>
-              </Reveal>
-              <ul className="mt-12 flex items-start justify-center sm:mt-16">
-                {prints.slice(0, 3).map((destination, index) => (
-                  <li
-                    key={destination.destination}
-                    className={cn(
-                      "w-[46vw] sm:w-[24vw] sm:max-w-[22rem]",
-                      index > 0 && "-ml-[8vw] sm:-ml-[3vw]",
-                      index === 2 && "hidden sm:block",
-                      PRINT_TILT[index],
-                    )}
-                  >
-                    <Reveal delay={index * 90}>
-                      <Link
-                        href={`/rides?q=${encodeURIComponent(destination.destination)}`}
-                        className="relative block bg-white p-2 pb-3 transition-transform duration-200 ease-out hover:z-10 hover:scale-[1.03] hover:rotate-0 focus-visible:rotate-0"
-                      >
-                        <span className="relative block aspect-3/4 w-full overflow-hidden">
-                          <Image
-                            src={destination.photo}
-                            alt={`${destination.destination}, where RoadKin rides are headed`}
-                            fill
-                            unoptimized
-                            className="object-cover"
-                          />
-                        </span>
-                        <span className="flex flex-col gap-1 pt-2 text-[#111]">
-                          <span className="font-display text-2xl leading-none sm:text-3xl">
-                            {destination.destination}
-                          </span>
-                          <span className="text-[13px] font-semibold tabular-nums">
-                            {destination.rideCount} ride{destination.rideCount === 1 ? "" : "s"}{" "}
-                            planned
-                          </span>
-                        </span>
-                      </Link>
-                    </Reveal>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-12 max-w-md text-[17px] text-white/80">
-                {prints.map((p) => p.destination).join(", ")}: the places our crews keep riding
-                back to. Tap one for its rides.
-              </p>
-            </div>
-          </section>
-        )}
+        {/* Where the crews keep riding: the field opens, the prints are dealt. */}
+        {prints.length >= 2 && <DealtPrints prints={prints} />}
 
         {/* The road family, as a ledger of real counts. */}
         <section
@@ -308,8 +258,8 @@ export default async function HomePage() {
                 : []),
             ].map((row, index) => (
               <Reveal key={row.label} delay={index * 80}>
-                <div className="grid grid-cols-[52%_1fr] items-baseline gap-x-6">
-                  <dd className="font-display text-right text-[15vw] leading-none tabular-nums sm:text-[clamp(64px,7vw,112px)]">
+                <div className="grid grid-cols-[minmax(3.25rem,auto)_1fr] items-baseline gap-x-4 sm:grid-cols-[52%_1fr] sm:gap-x-6">
+                  <dd className="font-display text-left text-[15vw] leading-none tabular-nums sm:text-right sm:text-[clamp(64px,7vw,112px)]">
                     <CountUp value={row.value} />
                   </dd>
                   <dt className="text-[15px] font-medium sm:text-base">{row.label}</dt>
@@ -320,10 +270,7 @@ export default async function HomePage() {
         </section>
 
         {/* The close: the idea again, inverted. */}
-        <section
-          aria-labelledby="close-title"
-          className="bg-secondary text-secondary-foreground mt-36 flex min-h-[80svh] flex-col justify-between px-4 py-14 sm:px-8 lg:mt-52 lg:min-h-[90svh] lg:py-20"
-        >
+        <WipeUp className="bg-secondary text-secondary-foreground mt-36 flex min-h-[80svh] flex-col justify-between px-4 py-14 sm:px-8 lg:mt-52 lg:min-h-[90svh] lg:py-20">
           <div className="mx-auto w-full max-w-[90rem]">
             <Reveal>
               <h2
@@ -357,12 +304,15 @@ export default async function HomePage() {
                 <li key={credit}>{credit}</li>
               ))}
               <li>
-                Photographs via Wikimedia Commons; opening photograph via Unsplash.
+                Photographs via Wikimedia Commons. The two opening road scenes are
+                AI-generated for RoadKin.
               </li>
             </ul>
           </details>
-        </section>
+        </WipeUp>
       </main>
+
+      <JourneyStone place={STONE.place} km={STONE.km} />
 
       <SiteFooter />
     </div>

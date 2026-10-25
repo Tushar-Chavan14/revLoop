@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
+import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RideCardData } from "@/services/rides";
@@ -17,6 +18,7 @@ const ALL = "All cities";
 export function WeekendRidesTable({ rides }: { rides: RideCardData[] }) {
   const cities = [ALL, ...new Set(rides.map((ride) => ride.city).filter((c): c is string => !!c))];
   const [city, setCity] = useState(ALL);
+  const still = useReducedMotion();
   const shown = city === ALL ? rides : rides.filter((ride) => ride.city === city);
 
   return (
@@ -43,10 +45,17 @@ export function WeekendRidesTable({ rides }: { rides: RideCardData[] }) {
       )}
 
       <ul className="flex flex-col">
-        {shown.map((ride) => {
+        {shown.map((ride, index) => {
           const isFull = ride.seats_available !== null && ride.seats_available <= 0;
           return (
-            <li key={ride.id}>
+            // Rows roll in one after another, like a departures board.
+            <motion.li
+              key={ride.id}
+              initial={still ? false : { opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+              transition={{ duration: 0.5, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
+            >
               <Link
                 href={`/rides/${ride.id}`}
                 className="group hover:bg-card -mx-3 grid grid-cols-[5.5rem_1fr_auto] items-baseline gap-x-4 rounded-md px-3 py-4 transition-colors sm:grid-cols-[7rem_1fr_auto]"
@@ -87,7 +96,7 @@ export function WeekendRidesTable({ rides }: { rides: RideCardData[] }) {
                   />
                 </span>
               </Link>
-            </li>
+            </motion.li>
           );
         })}
       </ul>
